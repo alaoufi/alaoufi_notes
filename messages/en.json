@@ -146,6 +146,7 @@
       "title": "Admin",
       "overview": "Overview",
       "categories": "Categories",
+      "regions": "Regions",
       "users": "Users",
       "disputes": "Disputes",
       "translations": "Translations",
@@ -168,6 +169,25 @@
       "subtitle": "Create, edit, enable/disable categories and subcategories",
       "addCta": "Add category",
       "edit": "Edit"
+    },
+    "regions": {
+      "title": "Regions & governorates",
+      "subtitle": "Each region must be activated by an admin to be visible to customers. Activating a region cascades activation to its governorates and cities.",
+      "activeCount": "{count} of {total} regions active",
+      "infoTitle": "How activation works",
+      "infoBody": "Toggling a region cascades the change to all its governorates, and each governorate cascades to its cities. You can later disable a single governorate manually without affecting the others.",
+      "governorates": "Governorates",
+      "noGovernorates": "No governorates registered for this region yet.",
+      "toggleRegion": "Toggle region",
+      "toggleGovernorate": "Toggle governorate",
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "errors": {
+        "noBackend": "Supabase connection required",
+        "updateFailed": "Update failed"
+      }
     },
     "users": {
       "title": "Users",

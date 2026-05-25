@@ -4,7 +4,15 @@ import { Link } from "@/i18n/navigation";
 import { requireRole } from "@/lib/auth/guard";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { type Locale } from "@/i18n/locales";
-import { Shield, Tag, Users, MessageSquare, Settings, AlertTriangle } from "lucide-react";
+import {
+  Shield,
+  Tag,
+  Users,
+  MessageSquare,
+  Settings,
+  AlertTriangle,
+  MapPin,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +43,7 @@ export default async function AdminLayout({
           </h2>
           <NavItem href="/admin" label={t("nav.overview")} icon={<Shield className="h-4 w-4" />} />
           <NavItem href="/admin/categories" label={t("nav.categories")} icon={<Tag className="h-4 w-4" />} />
+          <NavItem href="/admin/regions" label={t("nav.regions")} icon={<MapPin className="h-4 w-4" />} />
           <NavItem href="/admin/users" label={t("nav.users")} icon={<Users className="h-4 w-4" />} />
           <NavItem href="/admin/disputes" label={t("nav.disputes")} icon={<AlertTriangle className="h-4 w-4" />} />
           <NavItem href="/admin/translations" label={t("nav.translations")} icon={<MessageSquare className="h-4 w-4" />} />

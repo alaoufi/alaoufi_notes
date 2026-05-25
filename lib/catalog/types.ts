@@ -7,8 +7,38 @@ export interface Category {
   icon_key: string | null;
 }
 
+export interface Region {
+  id?: string;
+  slug: string;
+  name: Record<string, string>;
+  is_active: boolean;
+  display_order?: number;
+}
+
+export interface Governorate {
+  id?: string;
+  region_id?: string;
+  region_slug?: string;
+  slug: string;
+  name: Record<string, string>;
+  is_active: boolean;
+  display_order?: number;
+}
+
 export interface City {
   id?: string;
+  governorate_id?: string;
+  governorate_slug?: string;
+  region_slug?: string;
+  slug: string;
+  name: Record<string, string>;
+  is_active?: boolean;
+}
+
+export interface District {
+  id?: string;
+  city_id?: string;
+  city_slug?: string;
   slug: string;
   name: Record<string, string>;
 }
