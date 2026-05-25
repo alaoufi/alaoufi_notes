@@ -134,11 +134,11 @@
       "handle": "ব্যবহারকারীর নাম বা মোবাইল"
     },
     "placeholders": {
-      "fullName": "নাম",
+      "fullName": "",
       "handle": "ব্যবহারকারী নাম বা +9665XXXXXXXX"
     },
     "hints": {
-      "passwordPolicy": "অন্তত ৮টি অক্ষর, বড়, ছোট ও একটি সংখ্যা সহ।",
+      "passwordPolicy": "অন্তত ৪টি অক্ষর।",
       "phonePrimary": "মোবাইল আবশ্যক এবং সাইন ইনের জন্য ব্যবহৃত।",
       "usernameOptional": "ঐচ্ছিক — ছোট অক্ষর, সংখ্যা ও _, ৩-৩০ অক্ষর।",
       "emailOptional": "ঐচ্ছিক — শুধু পুনরুদ্ধারের জন্য।",

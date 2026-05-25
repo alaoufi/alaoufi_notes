@@ -264,13 +264,7 @@ function LocationTreePickerInner({
       {/* Prominent "use my location" CTA */}
       {showMap && (
         <div
-          className="overflow-hidden rounded-lg border-2 p-4"
-          style={{
-            borderColor: "var(--color-primary)",
-            backgroundImage:
-              "linear-gradient(135deg, var(--color-primary)/8% 0%, var(--color-accent)/4% 100%)",
-            backgroundColor: "var(--color-surface)",
-          }}
+          className="overflow-hidden rounded-lg border-2 border-primary bg-primary/5 p-4"
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">

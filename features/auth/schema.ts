@@ -21,12 +21,7 @@ export const signUpSchema = z.object({
     .string()
     .regex(phoneRegex, "auth.errors.phoneInvalid")
     .transform((v) => (v.startsWith("+") ? v : `+${v}`)),
-  password: z
-    .string()
-    .min(8, "auth.errors.passwordTooShort")
-    .regex(/[A-Z]/, "auth.errors.passwordWeak")
-    .regex(/[a-z]/, "auth.errors.passwordWeak")
-    .regex(/[0-9]/, "auth.errors.passwordWeak"),
+  password: z.string().min(4, "auth.errors.passwordTooShort"),
   roles: z
     .array(z.enum(["requester", "provider"]))
     .min(1, "auth.errors.roleRequired"),

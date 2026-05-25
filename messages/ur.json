@@ -142,11 +142,11 @@
       "handle": "صارف نام یا موبائل"
     },
     "placeholders": {
-      "fullName": "نام",
+      "fullName": "",
       "handle": "صارف نام یا +9665XXXXXXXX"
     },
     "hints": {
-      "passwordPolicy": "کم از کم 8 حروف، بڑے، چھوٹے اور ایک عدد شامل ہو۔",
+      "passwordPolicy": "کم از کم 4 حروف۔",
       "phonePrimary": "موبائل لازمی ہے اور سائن ان کے لیے استعمال ہوتا ہے۔",
       "usernameOptional": "اختیاری — چھوٹے حروف، اعداد اور _ صرف، 3-30 حروف۔",
       "emailOptional": "اختیاری — صرف بحالی کے لیے۔",

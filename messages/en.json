@@ -163,11 +163,11 @@
       "handle": "Username or mobile"
     },
     "placeholders": {
-      "fullName": "Name",
+      "fullName": "",
       "handle": "username or +9665XXXXXXXX"
     },
     "hints": {
-      "passwordPolicy": "8+ characters with uppercase, lowercase, and a number.",
+      "passwordPolicy": "4 characters minimum.",
       "phonePrimary": "Mobile is required and used to sign in.",
       "usernameOptional": "Optional — lowercase letters, digits and _ only, 3-30 chars. Lets you sign in instead of using your phone.",
       "emailOptional": "Optional — used for recovery only.",

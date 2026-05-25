@@ -64,10 +64,7 @@ export function SignUpForm({
     return (
       fullName.trim().length >= 2 &&
       phoneRegex.test(phone) &&
-      password.length >= 8 &&
-      /[A-Z]/.test(password) &&
-      /[a-z]/.test(password) &&
-      /[0-9]/.test(password) &&
+      password.length >= 4 &&
       usernameOk &&
       emailOk &&
       roles.length > 0

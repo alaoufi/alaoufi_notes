@@ -57,14 +57,14 @@ describe("signUpSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects short passwords", () => {
-    const result = signUpSchema.safeParse({ ...basePayload, password: "Aa1" });
+  it("rejects passwords shorter than 4 characters", () => {
+    const result = signUpSchema.safeParse({ ...basePayload, password: "ab" });
     expect(result.success).toBe(false);
   });
 
-  it("rejects weak password without digit", () => {
-    const result = signUpSchema.safeParse({ ...basePayload, password: "Abcdefgh" });
-    expect(result.success).toBe(false);
+  it("accepts simple 4+ character passwords", () => {
+    const result = signUpSchema.safeParse({ ...basePayload, password: "abcd" });
+    expect(result.success).toBe(true);
   });
 
   it("rejects invalid phone", () => {

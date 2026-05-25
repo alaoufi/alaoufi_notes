@@ -22,6 +22,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
       {label && (
         <label htmlFor={inputId} className="text-sm font-medium text-text">
           {label}
+          {rest.required && (
+            <span className="ms-1 text-danger" aria-hidden>
+              *
+            </span>
+          )}
         </label>
       )}
       <div
