@@ -1,75 +1,95 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Card, CardHeader, CardTitle, CardBody, Input, Button } from "@syanah/ui";
-import { type Locale } from "@/i18n/locales";
-import { locales, localeNames } from "@/i18n/locales";
+import { Card, CardHeader, CardTitle, CardBody, Badge } from "@syanah/ui";
+import { locales, type Locale } from "@/i18n/locales";
+import { flattenMessages, type FlatMessages } from "@/lib/i18n/cms";
+import { fetchAllOverrides } from "@/lib/i18n/cms-loader";
+import { TranslationsEditor, type EditorRow } from "@/features/admin/components/translations-editor";
 
 export const dynamic = "force-dynamic";
 
-// Demo entries (real ones come from the `translations` table).
-const SAMPLE_KEYS = [
-  "brand.name",
-  "brand.tagline",
-  "home.heroTitle",
-  "home.ctaPrimary",
-  "nav.signIn",
-];
+async function loadDefaults(): Promise<Record<Locale, FlatMessages>> {
+  const out: Record<Locale, FlatMessages> = {
+    ar: {}, ur: {}, en: {}, hi: {}, bn: {},
+  };
+  await Promise.all(
+    locales.map(async (loc) => {
+      try {
+        const mod = await import(`@/messages/${loc}.json`);
+        out[loc] = flattenMessages(mod.default);
+      } catch {
+        // missing locale file — skip
+      }
+    }),
+  );
+  return out;
+}
 
 export default async function AdminTranslationsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale: localeRaw } = await params;
-  const locale = localeRaw as Locale;
-  setRequestLocale(locale);
+  const { locale } = await params;
+  setRequestLocale(locale as Locale);
   const t = await getTranslations("admin.translations");
+
+  const [defaults, overrides] = await Promise.all([
+    loadDefaults(),
+    fetchAllOverrides(),
+  ]);
+
+  const allKeys = new Set<string>();
+  for (const loc of locales) {
+    for (const k of Object.keys(defaults[loc])) allKeys.add(k);
+    for (const k of Object.keys(overrides[loc])) allKeys.add(k);
+  }
+
+  const rows: EditorRow[] = Array.from(allKeys)
+    .sort()
+    .map((key) => {
+      const row: EditorRow = {
+        key,
+        defaults: { ar: "", ur: "", en: "", hi: "", bn: "" },
+        overrides: { ar: "", ur: "", en: "", hi: "", bn: "" },
+      };
+      for (const loc of locales) {
+        row.defaults[loc] = defaults[loc][key] ?? "";
+        row.overrides[loc] = overrides[loc][key] ?? "";
+      }
+      return row;
+    });
+
+  const overrideCount = locales.reduce(
+    (sum, loc) => sum + Object.keys(overrides[loc]).length,
+    0,
+  );
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-text">{t("title")}</h1>
-        <p className="text-text-muted">{t("subtitle")}</p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-text">{t("title")}</h1>
+          <p className="text-text-muted">{t("subtitle")}</p>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <Badge tone="primary">{t("totalKeys", { count: rows.length })}</Badge>
+          {overrideCount > 0 && (
+            <Badge tone="success">{t("overrideCount", { count: overrideCount })}</Badge>
+          )}
+        </div>
       </header>
+
+      <div className="rounded-md border border-info/30 bg-info/5 p-4 text-sm text-text">
+        <p className="font-medium">{t("infoTitle")}</p>
+        <p className="mt-1 text-text-muted">{t("infoBody")}</p>
+      </div>
 
       <Card>
         <CardHeader>
           <CardTitle>{t("editTitle")}</CardTitle>
         </CardHeader>
-        <CardBody className="space-y-4">
-          <Input label={t("searchLabel")} placeholder={t("searchPlaceholder")} />
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-text-muted">
-                  <th className="px-2 py-2 text-start">{t("keyHeader")}</th>
-                  {locales.map((loc) => (
-                    <th key={loc} className="px-2 py-2 text-start">
-                      {localeNames[loc]}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {SAMPLE_KEYS.map((key) => (
-                  <tr key={key} className="border-t border-border">
-                    <td className="px-2 py-2 font-mono text-xs">{key}</td>
-                    {locales.map((loc) => (
-                      <td key={loc} className="px-2 py-2">
-                        <input
-                          defaultValue=""
-                          placeholder={t("placeholder")}
-                          className="h-9 w-full rounded-md border border-border bg-surface px-2 outline-none focus:border-primary"
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex justify-end">
-            <Button>{t("save")}</Button>
-          </div>
+        <CardBody>
+          <TranslationsEditor rows={rows} />
         </CardBody>
       </Card>
     </div>
