@@ -22,18 +22,41 @@
     "fuchsia": "Fuchsia"
   },
   "home": {
-    "heroTitle": "Trusted maintenance, in minutes",
+    "badge": "Available 24/7 across 14 Saudi cities",
+    "heroTitle": "Trusted maintenance,",
+    "heroTitleAccent": "in minutes.",
     "heroSubtitle": "Book a verified technician for your home, car, or business in any Saudi city. Live tracking, transparent pricing, service guarantee.",
     "ctaPrimary": "Book a service",
     "ctaSecondary": "Become a provider",
+    "trust": {
+      "verified": "Verified providers",
+      "fast": "Fast response",
+      "rated": "4.8/5 from customers"
+    },
+    "quote": {
+      "author": "Noura from Riyadh",
+      "body": "The technician arrived in 20 minutes and finished the job professionally."
+    },
+    "eta": {
+      "label": "ETA",
+      "value": "≈ 18 min"
+    },
+    "demo": {
+      "hvac": "HVAC",
+      "plumbing": "Plumbing",
+      "electrical": "Electrical",
+      "vehicle": "Vehicle"
+    },
     "statsOrders": "completed orders",
     "statsProviders": "verified providers",
     "statsCities": "cities",
     "statsRating": "average rating"
   },
   "categories": {
+    "eyebrow": "Our services",
     "title": "Browse by category",
-    "subtitle": "We cover everything your home or business needs",
+    "subtitle": "We cover everything your home or business needs.",
+    "browse": "Browse",
     "hvac": "HVAC",
     "plumbing": "Plumbing",
     "electrical": "Electrical",
@@ -44,7 +67,9 @@
     "pest": "Pest control"
   },
   "howItWorks": {
-    "title": "How it works",
+    "eyebrow": "How it works",
+    "title": "Three simple steps",
+    "subtitle": "From booking to rating, your experience is smooth and clear.",
     "step1Title": "Pick a service",
     "step1Body": "Browse categories or search for the service you need.",
     "step2Title": "Choose a provider",
@@ -52,14 +77,62 @@
     "step3Title": "Track and rate",
     "step3Body": "Track your technician live and rate them when done."
   },
+  "trustSection": {
+    "verifiedTitle": "Verified providers",
+    "verifiedBody": "Every provider passes ID and commercial-record checks before accepting any order.",
+    "paymentTitle": "Secure payment",
+    "paymentBody": "Pay with Mada or card; we hold the amount until the work is completed.",
+    "guaranteeTitle": "Service guarantee",
+    "guaranteeBody": "If the service isn't done right, get a full refund or a free re-do."
+  },
+  "testimonials": {
+    "eyebrow": "Customer stories",
+    "title": "12,000+ happy customers",
+    "subtitle": "Real experiences from across the Kingdom.",
+    "t1": {
+      "name": "Noura Al-Zahrani",
+      "city": "Riyadh · Nakheel",
+      "body": "First time booking AC service via an app. Technician arrived exactly on time and was very professional."
+    },
+    "t2": {
+      "name": "Ahmed Al-Qahtani",
+      "city": "Jeddah · Safa",
+      "body": "Clear prices, no surprises. I expected hassle but the whole process was smooth."
+    },
+    "t3": {
+      "name": "Sarah Al-Otaibi",
+      "city": "Dammam · Faisaliyah",
+      "body": "Love that I could track the provider on the map. Knowing when exactly they'd arrive put me at ease."
+    }
+  },
   "providersCta": {
-    "title": "Are you a service provider?",
-    "body": "Join our network and get real bookings daily. Register in minutes, verify your identity, and start working.",
-    "cta": "Register as a provider"
+    "badge": "For providers",
+    "title": "Grow your business with us",
+    "body": "Join a network of 850+ verified providers and get real bookings every day with secure, scheduled payouts.",
+    "cta": "Register as a provider",
+    "pricingCta": "View packages",
+    "perks": {
+      "demand": {
+        "title": "Real, steady demand",
+        "body": "Thousands of customers search for services daily in your cities."
+      },
+      "payouts": {
+        "title": "Weekly payouts",
+        "body": "Your earnings land in your bank account automatically every week."
+      },
+      "growth": {
+        "title": "Tools to grow",
+        "body": "Track performance, ratings, and grow your business with our tools."
+      }
+    }
   },
   "footer": {
     "tagline": "Syanah Platform — Kingdom of Saudi Arabia",
     "rights": "All rights reserved",
+    "explore": "Explore",
+    "legal": "Legal",
+    "contactUs": "Contact us",
+    "addressLine": "Riyadh, Saudi Arabia",
     "privacy": "Privacy",
     "terms": "Terms",
     "contact": "Contact"
