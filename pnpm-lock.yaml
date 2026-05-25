@@ -7,18 +7,6 @@ settings:
 importers:
 
   .:
-    devDependencies:
-      prettier:
-        specifier: 3.3.3
-        version: 3.3.3
-      prettier-plugin-tailwindcss:
-        specifier: 0.6.8
-        version: 0.6.8(prettier@3.3.3)
-      typescript:
-        specifier: 5.6.3
-        version: 5.6.3
-
-  apps/web:
     dependencies:
       '@supabase/ssr':
         specifier: 0.5.2
@@ -28,7 +16,7 @@ importers:
         version: 2.46.1
       '@syanah/ui':
         specifier: workspace:*
-        version: link:../../packages/ui
+        version: link:packages/ui
       '@vis.gl/react-google-maps':
         specifier: ^1.8.3
         version: 1.8.3(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -93,6 +81,12 @@ importers:
       postcss:
         specifier: 8.4.49
         version: 8.4.49
+      prettier:
+        specifier: 3.3.3
+        version: 3.3.3
+      prettier-plugin-tailwindcss:
+        specifier: 0.6.8
+        version: 0.6.8(prettier@3.3.3)
       tailwindcss:
         specifier: 3.4.14
         version: 3.4.14
@@ -3801,7 +3795,7 @@ snapshots:
 
   '@types/react-dom@18.3.1':
     dependencies:
-      '@types/react': 18.3.12
+      '@types/react': 19.2.15
 
   '@types/react-dom@19.2.3(@types/react@19.2.15)':
     dependencies:
