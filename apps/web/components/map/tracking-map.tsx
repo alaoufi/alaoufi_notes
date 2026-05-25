@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { APIProvider, Map, AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { getGoogleMapsApiKey } from "./map-env";
 import { MapFallback } from "./map-fallback";
@@ -23,29 +22,19 @@ export function TrackingMap({
   height?: number;
 }) {
   const apiKey = getGoogleMapsApiKey();
-  const [center, setCenter] = useState(destination);
-
-  useEffect(() => {
-    if (providerPing) {
-      const midLat = (providerPing.lat + destination.lat) / 2;
-      const midLng = (providerPing.lng + destination.lng) / 2;
-      setCenter({ lat: midLat, lng: midLng });
-    } else {
-      setCenter(destination);
-    }
-  }, [providerPing, destination]);
+  const center = providerPing
+    ? {
+        lat: (providerPing.lat + destination.lat) / 2,
+        lng: (providerPing.lng + destination.lng) / 2,
+      }
+    : destination;
 
   if (!apiKey) return <MapFallback height={height} />;
 
   return (
     <div style={{ height }} className="overflow-hidden rounded-lg border border-border">
       <APIProvider apiKey={apiKey}>
-        <Map
-          mapId="syanah-tracking"
-          center={center}
-          defaultZoom={13}
-          gestureHandling="greedy"
-        >
+        <Map mapId="syanah-tracking" center={center} defaultZoom={13} gestureHandling="greedy">
           <AdvancedMarker position={destination}>
             <Pin background="#22c55e" borderColor="#ffffff" glyphColor="#ffffff" />
           </AdvancedMarker>

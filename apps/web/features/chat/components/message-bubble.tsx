@@ -41,11 +41,8 @@ export function MessageBubble({
       >
         {message.type === "text" && <p className="whitespace-pre-wrap break-words">{message.body}</p>}
         {message.type === "image" && message.mediaUrl && (
-          <img
-            src={message.mediaUrl}
-            alt=""
-            className="max-h-72 rounded-md"
-          />
+          // eslint-disable-next-line @next/next/no-img-element -- chat media is private and uses signed URLs; not an asset next/image can pre-optimize.
+          <img src={message.mediaUrl} alt="" className="max-h-72 rounded-md" />
         )}
         {message.type === "voice" && (
           <div className="flex items-center gap-2 text-sm">
