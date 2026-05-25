@@ -12,11 +12,14 @@
     "signIn": "Sign in",
     "signUp": "Sign up",
     "language": "Language",
-    "theme": "Theme"
+    "theme": "Theme",
+    "menu": "Menu",
+    "pricing": "Pricing"
   },
   "themes": {
-    "soft-blue": "Soft Blue",
-    "pink": "Pink"
+    "navy": "Navy (Official)",
+    "stc": "Purple",
+    "fuchsia": "Fuchsia"
   },
   "home": {
     "heroTitle": "Trusted maintenance, in minutes",

@@ -28,7 +28,8 @@ export default async function LocaleLayout({
 
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get("syanah_theme")?.value;
-  const theme = themeCookie === "pink" ? "pink" : "soft-blue";
+  const theme: "navy" | "stc" | "fuchsia" =
+    themeCookie === "stc" ? "stc" : themeCookie === "fuchsia" ? "fuchsia" : "navy";
 
   return (
     <html lang={locale} dir={dir} data-theme={theme} suppressHydrationWarning>

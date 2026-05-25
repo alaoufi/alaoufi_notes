@@ -24,7 +24,7 @@ export default async function AdminSettingsPage({
         <CardHeader><CardTitle>{t("appTitle")}</CardTitle></CardHeader>
         <CardBody className="space-y-4">
           <Input label={t("defaultLocale")} defaultValue="ar" />
-          <Input label={t("defaultTheme")} defaultValue="soft-blue" />
+          <Input label={t("defaultTheme")} defaultValue="navy" />
           <Input label={t("cancelWindow")} type="number" defaultValue={5} hint={t("cancelWindowHint")} />
           <Input label={t("disputesWindow")} type="number" defaultValue={72} hint={t("disputesWindowHint")} />
         </CardBody>

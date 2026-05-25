@@ -47,7 +47,7 @@ create table if not exists public.settings (
 
 insert into public.settings (key, value, description) values
   ('app.default_locale', '"ar"', 'Default locale for new users'),
-  ('app.default_theme', '"soft-blue"', 'Default theme for new users'),
+  ('app.default_theme', '"navy"', 'Default theme for new users'),
   ('app.enabled_locales', '["ar","ur","en","hi","bn"]', 'Locales available in UI'),
   ('orders.cancel_window_minutes', '5', 'Minutes after creation that requester can cancel free'),
   ('chat.media.image_max_bytes', '8388608', '8 MB image cap for chat'),

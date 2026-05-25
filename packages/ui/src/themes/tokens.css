@@ -2,69 +2,104 @@
  * Syanah Design Tokens — central definition for all themes.
  * NEVER hardcode colors elsewhere. Always read these CSS variables
  * (directly in CSS or via the Tailwind preset).
+ *
+ * Three themes are available:
+ *   • navy    — official default (white + navy + red)
+ *   • stc     — STC inspired (white + purple + magenta)
+ *   • fuchsia — modern fuchsia (white + dark pink + red)
+ *
+ * Background is a warm off-white that leans slightly toward beige.
  */
 
 :root,
-[data-theme="soft-blue"] {
-  /* surfaces */
-  --color-bg: #f7f9fc;
+[data-theme="navy"] {
+  --color-bg: #faf6ef;
   --color-surface: #ffffff;
-  --color-surface-muted: #eef2f8;
-  --color-surface-strong: #1f2a44;
+  --color-surface-muted: #ecf0f8;
+  --color-surface-strong: #0b1f4f;
 
-  /* brand */
-  --color-primary: #1f6feb;
-  --color-primary-hover: #1858c2;
+  --color-primary: #0f2d6b;
+  --color-primary-hover: #082052;
   --color-primary-contrast: #ffffff;
-  --color-accent: #22c55e;
+  --color-accent: #e11d2b;
+  --color-accent-hover: #b71522;
+  --color-accent-contrast: #ffffff;
 
-  /* text */
-  --color-text: #0f172a;
-  --color-text-muted: #52607a;
+  --color-text: #0a1733;
+  --color-text-muted: #4a5a7a;
   --color-text-inverse: #ffffff;
 
-  /* borders */
-  --color-border: #d7dee9;
-  --color-border-strong: #b6c1d2;
+  --color-border: #d5dce8;
+  --color-border-strong: #b3bdd2;
 
-  /* status */
   --color-danger: #dc2626;
   --color-warning: #f59e0b;
   --color-success: #16a34a;
   --color-info: #0ea5e9;
 
-  /* misc */
-  --color-focus-ring: rgba(31, 111, 235, 0.45);
-  --color-selection: rgba(31, 111, 235, 0.18);
-  --color-overlay: rgba(15, 23, 42, 0.45);
+  --color-focus-ring: rgba(15, 45, 107, 0.4);
+  --color-selection: rgba(15, 45, 107, 0.18);
+  --color-overlay: rgba(10, 23, 51, 0.5);
 }
 
-[data-theme="pink"] {
-  --color-bg: #fff7f8;
+[data-theme="stc"] {
+  --color-bg: #faf6ef;
   --color-surface: #ffffff;
-  --color-surface-muted: #fceef1;
-  --color-surface-strong: #4a1d2b;
+  --color-surface-muted: #f3ebe0;
+  --color-surface-strong: #2d004d;
 
-  --color-primary: #e94e77;
-  --color-primary-hover: #c9385f;
+  --color-primary: #4f008c;
+  --color-primary-hover: #3a006a;
   --color-primary-contrast: #ffffff;
-  --color-accent: #f59e0b;
+  --color-accent: #e60082;
+  --color-accent-hover: #c10070;
+  --color-accent-contrast: #ffffff;
 
-  --color-text: #1b0f14;
-  --color-text-muted: #7a4d5a;
+  --color-text: #1a0033;
+  --color-text-muted: #5a3f73;
   --color-text-inverse: #ffffff;
 
-  --color-border: #f3d6de;
-  --color-border-strong: #e3b2bf;
+  --color-border: #e4d9f0;
+  --color-border-strong: #c2afd9;
 
   --color-danger: #dc2626;
   --color-warning: #f59e0b;
   --color-success: #16a34a;
   --color-info: #0ea5e9;
 
-  --color-focus-ring: rgba(233, 78, 119, 0.45);
-  --color-selection: rgba(233, 78, 119, 0.18);
-  --color-overlay: rgba(27, 15, 20, 0.45);
+  --color-focus-ring: rgba(79, 0, 140, 0.4);
+  --color-selection: rgba(79, 0, 140, 0.18);
+  --color-overlay: rgba(26, 0, 51, 0.5);
+}
+
+[data-theme="fuchsia"] {
+  --color-bg: #faf6ef;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f6e5ec;
+  --color-surface-strong: #3d0e22;
+
+  --color-primary: #c2185b;
+  --color-primary-hover: #9c1448;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #e91e63;
+  --color-accent-hover: #c2185b;
+  --color-accent-contrast: #ffffff;
+
+  --color-text: #1b0a14;
+  --color-text-muted: #6f4655;
+  --color-text-inverse: #ffffff;
+
+  --color-border: #f3d6e0;
+  --color-border-strong: #e3b2c2;
+
+  --color-danger: #dc2626;
+  --color-warning: #f59e0b;
+  --color-success: #16a34a;
+  --color-info: #0ea5e9;
+
+  --color-focus-ring: rgba(194, 24, 91, 0.4);
+  --color-selection: rgba(194, 24, 91, 0.18);
+  --color-overlay: rgba(27, 10, 20, 0.5);
 }
 
 /* ----- shared tokens (theme-agnostic) ----- */
@@ -84,25 +119,21 @@
   --space-16: 4rem;
   --space-20: 5rem;
 
-  /* radii */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-pill: 9999px;
 
-  /* shadows */
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 4px 14px rgba(15, 23, 42, 0.08);
   --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.12);
 
-  /* motion */
   --duration-fast: 120ms;
   --duration-base: 200ms;
   --duration-slow: 320ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 
-  /* z-index ladder */
   --z-base: 0;
   --z-dropdown: 100;
   --z-sticky: 200;
@@ -111,7 +142,6 @@
   --z-toast: 2000;
   --z-popover: 3000;
 
-  /* typography */
   --font-sans-ar: "IBM Plex Sans Arabic", "Noto Sans Arabic", system-ui, sans-serif;
   --font-sans-latin: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }

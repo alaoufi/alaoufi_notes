@@ -15,7 +15,11 @@ const preset: Partial<Config> = {
           hover: "var(--color-primary-hover)",
           contrast: "var(--color-primary-contrast)",
         },
-        accent: "var(--color-accent)",
+        accent: {
+          DEFAULT: "var(--color-accent)",
+          hover: "var(--color-accent-hover)",
+          contrast: "var(--color-accent-contrast)",
+        },
         text: {
           DEFAULT: "var(--color-text)",
           muted: "var(--color-text-muted)",

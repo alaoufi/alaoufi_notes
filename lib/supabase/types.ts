@@ -12,7 +12,7 @@ export interface Profile {
   phone_e164: string | null;
   email_normalized: string | null;
   preferred_locale: "ar" | "ur" | "en" | "hi" | "bn";
-  preferred_theme: "soft-blue" | "pink";
+  preferred_theme: "navy" | "stc" | "fuchsia";
   avatar_path: string | null;
   is_active: boolean;
   created_at: string;

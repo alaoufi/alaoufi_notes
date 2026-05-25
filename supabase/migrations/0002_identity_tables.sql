@@ -11,7 +11,7 @@ create table if not exists public.profiles (
   phone_e164 text unique,
   email_normalized text unique,
   preferred_locale text not null default 'ar' check (preferred_locale in ('ar','ur','en','hi','bn')),
-  preferred_theme text not null default 'soft-blue' check (preferred_theme in ('soft-blue','pink')),
+  preferred_theme text not null default 'navy' check (preferred_theme in ('navy','stc','fuchsia')),
   avatar_path text,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
