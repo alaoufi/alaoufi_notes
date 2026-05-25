@@ -440,6 +440,33 @@
       "cantRemoveLastRole": "एकमात्र भूमिका नहीं हटा सकते"
     }
   },
+  "adminSetup": {
+    "title": "सुपर-एडमिन सेटअप",
+    "subtitle": "पहले एडमिन को बढ़ावा देने के लिए एक बार का पेज।",
+    "statusTitle": "स्थिति",
+    "steps": {
+      "backend": "Supabase कनेक्शन", "backendOk": "जुड़ा ✓", "backendFail": "कॉन्फ़िगर नहीं — Vercel में env जोड़ें",
+      "signedIn": "आप साइन इन हैं", "signedInOk": "हाँ", "signedInFail": "पहले साइन इन करें",
+      "slotAvailable": "एडमिन स्लॉट उपलब्ध", "slotAvailableOk": "कोई एडमिन नहीं — आप ख़ुद को बढ़ावा दे सकते हैं", "slotTaken": "एक एडमिन पहले से मौजूद"
+    },
+    "actionTitle": "मेरा खाता बढ़ावा दें",
+    "actionBody": "अपने खाते को सुपर एडमिन में बढ़ावा देने के लिए क्लिक करें।",
+    "promoteMe": "मुझे सुपर एडमिन बनाएँ",
+    "oneShot": "यह केवल एक बार चलता है। पहली सफल बढ़ोतरी के बाद यह URL हमेशा बंद हो जाता है।",
+    "success": "सफलतापूर्वक बढ़ाया गया ✓",
+    "redirecting": "एडमिन डैशबोर्ड पर भेज रहे हैं...",
+    "alreadyAdmin": "पहले से कॉन्फ़िगर",
+    "alreadyAdminBody": "एडमिन पहले से सेट है।",
+    "openAdmin": "एडमिन खोलें",
+    "notConfigured": "Supabase कॉन्फ़िगर नहीं",
+    "notConfiguredBody": "Vercel में env जोड़ें और पुनः प्रयास करें।",
+    "goSignIn": "साइन इन",
+    "errors": {
+      "noBackend": "Supabase कनेक्शन आवश्यक",
+      "rpcFailed": "RPC विफल — सुनिश्चित करें कि migration 0023 लागू है",
+      "adminExists": "एडमिन पहले से मौजूद है"
+    }
+  },
   "providerDetail": {
     "notFound": "प्रदाता नहीं मिला",
     "backToList": "सूची पर वापस",

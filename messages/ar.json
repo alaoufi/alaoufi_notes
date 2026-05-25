@@ -570,6 +570,39 @@
       "cantRemoveLastRole": "لا يمكن إزالة الدور الوحيد"
     }
   },
+  "adminSetup": {
+    "title": "تجهيز حساب المشرف العام",
+    "subtitle": "هذه الصفحة تستخدم مرّة واحدة لتعيين أوّل مشرف للمنصّة.",
+    "statusTitle": "حالة الإعداد",
+    "steps": {
+      "backend": "اتصال Supabase",
+      "backendOk": "متصل ✓",
+      "backendFail": "غير مُهيّأ — أضف متغيّرات Supabase في Vercel",
+      "signedIn": "أنت مسجّل دخول",
+      "signedInOk": "نعم",
+      "signedInFail": "سجّل دخول من حسابك",
+      "slotAvailable": "خانة المشرف متاحة",
+      "slotAvailableOk": "لا يوجد مشرف بعد — يمكنك ترقية نفسك",
+      "slotTaken": "يوجد مشرف بالفعل"
+    },
+    "actionTitle": "ترقية حسابي",
+    "actionBody": "اضغط الزرّ لترقية حسابك الحالي لدور المشرف العام (super_admin).",
+    "promoteMe": "ترقية حسابي إلى مشرف عام",
+    "oneShot": "هذا الإجراء يعمل مرّة واحدة فقط — بعد أوّل مشرف ينجح، يُغلق هذا الرابط دائماً.",
+    "success": "تمّت الترقية بنجاح ✓",
+    "redirecting": "جارٍ توجيهك إلى لوحة الإدارة...",
+    "alreadyAdmin": "تمّ التعيين سابقاً",
+    "alreadyAdminBody": "تمّ تعيين مشرف للمنصّة. سجّل دخول بحسابك الإداري للوصول.",
+    "openAdmin": "افتح لوحة الإدارة",
+    "notConfigured": "Supabase غير مُهيّأ",
+    "notConfiguredBody": "أضف متغيّرات Supabase في إعدادات Vercel ثم أعد المحاولة.",
+    "goSignIn": "تسجيل الدخول",
+    "errors": {
+      "noBackend": "يتطلّب ربط Supabase",
+      "rpcFailed": "فشل الاستدعاء — تأكّد من تطبيق ترحيل 0023",
+      "adminExists": "يوجد مشرف بالفعل — لا يمكن ترقية حساب جديد"
+    }
+  },
   "providerDetail": {
     "notFound": "هذا المزوّد غير موجود",
     "backToList": "العودة لقائمة المزوّدين",

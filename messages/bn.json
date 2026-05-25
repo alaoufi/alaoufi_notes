@@ -437,6 +437,33 @@
       "cantRemoveLastRole": "একমাত্র ভূমিকা সরাতে পারবেন না"
     }
   },
+  "adminSetup": {
+    "title": "সুপার-অ্যাডমিন সেটআপ",
+    "subtitle": "প্রথম অ্যাডমিন নিয়োগ করার জন্য একবারের পৃষ্ঠা।",
+    "statusTitle": "অবস্থা",
+    "steps": {
+      "backend": "Supabase সংযোগ", "backendOk": "সংযুক্ত ✓", "backendFail": "কনফিগার করা নেই — Vercel-এ env যোগ করুন",
+      "signedIn": "আপনি সাইন ইন", "signedInOk": "হ্যাঁ", "signedInFail": "প্রথমে সাইন ইন করুন",
+      "slotAvailable": "অ্যাডমিন স্লট খালি", "slotAvailableOk": "কোনো অ্যাডমিন নেই — আপনি নিজেকে প্রমোট করতে পারেন", "slotTaken": "একজন অ্যাডমিন ইতিমধ্যে আছেন"
+    },
+    "actionTitle": "আমার অ্যাকাউন্ট প্রমোট করুন",
+    "actionBody": "আপনার অ্যাকাউন্টকে সুপার অ্যাডমিনে প্রমোট করতে ক্লিক করুন।",
+    "promoteMe": "আমাকে সুপার অ্যাডমিন বানান",
+    "oneShot": "এটি কেবল একবার চলে। প্রথম সফল প্রমোশনের পর এই URL চিরতরে বন্ধ।",
+    "success": "প্রমোট হয়েছে ✓",
+    "redirecting": "অ্যাডমিন ড্যাশবোর্ডে নিয়ে যাচ্ছি...",
+    "alreadyAdmin": "ইতিমধ্যে কনফিগার",
+    "alreadyAdminBody": "অ্যাডমিন ইতিমধ্যে সেট।",
+    "openAdmin": "অ্যাডমিন খুলুন",
+    "notConfigured": "Supabase কনফিগার নেই",
+    "notConfiguredBody": "Vercel-এ env যোগ করে পুনরায় চেষ্টা করুন।",
+    "goSignIn": "সাইন ইন",
+    "errors": {
+      "noBackend": "Supabase সংযোগ প্রয়োজন",
+      "rpcFailed": "RPC ব্যর্থ — নিশ্চিত করুন যে migration 0023 প্রয়োগ হয়েছে",
+      "adminExists": "অ্যাডমিন ইতিমধ্যে আছেন"
+    }
+  },
   "providerDetail": {
     "notFound": "সেবাদাতা পাওয়া যায়নি",
     "backToList": "তালিকায় ফিরুন",

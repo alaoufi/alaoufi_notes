@@ -547,6 +547,39 @@
       "cantRemoveLastRole": "Can't remove your only role"
     }
   },
+  "adminSetup": {
+    "title": "Super-admin setup",
+    "subtitle": "One-time page to promote the first admin of the platform.",
+    "statusTitle": "Setup status",
+    "steps": {
+      "backend": "Supabase connection",
+      "backendOk": "Connected ✓",
+      "backendFail": "Not configured — add Supabase env vars in Vercel",
+      "signedIn": "You are signed in",
+      "signedInOk": "Yes",
+      "signedInFail": "Sign in to your account first",
+      "slotAvailable": "Admin slot available",
+      "slotAvailableOk": "No admin yet — you can promote yourself",
+      "slotTaken": "An admin already exists"
+    },
+    "actionTitle": "Promote my account",
+    "actionBody": "Click to promote your current account to super_admin.",
+    "promoteMe": "Promote me to super-admin",
+    "oneShot": "This action runs only once — after the first successful promotion, this URL is locked forever.",
+    "success": "Promoted successfully ✓",
+    "redirecting": "Redirecting to admin dashboard...",
+    "alreadyAdmin": "Already configured",
+    "alreadyAdminBody": "An admin is already set. Sign in with your admin account to access the dashboard.",
+    "openAdmin": "Open admin",
+    "notConfigured": "Supabase not configured",
+    "notConfiguredBody": "Add Supabase env vars in Vercel settings, then retry.",
+    "goSignIn": "Sign in",
+    "errors": {
+      "noBackend": "Supabase connection required",
+      "rpcFailed": "RPC failed — make sure migration 0023 is applied",
+      "adminExists": "An admin already exists — cannot promote a new one"
+    }
+  },
   "providerDetail": {
     "notFound": "Provider not found",
     "backToList": "Back to providers",

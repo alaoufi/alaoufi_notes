@@ -445,6 +445,33 @@
       "cantRemoveLastRole": "آخری کردار نہیں ہٹا سکتے"
     }
   },
+  "adminSetup": {
+    "title": "سپر ایڈمن سیٹ اپ",
+    "subtitle": "ایک بار استعمال ہونے والا صفحہ پہلے ایڈمن کو ترقی دینے کے لیے۔",
+    "statusTitle": "حالت",
+    "steps": {
+      "backend": "Supabase کنکشن", "backendOk": "متصل ✓", "backendFail": "غیر مرتب — Vercel میں env شامل کریں",
+      "signedIn": "آپ سائن ان ہیں", "signedInOk": "ہاں", "signedInFail": "پہلے سائن ان کریں",
+      "slotAvailable": "ایڈمن سلاٹ دستیاب", "slotAvailableOk": "کوئی ایڈمن نہیں — آپ خود کو ترقی دے سکتے ہیں", "slotTaken": "ایک ایڈمن پہلے سے موجود"
+    },
+    "actionTitle": "میرا اکاؤنٹ ترقی دیں",
+    "actionBody": "اپنے اکاؤنٹ کو سپر ایڈمن میں ترقی دینے کے لیے کلک کریں۔",
+    "promoteMe": "مجھے سپر ایڈمن بنائیں",
+    "oneShot": "یہ صرف ایک بار چلتا ہے۔ پہلی کامیاب ترقی کے بعد یہ URL ہمیشہ کے لیے بند ہو جاتا ہے۔",
+    "success": "ترقی کامیاب ✓",
+    "redirecting": "ایڈمن ڈیش بورڈ پر جا رہا ہے...",
+    "alreadyAdmin": "پہلے سے ترتیب شدہ",
+    "alreadyAdminBody": "ایڈمن پہلے سے موجود ہے۔",
+    "openAdmin": "ایڈمن کھولیں",
+    "notConfigured": "Supabase ترتیب نہیں دیا گیا",
+    "notConfiguredBody": "Vercel میں env شامل کریں اور دوبارہ کوشش کریں۔",
+    "goSignIn": "سائن ان",
+    "errors": {
+      "noBackend": "Supabase کنکشن درکار",
+      "rpcFailed": "RPC ناکام — تصدیق کریں کہ migration 0023 لاگو ہے",
+      "adminExists": "ایڈمن پہلے سے موجود ہے"
+    }
+  },
   "providerDetail": {
     "notFound": "فراہم کنندہ نہیں ملا",
     "backToList": "فہرست پر واپس جائیں",
