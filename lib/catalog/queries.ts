@@ -119,7 +119,7 @@ export async function listCities(): Promise<City[]> {
       .from("cities_visible" as never)
       .select("id, slug, name, governorate_id")
       .order("display_order");
-    if (error || !data) return FALLBACK_CITIES;
+    if (error || !data || (data as unknown[]).length === 0) return FALLBACK_CITIES;
     return data as unknown as City[];
   } catch {
     return FALLBACK_CITIES;
@@ -135,24 +135,32 @@ export async function listAllRegions(): Promise<Region[]> {
       .from("regions" as never)
       .select("id, slug, name, is_active, display_order")
       .order("display_order");
-    if (error || !data) return FALLBACK_REGIONS;
+    if (error || !data || (data as unknown[]).length === 0) return FALLBACK_REGIONS;
     return data as unknown as Region[];
   } catch {
     return FALLBACK_REGIONS;
   }
 }
 
-/** Active regions only — for the public site. */
+/**
+ * Active regions only — for the public site.
+ * If everything is inactive (either Supabase hasn't been seeded or admin
+ * disabled every region), we still surface the demo set so the registration
+ * flow and provider browse stay usable.
+ */
 export async function listActiveRegions(): Promise<Region[]> {
   const all = await listAllRegions();
-  return all.filter((r) => r.is_active);
+  const active = all.filter((r) => r.is_active);
+  if (active.length === 0) {
+    return FALLBACK_REGIONS.filter((r) => r.is_active);
+  }
+  return active;
 }
 
 /** Governorates of a region. Includes inactive (RLS filters for non-admins). */
 export async function listGovernorates(regionSlug: string): Promise<Governorate[]> {
-  if (!hasSupabaseEnv()) {
-    return FALLBACK_GOVERNORATES.filter((g) => g.region_slug === regionSlug);
-  }
+  const fallback = FALLBACK_GOVERNORATES.filter((g) => g.region_slug === regionSlug);
+  if (!hasSupabaseEnv()) return fallback;
   try {
     const supabase = await createSupabaseServerClient();
     const { data: region, error: regErr } = await supabase
@@ -160,16 +168,16 @@ export async function listGovernorates(regionSlug: string): Promise<Governorate[
       .select("id")
       .eq("slug", regionSlug)
       .maybeSingle();
-    if (regErr || !region) return [];
+    if (regErr || !region) return fallback;
     const regionId = (region as { id: string }).id;
     const { data, error } = await supabase
       .from("governorates" as never)
       .select("id, region_id, slug, name, is_active, display_order")
       .eq("region_id", regionId)
       .order("display_order");
-    if (error || !data) return [];
+    if (error || !data || (data as unknown[]).length === 0) return fallback;
     return data as unknown as Governorate[];
   } catch {
-    return FALLBACK_GOVERNORATES.filter((g) => g.region_slug === regionSlug);
+    return fallback;
   }
 }

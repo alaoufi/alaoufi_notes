@@ -68,20 +68,20 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
       </button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-modal flex md:hidden"
-          role="dialog"
-          aria-modal="true"
-        >
+        <>
+          {/* Scrim — separate fixed element so nothing renders on top of it */}
           <div
-            className="absolute inset-0 z-0"
-            style={{ backgroundColor: "rgba(0, 0, 0, 0.55)" }}
+            className="fixed inset-0 md:hidden"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.55)", zIndex: 1000 }}
             onClick={close}
             aria-hidden
           />
-          <div
-            className="relative z-10 ms-auto flex h-full w-[88%] max-w-sm flex-col bg-white shadow-2xl"
-            style={{ backgroundColor: "#ffffff" }}
+          {/* Drawer — separate fixed element with hardcoded surface */}
+          <aside
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-y-0 end-0 flex h-full w-[88%] max-w-sm flex-col shadow-2xl md:hidden"
+            style={{ backgroundColor: "#ffffff", zIndex: 1001 }}
           >
             <div className="flex h-16 items-center justify-between border-b border-border px-4">
               <span className="text-base font-semibold text-text">{t("menu")}</span>
@@ -181,8 +181,8 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
                 {t("signUp")}
               </Link>
             </div>
-          </div>
-        </div>
+          </aside>
+        </>
       )}
     </>
   );
