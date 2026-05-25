@@ -20,7 +20,7 @@ export function SiteHeader({
   const brand = useTranslations("brand");
 
   return (
-    <header className="sticky top-0 z-sticky border-b border-border bg-surface/85 backdrop-blur">
+    <header className="sticky top-0 z-sticky border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
       <Container className="flex h-16 items-center justify-between gap-3">
         <Link href="/" className="flex items-center gap-2 font-semibold text-text">
           <span className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-contrast shadow-sm">
