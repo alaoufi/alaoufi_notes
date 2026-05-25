@@ -88,7 +88,16 @@ function LocationTreePickerInner({
 }: LocationTreePickerProps) {
   const t = useTranslations("location");
   const [mapOpen, setMapOpen] = useState(false);
-  const [autoFillStatus, setAutoFillStatus] = useState<"idle" | "loading" | "ok" | "partial" | "fail">("idle");
+  type AutoFillStatus =
+    | "idle"
+    | "loading"
+    | "ok"
+    | "partial"
+    | "fail"
+    | "denied"
+    | "timeout"
+    | "noGeolocation";
+  const [autoFillStatus, setAutoFillStatus] = useState<AutoFillStatus>("idle");
   const geocodingLib = useMapsLibrary("geocoding");
 
   const region = useMemo(
@@ -184,38 +193,59 @@ function LocationTreePickerInner({
   }
 
   async function applyCoords(lat: number, lng: number) {
-    setAutoFillStatus("loading");
+    // Always save the coordinates first — we want the pin on the map even if
+    // geocoding fails or the maps library isn't ready yet.
     const next: LocationValue = { ...value, lat, lng };
+    onChange(next);
+
+    if (!geocodingLib) {
+      // Maps library not ready yet — wait a moment and retry once.
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+    }
 
     const geo = await reverseGeocode(lat, lng);
     if (geo) {
-      if (geo.regionSlug) next.regionSlug = geo.regionSlug;
-      if (geo.governorateSlug) next.governorateSlug = geo.governorateSlug;
-      if (geo.citySlug) next.citySlug = geo.citySlug;
-      if (geo.district && !next.districtName) next.districtName = geo.district;
+      const merged: LocationValue = { ...next };
+      if (geo.regionSlug) merged.regionSlug = geo.regionSlug;
+      if (geo.governorateSlug) merged.governorateSlug = geo.governorateSlug;
+      if (geo.citySlug) merged.citySlug = geo.citySlug;
+      if (geo.district && !merged.districtName) merged.districtName = geo.district;
+      onChange(merged);
     }
-    onChange(next);
 
-    if (!geo || !geo.regionSlug) setAutoFillStatus("fail");
-    else if (geo.governorateSlug && geo.citySlug) setAutoFillStatus("ok");
-    else setAutoFillStatus("partial");
+    if (!geo || !geo.regionSlug) {
+      setAutoFillStatus("partial");
+    } else if (geo.governorateSlug && geo.citySlug) {
+      setAutoFillStatus("ok");
+    } else {
+      setAutoFillStatus("partial");
+    }
   }
 
   function useMyLocation() {
+    // Open the map immediately so the user always sees a visible response.
+    setMapOpen(true);
+    setAutoFillStatus("loading");
+
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      setAutoFillStatus("fail");
+      setAutoFillStatus("noGeolocation");
       return;
     }
-    setAutoFillStatus("loading");
-    setMapOpen(true);
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         void applyCoords(pos.coords.latitude, pos.coords.longitude);
       },
-      () => {
-        setAutoFillStatus("fail");
+      (err) => {
+        if (err.code === err.PERMISSION_DENIED) {
+          setAutoFillStatus("denied");
+        } else if (err.code === err.TIMEOUT) {
+          setAutoFillStatus("timeout");
+        } else {
+          setAutoFillStatus("fail");
+        }
       },
-      { enableHighAccuracy: true, timeout: 8000 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
     );
   }
 
@@ -277,6 +307,24 @@ function LocationTreePickerInner({
             <div className="mt-3 flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
               <AlertCircle className="h-4 w-4" />
               <span>{t("autoFillPartial")}</span>
+            </div>
+          )}
+          {autoFillStatus === "denied" && (
+            <div className="mt-3 flex items-center gap-2 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+              <AlertCircle className="h-4 w-4" />
+              <span>{t("autoFillDenied")}</span>
+            </div>
+          )}
+          {autoFillStatus === "timeout" && (
+            <div className="mt-3 flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
+              <AlertCircle className="h-4 w-4" />
+              <span>{t("autoFillTimeout")}</span>
+            </div>
+          )}
+          {autoFillStatus === "noGeolocation" && (
+            <div className="mt-3 flex items-center gap-2 rounded-md bg-warning/10 px-3 py-2 text-sm text-warning">
+              <AlertCircle className="h-4 w-4" />
+              <span>{t("autoFillNoGeolocation")}</span>
             </div>
           )}
           {autoFillStatus === "fail" && (

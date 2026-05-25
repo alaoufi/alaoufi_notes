@@ -568,7 +568,10 @@
     "autoFillBody": "Tap to use your current location and we'll auto-fill region, governorate, city and district so you can review before saving.",
     "autoFillOk": "Detected ✓ — please review the fields below.",
     "autoFillPartial": "Detected partially. Please complete the missing fields manually.",
-    "autoFillFail": "Couldn't detect your location. Allow location access and retry, or pick manually.",
+    "autoFillFail": "Couldn't detect your location. Try again or pick on the map manually.",
+    "autoFillDenied": "Location permission denied. Enable it in your browser settings, then retry, or pick manually.",
+    "autoFillTimeout": "Detection took too long. Check your GPS and retry.",
+    "autoFillNoGeolocation": "Your browser doesn't support geolocation. Pick your area manually.",
     "noMapsKey": "Auto-fill needs the Google Maps API key to be configured."
   }
 }
