@@ -1,10 +1,21 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
-import { Container, Card, CardHeader, CardTitle, CardBody, Input, Button, Badge } from "@syanah/ui";
+import {
+  Container,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardBody,
+  Input,
+  Button,
+  Badge,
+} from "@syanah/ui";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { getCurrentRoles, requireUser } from "@/lib/auth/guard";
 import { RoleCard } from "@/features/profile/components/role-card";
+import { AddressCard } from "@/features/profile/components/address-card";
+import { getActiveLocationTree } from "@/lib/catalog/location-tree";
 import { type Locale } from "@/i18n/locales";
-import { Mail, Phone, AtSign } from "lucide-react";
+import { Mail, Phone, AtSign, MapPin } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +25,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   const t = await getTranslations("profile");
   const authT = await getTranslations("auth");
 
-  // Pull live user info when possible; otherwise display the demo placeholders.
   let user: {
     email: string | null;
     phone: string | null;
@@ -37,7 +47,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
     user = {
       email: u.email ?? null,
       phone: (u.phone as string | undefined) ?? null,
-      username: null, // resolved via a profile read in the live action
+      username: null,
       fullName: null,
       roles: (roles.length ? roles : ["requester"]) as typeof user.roles,
       activeRole:
@@ -52,6 +62,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
   const heldRoles = user.roles.filter(
     (r) => r === "requester" || r === "provider",
   ) as Array<"requester" | "provider">;
+
+  const locationTree = await getActiveLocationTree();
 
   return (
     <Container className="py-10">
@@ -105,7 +117,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
             <CardTitle>{t("personal")}</CardTitle>
           </CardHeader>
           <CardBody className="space-y-4">
-            <Input label={t("fullName")} defaultValue={user.fullName ?? ""} placeholder={t("fullNamePlaceholder")} />
+            <Input
+              label={t("fullName")}
+              defaultValue={user.fullName ?? ""}
+              placeholder={t("fullNamePlaceholder")}
+            />
             <Input
               label={t("usernameEditable")}
               defaultValue={user.username ?? ""}
@@ -131,7 +147,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
         </Card>
 
         {/* Role mode */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle>{t("roleMode")}</CardTitle>
           </CardHeader>
@@ -140,14 +156,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
           </CardBody>
         </Card>
 
-        {/* Address */}
-        <Card className="lg:col-span-1">
+        {/* Address — full width, with the same picker used in sign-up */}
+        <Card className="lg:col-span-3">
           <CardHeader>
-            <CardTitle>{t("address")}</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              {t("address")}
+            </CardTitle>
           </CardHeader>
-          <CardBody className="space-y-3">
-            <p className="text-sm text-text-muted">{t("addressNote")}</p>
-            <Badge tone="neutral">{t("addressEditNote")}</Badge>
+          <CardBody>
+            <AddressCard locale={locale as Locale} tree={locationTree} />
           </CardBody>
         </Card>
       </div>

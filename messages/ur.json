@@ -434,7 +434,8 @@
     "activeRoleSwitchLabel": "بطور آغاز",
     "activeRoleSwitchHint": "طے کرتا ہے کہ کون سا ڈیش بورڈ کھلے۔",
     "address": "پتہ اور مقام",
-    "addressNote": "آپ کا پتہ قریبی فراہم کنندگان کے ساتھ ملانے کے لیے استعمال ہوتا ہے۔",
+    "addressNote": "آپ کا پتہ قریبی فراہم کنندگان کے ساتھ ملانے کے لیے استعمال ہوتا ہے۔ \"میرا مقام معلوم کریں\" بٹن استعمال کریں۔",
+    "addressSaved": "محفوظ",
     "addressEditNote": "مکمل ترمیم Supabase سے جڑتی ہے۔",
     "fullName": "پورا نام", "fullNamePlaceholder": "احمد المالکی",
     "email": "ای میل", "phone": "موبائل", "save": "تبدیلیاں محفوظ کریں",
@@ -443,6 +444,27 @@
       "roleNotHeld": "آپ کے پاس یہ کردار نہیں",
       "cantRemoveLastRole": "آخری کردار نہیں ہٹا سکتے"
     }
+  },
+  "providerDetail": {
+    "notFound": "فراہم کنندہ نہیں ملا",
+    "backToList": "فہرست پر واپس جائیں",
+    "memberSince": "{year} سے رکن",
+    "recentReviews": "حالیہ جائزے",
+    "contactProvider": "رابطہ کریں",
+    "trust": "ضمانتیں",
+    "identityVerified": "شناخت تصدیق شدہ",
+    "guaranteed": "خدمت کی ضمانت"
+  },
+  "customerDetail": {
+    "notFound": "گاہک نہیں ملا",
+    "backToList": "گاہکوں کی فہرست پر واپس",
+    "dashboard": "ڈیش بورڈ",
+    "completed": "{count} مکمل",
+    "history": "آرڈر کی تاریخ",
+    "myNote": "گاہک کے بارے میں نوٹ",
+    "myNoteHint": "صرف آپ دیکھ سکتے ہیں۔",
+    "notePlaceholder": "مثال: شام کے وقت کو ترجیح",
+    "saveNote": "نوٹ محفوظ کریں"
   },
   "location": {
     "region": "علاقہ", "selectRegion": "علاقہ منتخب کریں",

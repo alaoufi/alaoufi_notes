@@ -533,7 +533,8 @@
     "activeRoleSwitchLabel": "Start as",
     "activeRoleSwitchHint": "Decides which dashboard opens by default. You can switch anytime.",
     "address": "Address & location",
-    "addressNote": "Your address is used to match you with nearby providers and deliver service.",
+    "addressNote": "Your address is used to match you with nearby providers and deliver service. Use the \"Detect my location\" button to auto-fill the fields.",
+    "addressSaved": "Saved",
     "addressEditNote": "Full editing (region → governorate → city → district + map) is wired to live Supabase.",
     "fullName": "Full name",
     "fullNamePlaceholder": "Ahmed Al-Malki",
@@ -545,6 +546,27 @@
       "roleNotHeld": "You don't hold this role",
       "cantRemoveLastRole": "Can't remove your only role"
     }
+  },
+  "providerDetail": {
+    "notFound": "Provider not found",
+    "backToList": "Back to providers",
+    "memberSince": "Member since {year}",
+    "recentReviews": "Recent reviews",
+    "contactProvider": "Call provider",
+    "trust": "Trust",
+    "identityVerified": "Identity verified",
+    "guaranteed": "Service guaranteed"
+  },
+  "customerDetail": {
+    "notFound": "Customer not found",
+    "backToList": "Back to customers",
+    "dashboard": "Dashboard",
+    "completed": "{count} completed",
+    "history": "Order history",
+    "myNote": "My note about the customer",
+    "myNoteHint": "Private — only you see this.",
+    "notePlaceholder": "e.g. Prefers evening appointments",
+    "saveNote": "Save note"
   },
   "location": {
     "region": "Region",

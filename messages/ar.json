@@ -556,7 +556,8 @@
     "activeRoleSwitchLabel": "ابدأ كـ",
     "activeRoleSwitchHint": "يحدّد أي لوحة تحكم تفتح افتراضياً، ويمكنك تبديلها أي وقت.",
     "address": "العنوان والموقع",
-    "addressNote": "عنوانك يُستخدم لاقتراح أقرب المزوّدين وتسليم الخدمة.",
+    "addressNote": "عنوانك يُستخدم لاقتراح أقرب المزوّدين وتسليم الخدمة. استخدم زرّ \"حدّد موقعي\" أعلاه لتعبئة الحقول تلقائياً.",
+    "addressSaved": "تم الحفظ",
     "addressEditNote": "التحرير الكامل (منطقة → محافظة → مدينة → حيّ + خريطة) يُربط بـ Supabase الفعلي.",
     "fullName": "الاسم الكامل",
     "fullNamePlaceholder": "أحمد المالكي",
@@ -568,6 +569,27 @@
       "roleNotHeld": "لا تملك هذا الدور",
       "cantRemoveLastRole": "لا يمكن إزالة الدور الوحيد"
     }
+  },
+  "providerDetail": {
+    "notFound": "هذا المزوّد غير موجود",
+    "backToList": "العودة لقائمة المزوّدين",
+    "memberSince": "عضو منذ {year}",
+    "recentReviews": "آخر التقييمات",
+    "contactProvider": "اتصال بالمزوّد",
+    "trust": "ضمانات",
+    "identityVerified": "هوية متحقّق منها",
+    "guaranteed": "خدمة مضمونة"
+  },
+  "customerDetail": {
+    "notFound": "هذا العميل غير موجود",
+    "backToList": "العودة لقائمة العملاء",
+    "dashboard": "لوحة التحكم",
+    "completed": "{count} مكتمل",
+    "history": "سجل الطلبات",
+    "myNote": "ملاحظتي عن العميل",
+    "myNoteHint": "ملاحظة خاصّة بك فقط — لا يراها العميل.",
+    "notePlaceholder": "مثال: يفضّل المواعيد المسائية",
+    "saveNote": "حفظ الملاحظة"
   },
   "location": {
     "region": "المنطقة",

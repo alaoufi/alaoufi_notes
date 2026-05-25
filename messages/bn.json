@@ -426,7 +426,8 @@
     "activeRoleSwitchLabel": "হিসেবে শুরু করুন",
     "activeRoleSwitchHint": "কোন ড্যাশবোর্ড খুলবে তা নির্ধারণ করে।",
     "address": "ঠিকানা ও অবস্থান",
-    "addressNote": "আপনার ঠিকানা কাছের সেবাদাতাদের সঙ্গে মেলানোর জন্য ব্যবহৃত হয়।",
+    "addressNote": "আপনার ঠিকানা কাছের সেবাদাতাদের সঙ্গে মেলানোর জন্য ব্যবহৃত হয়। \"আমার অবস্থান শনাক্ত করুন\" বোতাম ব্যবহার করুন।",
+    "addressSaved": "সংরক্ষিত",
     "addressEditNote": "সম্পূর্ণ সম্পাদনা Supabase-এর সাথে যুক্ত।",
     "fullName": "পুরো নাম", "fullNamePlaceholder": "আহমেদ আল-মালকি",
     "email": "ইমেইল", "phone": "মোবাইল", "save": "পরিবর্তন সংরক্ষণ",
@@ -435,6 +436,27 @@
       "roleNotHeld": "আপনার এই ভূমিকা নেই",
       "cantRemoveLastRole": "একমাত্র ভূমিকা সরাতে পারবেন না"
     }
+  },
+  "providerDetail": {
+    "notFound": "সেবাদাতা পাওয়া যায়নি",
+    "backToList": "তালিকায় ফিরুন",
+    "memberSince": "{year} থেকে সদস্য",
+    "recentReviews": "সাম্প্রতিক পর্যালোচনা",
+    "contactProvider": "যোগাযোগ",
+    "trust": "গ্যারান্টি",
+    "identityVerified": "পরিচয় যাচাইকৃত",
+    "guaranteed": "সেবার গ্যারান্টি"
+  },
+  "customerDetail": {
+    "notFound": "গ্রাহক পাওয়া যায়নি",
+    "backToList": "গ্রাহক তালিকায় ফিরুন",
+    "dashboard": "ড্যাশবোর্ড",
+    "completed": "{count} সম্পন্ন",
+    "history": "অর্ডারের ইতিহাস",
+    "myNote": "গ্রাহক সম্পর্কে নোট",
+    "myNoteHint": "শুধু আপনি দেখতে পারবেন।",
+    "notePlaceholder": "যেমন: সন্ধ্যার সময় পছন্দ",
+    "saveNote": "নোট সংরক্ষণ"
   },
   "location": {
     "region": "অঞ্চল", "selectRegion": "অঞ্চল নির্বাচন",

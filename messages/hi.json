@@ -429,7 +429,8 @@
     "activeRoleSwitchLabel": "के रूप में शुरू करें",
     "activeRoleSwitchHint": "तय करता है कि कौन सा डैशबोर्ड खुले।",
     "address": "पता और स्थान",
-    "addressNote": "आपके पते का उपयोग पास के प्रदाताओं को खोजने के लिए होता है।",
+    "addressNote": "आपके पते का उपयोग पास के प्रदाताओं को खोजने के लिए होता है। \"मेरा स्थान पता करें\" बटन का उपयोग करें।",
+    "addressSaved": "सहेजा गया",
     "addressEditNote": "पूर्ण संपादन Supabase से जुड़ता है।",
     "fullName": "पूरा नाम", "fullNamePlaceholder": "अहमद अल-मालकी",
     "email": "ईमेल", "phone": "मोबाइल", "save": "परिवर्तन सहेजें",
@@ -438,6 +439,27 @@
       "roleNotHeld": "आपके पास यह भूमिका नहीं है",
       "cantRemoveLastRole": "एकमात्र भूमिका नहीं हटा सकते"
     }
+  },
+  "providerDetail": {
+    "notFound": "प्रदाता नहीं मिला",
+    "backToList": "सूची पर वापस",
+    "memberSince": "{year} से सदस्य",
+    "recentReviews": "हाल की समीक्षाएँ",
+    "contactProvider": "संपर्क करें",
+    "trust": "गारंटी",
+    "identityVerified": "पहचान सत्यापित",
+    "guaranteed": "सेवा गारंटी"
+  },
+  "customerDetail": {
+    "notFound": "ग्राहक नहीं मिला",
+    "backToList": "ग्राहक सूची पर वापस",
+    "dashboard": "डैशबोर्ड",
+    "completed": "{count} पूर्ण",
+    "history": "ऑर्डर इतिहास",
+    "myNote": "ग्राहक के बारे में नोट",
+    "myNoteHint": "केवल आप देख सकते हैं।",
+    "notePlaceholder": "जैसे: शाम के समय को प्राथमिकता",
+    "saveNote": "नोट सहेजें"
   },
   "location": {
     "region": "क्षेत्र", "selectRegion": "क्षेत्र चुनें",
