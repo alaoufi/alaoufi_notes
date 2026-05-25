@@ -74,13 +74,14 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
           aria-modal="true"
         >
           <div
-            className="absolute inset-0 z-0 bg-overlay"
+            className="absolute inset-0 z-0"
+            style={{ backgroundColor: "rgba(0, 0, 0, 0.55)" }}
             onClick={close}
             aria-hidden
           />
           <div
-            className="relative z-10 ms-auto flex h-full w-[88%] max-w-sm flex-col shadow-lg"
-            style={{ backgroundColor: "var(--color-surface)" }}
+            className="relative z-10 ms-auto flex h-full w-[88%] max-w-sm flex-col bg-white shadow-2xl"
+            style={{ backgroundColor: "#ffffff" }}
           >
             <div className="flex h-16 items-center justify-between border-b border-border px-4">
               <span className="text-base font-semibold text-text">{t("menu")}</span>
