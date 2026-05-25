@@ -98,6 +98,8 @@
     },
     "signInPrompt": "پہلے سے اکاؤنٹ ہے؟",
     "signUpPrompt": "اکاؤنٹ نہیں ہے؟",
+    "steps": { "step1": "ذاتی معلومات", "step2": "آپ کا مقام" },
+    "locationIntro": "اپنا علاقہ، گورنریٹ اور شہر منتخب کریں تاکہ ہم آپ کو قریبی فراہم کنندگان دکھائیں۔ آپ نقشے پر اپنا مقام بھی پن کر سکتے ہیں۔",
     "errors": {
       "invalidInput": "درج کردہ ڈیٹا چیک کریں",
       "fullNameTooShort": "نام بہت چھوٹا ہے",
@@ -108,6 +110,10 @@
       "passwordRequired": "پاس ورڈ درکار ہے",
       "userExists": "یہ ای میل پہلے سے رجسٹرڈ ہے",
       "invalidCredentials": "غلط معلومات",
+      "regionRequired": "علاقہ منتخب کریں",
+      "governorateRequired": "گورنریٹ منتخب کریں",
+      "cityRequired": "شہر منتخب کریں",
+      "locationRequired": "مقام مکمل کریں",
       "unknown": "غیر متوقع خرابی"
     },
     "forbidden": {
@@ -287,6 +293,70 @@
       "section_admin": "سیکشن ایڈمن",
       "provider": "فراہم کنندہ",
       "requester": "خواہشمند"
+    },
+    "requester": {
+      "title": "خوش آمدید",
+      "quick": {
+        "newOrder": "نیا آرڈر", "newOrderHint": "چند منٹ میں خدمت بک کریں",
+        "saved": "محفوظ خدمات", "savedHint": "آپ کی فہرست میں {count} خدمات",
+        "orders": "میرے آرڈرز", "ordersHint": "سابقہ اور فعال",
+        "profile": "میرا پروفائل", "profileHint": "پتہ اور ترتیبات"
+      },
+      "savedTitle": "خدمات جن کی مجھے اکثر ضرورت ہوتی ہے",
+      "savedEmpty": "آپ نے ابھی تک کوئی خدمت محفوظ نہیں کی۔",
+      "recentTitle": "حالیہ سرگرمی",
+      "recentEmpty": "ابھی تک کوئی سرگرمی نہیں۔",
+      "orderNow": "ابھی آرڈر کریں",
+      "seeAll": "سب دیکھیں"
+    },
+    "provider": {
+      "title": "فراہم کنندہ ڈیش بورڈ",
+      "kpi": {
+        "incoming": "آنے والے آرڈرز", "completed30d": "30 دن میں مکمل",
+        "rating": "میری درجہ بندی", "earnings30d": "ماہانہ آمدنی"
+      },
+      "incomingTitle": "آنے والے آرڈرز",
+      "incomingEmpty": "ابھی کوئی آنے والا آرڈر نہیں۔",
+      "customersTitle": "میرے گاہک",
+      "customersEmpty": "ابھی تک کوئی گاہک نہیں۔",
+      "ordersCount": "{count} آرڈرز",
+      "accept": "قبول", "decline": "مسترد",
+      "seeAll": "سب دیکھیں"
+    },
+    "saved": {
+      "title": "محفوظ خدمات",
+      "subtitle": "ان خدمات کو محفوظ کریں جو آپ اکثر استعمال کرتے ہیں۔",
+      "addCta": "شامل کریں", "browse": "خدمات براؤز کریں",
+      "empty": "ابھی تک کوئی خدمت محفوظ نہیں۔",
+      "remove": "ہٹائیں", "orderNow": "آرڈر", "editNote": "نوٹ میں ترمیم"
+    },
+    "customers": {
+      "title": "میرے گاہک",
+      "subtitle": "وہ تمام لوگ جنہیں آپ نے خدمت فراہم کی۔",
+      "searchPlaceholder": "نام یا فون سے تلاش کریں",
+      "ordersCount": "{count} آرڈرز",
+      "call": "کال", "message": "پیغام"
     }
+  },
+  "profile": {
+    "title": "میرا پروفائل",
+    "subtitle": "اپنی تفصیلات اور پتہ کسی بھی وقت اپ ڈیٹ کریں۔",
+    "personal": "ذاتی معلومات",
+    "address": "پتہ اور مقام",
+    "addressNote": "آپ کا پتہ قریبی فراہم کنندگان کے ساتھ ملانے کے لیے استعمال ہوتا ہے۔",
+    "addressEditNote": "پتہ ترتیب (علاقہ → گورنریٹ → شہر → محلہ + نقشہ) Supabase سے جڑتا ہے۔",
+    "fullName": "پورا نام", "fullNamePlaceholder": "احمد المالکی",
+    "email": "ای میل", "phone": "موبائل", "save": "تبدیلیاں محفوظ کریں"
+  },
+  "location": {
+    "region": "علاقہ", "selectRegion": "علاقہ منتخب کریں",
+    "governorate": "گورنریٹ", "selectGovernorate": "گورنریٹ منتخب کریں",
+    "city": "شہر", "selectCity": "شہر منتخب کریں",
+    "district": "محلہ", "districtPlaceholder": "مثلاً النخیل",
+    "street": "سڑک", "streetPlaceholder": "سڑک کا نام",
+    "building": "عمارت نمبر", "buildingPlaceholder": "مثلاً 142",
+    "mapTitle": "نقشے پر اپنا مقام پن کریں",
+    "useMyLocation": "میرا مقام", "openMap": "مقام پن کرنے کے لیے نقشہ کھولیں",
+    "pinCoords": "کوآرڈینیٹس"
   }
 }

@@ -98,6 +98,11 @@
     },
     "signInPrompt": "لديك حساب؟",
     "signUpPrompt": "ليس لديك حساب؟",
+    "steps": {
+      "step1": "البيانات الشخصية",
+      "step2": "موقعك"
+    },
+    "locationIntro": "حدّد منطقتك ومحافظتك ومدينتك حتى نظهر لك أقرب المزوّدين. تستطيع أيضاً تحديد موقعك على الخريطة لتعريف الحيّ تلقائياً.",
     "errors": {
       "invalidInput": "تحقّق من البيانات المُدخَلة",
       "fullNameTooShort": "الاسم قصير جداً",
@@ -108,6 +113,10 @@
       "passwordRequired": "كلمة المرور مطلوبة",
       "userExists": "هذا البريد مسجَّل مسبقاً",
       "invalidCredentials": "بيانات الدخول غير صحيحة",
+      "regionRequired": "اختر المنطقة",
+      "governorateRequired": "اختر المحافظة",
+      "cityRequired": "اختر المدينة",
+      "locationRequired": "أكمل بيانات الموقع",
       "unknown": "حدث خطأ غير متوقّع"
     },
     "forbidden": {
@@ -374,6 +383,91 @@
       "section_admin": "مشرف قسم",
       "provider": "مزوّد خدمة",
       "requester": "طالب خدمة"
+    },
+    "requester": {
+      "title": "أهلاً بك",
+      "quick": {
+        "newOrder": "طلب جديد",
+        "newOrderHint": "احجز خدمة في دقائق",
+        "saved": "خدماتي المحفوظة",
+        "savedHint": "{count} خدمات في قائمتك",
+        "orders": "طلباتي",
+        "ordersHint": "السابقة والحالية",
+        "profile": "ملفي الشخصي",
+        "profileHint": "العنوان والإعدادات"
+      },
+      "savedTitle": "خدمات أحتاجها متكرّراً",
+      "savedEmpty": "لم تحفظ خدمات بعد.",
+      "recentTitle": "آخر النشاط",
+      "recentEmpty": "لا يوجد نشاط بعد.",
+      "orderNow": "اطلب الآن",
+      "seeAll": "عرض الكل"
+    },
+    "provider": {
+      "title": "لوحة المزوّد",
+      "kpi": {
+        "incoming": "طلبات واردة",
+        "completed30d": "إنجازات ٣٠ يوم",
+        "rating": "تقييمي",
+        "earnings30d": "دخل الشهر"
+      },
+      "incomingTitle": "الطلبات الواردة",
+      "incomingEmpty": "لا توجد طلبات حالياً.",
+      "customersTitle": "عملائي",
+      "customersEmpty": "لم تظهر بياناتك للعملاء بعد.",
+      "ordersCount": "{count} طلب",
+      "accept": "قبول",
+      "decline": "رفض",
+      "seeAll": "عرض الكل"
+    },
+    "saved": {
+      "title": "خدماتي المحفوظة",
+      "subtitle": "احفظ الخدمات التي تحتاجها كثيراً للوصول السريع.",
+      "addCta": "إضافة",
+      "browse": "تصفّح الخدمات",
+      "empty": "لم تحفظ أي خدمة بعد.",
+      "remove": "إزالة",
+      "orderNow": "اطلب",
+      "editNote": "تعديل ملاحظة"
+    },
+    "customers": {
+      "title": "عملائي",
+      "subtitle": "كل من تعامل معك من قبل، مع ملاحظاتك الخاصة لكل عميل.",
+      "searchPlaceholder": "ابحث باسم العميل أو رقمه",
+      "ordersCount": "{count} طلب",
+      "call": "اتصال",
+      "message": "رسالة"
     }
+  },
+  "profile": {
+    "title": "ملفي الشخصي",
+    "subtitle": "حدّث بياناتك وعنوانك وقت ما تشاء.",
+    "personal": "البيانات الشخصية",
+    "address": "العنوان والموقع",
+    "addressNote": "عنوانك يُستخدم لاقتراح أقرب المزوّدين وتسليم الخدمة.",
+    "addressEditNote": "تحرير العنوان الكامل (منطقة → محافظة → مدينة → حيّ + خريطة) يُربط بـ Supabase الفعلي.",
+    "fullName": "الاسم الكامل",
+    "fullNamePlaceholder": "أحمد المالكي",
+    "email": "البريد",
+    "phone": "الجوال",
+    "save": "حفظ التغييرات"
+  },
+  "location": {
+    "region": "المنطقة",
+    "selectRegion": "اختر المنطقة",
+    "governorate": "المحافظة",
+    "selectGovernorate": "اختر المحافظة",
+    "city": "المدينة",
+    "selectCity": "اختر المدينة",
+    "district": "الحيّ",
+    "districtPlaceholder": "مثال: حيّ النخيل",
+    "street": "الشارع",
+    "streetPlaceholder": "اسم الشارع",
+    "building": "رقم المبنى",
+    "buildingPlaceholder": "مثل: 142",
+    "mapTitle": "حدّد موقعك على الخريطة",
+    "useMyLocation": "موقعي الحالي",
+    "openMap": "افتح الخريطة لتحديد الموقع",
+    "pinCoords": "إحداثيات"
   }
 }

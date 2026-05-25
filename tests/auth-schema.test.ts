@@ -1,6 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { signUpSchema, signInSchema } from "@/features/auth/schema";
 
+const baseLocation = {
+  regionSlug: "riyadh",
+  governorateSlug: "riyadh",
+  citySlug: "riyadh",
+};
+
 describe("signUpSchema", () => {
   it("accepts a valid signup payload", () => {
     const result = signUpSchema.safeParse({
@@ -10,6 +16,7 @@ describe("signUpSchema", () => {
       password: "Aa1bbbbb",
       role: "requester",
       locale: "ar",
+      ...baseLocation,
     });
     expect(result.success).toBe(true);
   });
@@ -21,6 +28,7 @@ describe("signUpSchema", () => {
       phone: "+966500000000",
       password: "Aa1",
       role: "requester",
+      ...baseLocation,
     });
     expect(result.success).toBe(false);
   });
@@ -32,6 +40,7 @@ describe("signUpSchema", () => {
       phone: "+966500000000",
       password: "Abcdefgh",
       role: "requester",
+      ...baseLocation,
     });
     expect(result.success).toBe(false);
   });
@@ -43,6 +52,21 @@ describe("signUpSchema", () => {
       phone: "not-a-phone",
       password: "Aa1bbbbb",
       role: "requester",
+      ...baseLocation,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects missing region", () => {
+    const result = signUpSchema.safeParse({
+      fullName: "Ahmed",
+      email: "ahmed@example.com",
+      phone: "+966500000000",
+      password: "Aa1bbbbb",
+      role: "requester",
+      regionSlug: "",
+      governorateSlug: "riyadh",
+      citySlug: "riyadh",
     });
     expect(result.success).toBe(false);
   });
@@ -54,6 +78,7 @@ describe("signUpSchema", () => {
       phone: "966500000000",
       password: "Aa1bbbbb",
       role: "requester",
+      ...baseLocation,
     });
     expect(result.success).toBe(true);
     if (result.success) {

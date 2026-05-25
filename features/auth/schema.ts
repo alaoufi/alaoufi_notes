@@ -15,6 +15,16 @@ export const signUpSchema = z.object({
     .regex(/[0-9]/, "auth.errors.passwordWeak"),
   role: z.enum(["requester", "provider"]),
   locale: z.enum(["ar", "ur", "en", "hi", "bn"]).default("ar"),
+
+  // Address — at least region + governorate + city are required.
+  regionSlug: z.string().min(1, "auth.errors.regionRequired"),
+  governorateSlug: z.string().min(1, "auth.errors.governorateRequired"),
+  citySlug: z.string().min(1, "auth.errors.cityRequired"),
+  districtName: z.string().max(120).optional().default(""),
+  street: z.string().max(200).optional().default(""),
+  building: z.string().max(60).optional().default(""),
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
 });
 
 export type SignUpInput = z.infer<typeof signUpSchema>;

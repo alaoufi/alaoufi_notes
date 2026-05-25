@@ -98,6 +98,11 @@
     },
     "signInPrompt": "Already have an account?",
     "signUpPrompt": "Don't have an account?",
+    "steps": {
+      "step1": "Personal info",
+      "step2": "Your location"
+    },
+    "locationIntro": "Set your region, governorate and city so we can match you with nearby providers. You can also pin your location on the map.",
     "errors": {
       "invalidInput": "Check the entered data",
       "fullNameTooShort": "Name is too short",
@@ -108,6 +113,10 @@
       "passwordRequired": "Password is required",
       "userExists": "This email is already registered",
       "invalidCredentials": "Invalid credentials",
+      "regionRequired": "Pick a region",
+      "governorateRequired": "Pick a governorate",
+      "cityRequired": "Pick a city",
+      "locationRequired": "Complete your location",
       "unknown": "An unexpected error occurred"
     },
     "forbidden": {
@@ -351,6 +360,91 @@
       "section_admin": "Section admin",
       "provider": "Provider",
       "requester": "Requester"
+    },
+    "requester": {
+      "title": "Welcome",
+      "quick": {
+        "newOrder": "New order",
+        "newOrderHint": "Book a service in minutes",
+        "saved": "Saved services",
+        "savedHint": "{count} services on your list",
+        "orders": "My orders",
+        "ordersHint": "Past and active",
+        "profile": "My profile",
+        "profileHint": "Address and settings"
+      },
+      "savedTitle": "Services I need often",
+      "savedEmpty": "You haven't saved any service yet.",
+      "recentTitle": "Recent activity",
+      "recentEmpty": "No activity yet.",
+      "orderNow": "Order now",
+      "seeAll": "See all"
+    },
+    "provider": {
+      "title": "Provider dashboard",
+      "kpi": {
+        "incoming": "Incoming orders",
+        "completed30d": "30-day completed",
+        "rating": "My rating",
+        "earnings30d": "Month earnings"
+      },
+      "incomingTitle": "Incoming orders",
+      "incomingEmpty": "No incoming orders right now.",
+      "customersTitle": "My customers",
+      "customersEmpty": "No customer history yet.",
+      "ordersCount": "{count} orders",
+      "accept": "Accept",
+      "decline": "Decline",
+      "seeAll": "See all"
+    },
+    "saved": {
+      "title": "Saved services",
+      "subtitle": "Save services you use often for quick booking.",
+      "addCta": "Add",
+      "browse": "Browse services",
+      "empty": "You haven't saved any service yet.",
+      "remove": "Remove",
+      "orderNow": "Order",
+      "editNote": "Edit note"
+    },
+    "customers": {
+      "title": "My customers",
+      "subtitle": "Everyone you've served before, with your private notes.",
+      "searchPlaceholder": "Search by name or phone",
+      "ordersCount": "{count} orders",
+      "call": "Call",
+      "message": "Message"
     }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Update your details and address anytime.",
+    "personal": "Personal info",
+    "address": "Address & location",
+    "addressNote": "Your address is used to match you with nearby providers and deliver service.",
+    "addressEditNote": "Editing the full address chain (region → governorate → city → district + map) is wired to live Supabase.",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Ahmed Al-Malki",
+    "email": "Email",
+    "phone": "Mobile",
+    "save": "Save changes"
+  },
+  "location": {
+    "region": "Region",
+    "selectRegion": "Pick a region",
+    "governorate": "Governorate",
+    "selectGovernorate": "Pick a governorate",
+    "city": "City",
+    "selectCity": "Pick a city",
+    "district": "District",
+    "districtPlaceholder": "e.g. An-Nakheel",
+    "street": "Street",
+    "streetPlaceholder": "Street name",
+    "building": "Building #",
+    "buildingPlaceholder": "e.g. 142",
+    "mapTitle": "Pin your location on the map",
+    "useMyLocation": "Use my location",
+    "openMap": "Open map to pin location",
+    "pinCoords": "Coords"
   }
 }

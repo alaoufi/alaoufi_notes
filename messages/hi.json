@@ -98,6 +98,8 @@
     },
     "signInPrompt": "पहले से खाता है?",
     "signUpPrompt": "खाता नहीं है?",
+    "steps": { "step1": "व्यक्तिगत जानकारी", "step2": "आपका स्थान" },
+    "locationIntro": "अपना क्षेत्र, जिला और शहर सेट करें ताकि हम आपको पास के प्रदाताओं से मिला सकें।",
     "errors": {
       "invalidInput": "दर्ज डेटा जाँचें",
       "fullNameTooShort": "नाम बहुत छोटा है",
@@ -108,6 +110,10 @@
       "passwordRequired": "पासवर्ड आवश्यक है",
       "userExists": "यह ईमेल पहले से पंजीकृत है",
       "invalidCredentials": "अमान्य क्रेडेंशियल",
+      "regionRequired": "क्षेत्र चुनें",
+      "governorateRequired": "जिला चुनें",
+      "cityRequired": "शहर चुनें",
+      "locationRequired": "स्थान पूरा करें",
       "unknown": "अप्रत्याशित त्रुटि हुई"
     },
     "forbidden": {
@@ -287,6 +293,70 @@
       "section_admin": "सेक्शन एडमिन",
       "provider": "प्रदाता",
       "requester": "अनुरोधकर्ता"
+    },
+    "requester": {
+      "title": "स्वागत",
+      "quick": {
+        "newOrder": "नया ऑर्डर", "newOrderHint": "मिनटों में सेवा बुक करें",
+        "saved": "सहेजी गई सेवाएँ", "savedHint": "आपकी सूची में {count} सेवाएँ",
+        "orders": "मेरे ऑर्डर", "ordersHint": "पिछले और सक्रिय",
+        "profile": "मेरा प्रोफ़ाइल", "profileHint": "पता और सेटिंग्स"
+      },
+      "savedTitle": "सेवाएँ जो मुझे अक्सर चाहिए",
+      "savedEmpty": "आपने अभी तक कोई सेवा सहेजी नहीं है।",
+      "recentTitle": "हालिया गतिविधि",
+      "recentEmpty": "अभी तक कोई गतिविधि नहीं।",
+      "orderNow": "अभी ऑर्डर करें",
+      "seeAll": "सभी देखें"
+    },
+    "provider": {
+      "title": "प्रदाता डैशबोर्ड",
+      "kpi": {
+        "incoming": "आने वाले ऑर्डर", "completed30d": "30 दिन पूर्ण",
+        "rating": "मेरी रेटिंग", "earnings30d": "मासिक आय"
+      },
+      "incomingTitle": "आने वाले ऑर्डर",
+      "incomingEmpty": "अभी कोई आने वाला ऑर्डर नहीं।",
+      "customersTitle": "मेरे ग्राहक",
+      "customersEmpty": "अभी तक कोई ग्राहक नहीं।",
+      "ordersCount": "{count} ऑर्डर",
+      "accept": "स्वीकार", "decline": "अस्वीकार",
+      "seeAll": "सभी देखें"
+    },
+    "saved": {
+      "title": "सहेजी गई सेवाएँ",
+      "subtitle": "अक्सर उपयोग की जाने वाली सेवाओं को सहेजें।",
+      "addCta": "जोड़ें", "browse": "सेवाएँ ब्राउज़ करें",
+      "empty": "अभी तक कोई सेवा सहेजी नहीं।",
+      "remove": "हटाएँ", "orderNow": "ऑर्डर", "editNote": "नोट संपादित"
+    },
+    "customers": {
+      "title": "मेरे ग्राहक",
+      "subtitle": "वे सभी जिनकी आपने सेवा की।",
+      "searchPlaceholder": "नाम या फ़ोन से खोजें",
+      "ordersCount": "{count} ऑर्डर",
+      "call": "कॉल", "message": "संदेश"
     }
+  },
+  "profile": {
+    "title": "मेरा प्रोफ़ाइल",
+    "subtitle": "अपनी जानकारी और पता कभी भी अपडेट करें।",
+    "personal": "व्यक्तिगत जानकारी",
+    "address": "पता और स्थान",
+    "addressNote": "आपके पते का उपयोग पास के प्रदाताओं को खोजने के लिए होता है।",
+    "addressEditNote": "पूर्ण पता संपादन (क्षेत्र → जिला → शहर → मोहल्ला + मानचित्र) Supabase से जुड़ता है।",
+    "fullName": "पूरा नाम", "fullNamePlaceholder": "अहमद अल-मालकी",
+    "email": "ईमेल", "phone": "मोबाइल", "save": "परिवर्तन सहेजें"
+  },
+  "location": {
+    "region": "क्षेत्र", "selectRegion": "क्षेत्र चुनें",
+    "governorate": "जिला", "selectGovernorate": "जिला चुनें",
+    "city": "शहर", "selectCity": "शहर चुनें",
+    "district": "मोहल्ला", "districtPlaceholder": "जैसे अन-नखील",
+    "street": "सड़क", "streetPlaceholder": "सड़क का नाम",
+    "building": "भवन #", "buildingPlaceholder": "जैसे 142",
+    "mapTitle": "मानचित्र पर स्थान पिन करें",
+    "useMyLocation": "मेरा स्थान", "openMap": "स्थान पिन करने के लिए मानचित्र खोलें",
+    "pinCoords": "निर्देशांक"
   }
 }
