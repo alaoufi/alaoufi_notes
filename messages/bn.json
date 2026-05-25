@@ -462,7 +462,7 @@
     "region": "অঞ্চল", "selectRegion": "অঞ্চল নির্বাচন",
     "governorate": "জেলা", "selectGovernorate": "জেলা নির্বাচন",
     "city": "শহর", "selectCity": "শহর নির্বাচন",
-    "district": "মহল্লা", "districtPlaceholder": "যেমন আন-নাখিল",
+    "district": "মহল্লা", "selectDistrict": "মহল্লা নির্বাচন", "otherDistrict": "অন্যান্য — ম্যানুয়ালি লিখুন", "districtOtherLabel": "মহল্লার নাম", "districtPlaceholder": "যেমন আন-নাখিল",
     "street": "রাস্তা", "streetPlaceholder": "রাস্তার নাম",
     "building": "ভবন #", "buildingPlaceholder": "যেমন ১৪২",
     "mapTitle": "মানচিত্রে অবস্থান পিন করুন",

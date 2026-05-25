@@ -41,6 +41,8 @@ export interface District {
   city_slug?: string;
   slug: string;
   name: Record<string, string>;
+  lat?: number | null;
+  lng?: number | null;
 }
 
 export function localized(field: Record<string, string> | null | undefined, locale: Locale): string {

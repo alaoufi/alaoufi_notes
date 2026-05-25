@@ -1,7 +1,7 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import type { Category, City, Region, Governorate } from "./types";
+import type { Category, City, Region, Governorate, District } from "./types";
 
 export type { Category, City, Region, Governorate, District } from "./types";
 export { localized } from "./types";
@@ -179,5 +179,57 @@ export async function listGovernorates(regionSlug: string): Promise<Governorate[
     return data as unknown as Governorate[];
   } catch {
     return fallback;
+  }
+}
+
+/**
+ * Districts inside a city, by city slug. Returns only active districts for
+ * the public site; admins use a separate query that includes inactive rows.
+ */
+export async function listDistricts(citySlug: string): Promise<District[]> {
+  if (!hasSupabaseEnv()) return [];
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: city, error: cityErr } = await supabase
+      .from("cities" as never)
+      .select("id")
+      .eq("slug", citySlug)
+      .maybeSingle();
+    if (cityErr || !city) return [];
+    const cityId = (city as { id: string }).id;
+    const { data, error } = await supabase
+      .from("districts" as never)
+      .select("id, city_id, slug, name, lat, lng, is_active, display_order")
+      .eq("city_id", cityId)
+      .eq("is_active", true)
+      .order("display_order");
+    if (error || !data) return [];
+    return data as unknown as District[];
+  } catch {
+    return [];
+  }
+}
+
+/** All districts inside a city — including inactive (admin views). */
+export async function listAllDistricts(citySlug: string): Promise<District[]> {
+  if (!hasSupabaseEnv()) return [];
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: city, error: cityErr } = await supabase
+      .from("cities" as never)
+      .select("id")
+      .eq("slug", citySlug)
+      .maybeSingle();
+    if (cityErr || !city) return [];
+    const cityId = (city as { id: string }).id;
+    const { data, error } = await supabase
+      .from("districts" as never)
+      .select("id, city_id, slug, name, lat, lng, is_active, display_order")
+      .eq("city_id", cityId)
+      .order("display_order");
+    if (error || !data) return [];
+    return data as unknown as District[];
+  } catch {
+    return [];
   }
 }

@@ -465,7 +465,7 @@
     "region": "क्षेत्र", "selectRegion": "क्षेत्र चुनें",
     "governorate": "जिला", "selectGovernorate": "जिला चुनें",
     "city": "शहर", "selectCity": "शहर चुनें",
-    "district": "मोहल्ला", "districtPlaceholder": "जैसे अन-नखील",
+    "district": "मोहल्ला", "selectDistrict": "मोहल्ला चुनें", "otherDistrict": "अन्य — मैन्युअली लिखें", "districtOtherLabel": "मोहल्ले का नाम", "districtPlaceholder": "जैसे अन-नखील",
     "street": "सड़क", "streetPlaceholder": "सड़क का नाम",
     "building": "भवन #", "buildingPlaceholder": "जैसे 142",
     "mapTitle": "मानचित्र पर स्थान पिन करें",

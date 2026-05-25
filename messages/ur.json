@@ -470,7 +470,7 @@
     "region": "علاقہ", "selectRegion": "علاقہ منتخب کریں",
     "governorate": "گورنریٹ", "selectGovernorate": "گورنریٹ منتخب کریں",
     "city": "شہر", "selectCity": "شہر منتخب کریں",
-    "district": "محلہ", "districtPlaceholder": "مثلاً النخیل",
+    "district": "محلہ", "selectDistrict": "محلہ منتخب کریں", "otherDistrict": "دوسرا — دستی لکھیں", "districtOtherLabel": "محلے کا نام", "districtPlaceholder": "مثلاً النخیل",
     "street": "سڑک", "streetPlaceholder": "سڑک کا نام",
     "building": "عمارت نمبر", "buildingPlaceholder": "مثلاً 142",
     "mapTitle": "نقشے پر اپنا مقام پن کریں",

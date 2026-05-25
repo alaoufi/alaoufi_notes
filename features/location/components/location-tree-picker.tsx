@@ -11,12 +11,25 @@ import type { Locale } from "@/i18n/locales";
 import type { LocationValue } from "../types";
 import { MapPin, Crosshair, CheckCircle2, AlertCircle } from "lucide-react";
 
+export interface TreeDistrict {
+  slug: string;
+  name: Record<string, string>;
+  lat?: number | null;
+  lng?: number | null;
+}
+
+export interface TreeCity {
+  slug: string;
+  name: Record<string, string>;
+  districts: TreeDistrict[];
+}
+
 export interface TreeNode {
   region: { slug: string; name: Record<string, string> };
   governorates: Array<{
     slug: string;
     name: Record<string, string>;
-    cities: Array<{ slug: string; name: Record<string, string> }>;
+    cities: TreeCity[];
   }>;
 }
 
@@ -108,6 +121,10 @@ function LocationTreePickerInner({
     () => region?.governorates.find((g) => g.slug === value.governorateSlug),
     [region, value.governorateSlug],
   );
+  const city = useMemo(
+    () => governorate?.cities.find((c) => c.slug === value.citySlug),
+    [governorate, value.citySlug],
+  );
 
   function setField<K extends keyof LocationValue>(key: K, val: LocationValue[K]) {
     onChange({ ...value, [key]: val });
@@ -119,13 +136,23 @@ function LocationTreePickerInner({
       regionSlug: slug || null,
       governorateSlug: null,
       citySlug: null,
+      districtName: "",
     });
   }
   function onGovernorateChange(slug: string) {
-    onChange({ ...value, governorateSlug: slug || null, citySlug: null });
+    onChange({
+      ...value,
+      governorateSlug: slug || null,
+      citySlug: null,
+      districtName: "",
+    });
   }
   function onCityChange(slug: string) {
-    setField("citySlug", slug || null);
+    onChange({
+      ...value,
+      citySlug: slug || null,
+      districtName: "",
+    });
   }
 
   async function reverseGeocode(lat: number, lng: number): Promise<ReverseGeocodeResult | null> {
@@ -386,12 +413,36 @@ function LocationTreePickerInner({
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Input
-          label={t("district")}
-          placeholder={t("districtPlaceholder")}
-          value={value.districtName}
-          onChange={(e) => setField("districtName", e.target.value)}
-        />
+        {city && city.districts.length > 0 ? (
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text">
+              {t("district")}
+            </label>
+            <select
+              value={value.districtName}
+              onChange={(e) => setField("districtName", e.target.value)}
+              className="h-11 w-full rounded-md border border-border bg-surface px-3 text-text outline-none focus:border-primary"
+            >
+              <option value="">{t("selectDistrict")}</option>
+              {city.districts.map((d) => {
+                const label = d.name[locale] ?? d.name.ar ?? d.name.en ?? d.slug;
+                return (
+                  <option key={d.slug} value={label}>
+                    {label}
+                  </option>
+                );
+              })}
+              <option value="__other__">{t("otherDistrict")}</option>
+            </select>
+          </div>
+        ) : (
+          <Input
+            label={t("district")}
+            placeholder={t("districtPlaceholder")}
+            value={value.districtName}
+            onChange={(e) => setField("districtName", e.target.value)}
+          />
+        )}
         <Input
           label={t("street")}
           placeholder={t("streetPlaceholder")}
@@ -405,6 +456,16 @@ function LocationTreePickerInner({
           onChange={(e) => setField("building", e.target.value)}
         />
       </div>
+
+      {/* When user picked "Other" from the district dropdown, surface a free-text input */}
+      {city && city.districts.length > 0 && value.districtName === "__other__" && (
+        <Input
+          label={t("districtOtherLabel")}
+          placeholder={t("districtPlaceholder")}
+          value=""
+          onChange={(e) => setField("districtName", e.target.value)}
+        />
+      )}
 
       {showMap && (
         <div className="rounded-lg border border-border bg-surface-muted/40 p-4">
