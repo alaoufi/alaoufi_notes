@@ -137,7 +137,7 @@
       "handle": "उपयोगकर्ता नाम या मोबाइल"
     },
     "placeholders": {
-      "fullName": "अहमद अल-मालकी",
+      "fullName": "नाम",
       "handle": "उपयोगकर्ता नाम या +9665XXXXXXXX"
     },
     "hints": {
@@ -432,7 +432,7 @@
     "addressNote": "आपके पते का उपयोग पास के प्रदाताओं को खोजने के लिए होता है। \"मेरा स्थान पता करें\" बटन का उपयोग करें।",
     "addressSaved": "सहेजा गया",
     "addressEditNote": "पूर्ण संपादन Supabase से जुड़ता है।",
-    "fullName": "पूरा नाम", "fullNamePlaceholder": "अहमद अल-मालकी",
+    "fullName": "पूरा नाम", "fullNamePlaceholder": "नाम",
     "email": "ईमेल", "phone": "मोबाइल", "save": "परिवर्तन सहेजें",
     "errors": {
       "updateFailed": "अद्यतन विफल",

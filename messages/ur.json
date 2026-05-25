@@ -142,7 +142,7 @@
       "handle": "صارف نام یا موبائل"
     },
     "placeholders": {
-      "fullName": "احمد المالکی",
+      "fullName": "نام",
       "handle": "صارف نام یا +9665XXXXXXXX"
     },
     "hints": {
@@ -437,7 +437,7 @@
     "addressNote": "آپ کا پتہ قریبی فراہم کنندگان کے ساتھ ملانے کے لیے استعمال ہوتا ہے۔ \"میرا مقام معلوم کریں\" بٹن استعمال کریں۔",
     "addressSaved": "محفوظ",
     "addressEditNote": "مکمل ترمیم Supabase سے جڑتی ہے۔",
-    "fullName": "پورا نام", "fullNamePlaceholder": "احمد المالکی",
+    "fullName": "پورا نام", "fullNamePlaceholder": "نام",
     "email": "ای میل", "phone": "موبائل", "save": "تبدیلیاں محفوظ کریں",
     "errors": {
       "updateFailed": "اپ ڈیٹ ناکام",

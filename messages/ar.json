@@ -163,7 +163,7 @@
       "handle": "اسم المستخدم أو الجوال"
     },
     "placeholders": {
-      "fullName": "أحمد المالكي",
+      "fullName": "الاسم",
       "handle": "اسم المستخدم أو +9665XXXXXXXX"
     },
     "hints": {
@@ -560,7 +560,7 @@
     "addressSaved": "تم الحفظ",
     "addressEditNote": "التحرير الكامل (منطقة → محافظة → مدينة → حيّ + خريطة) يُربط بـ Supabase الفعلي.",
     "fullName": "الاسم الكامل",
-    "fullNamePlaceholder": "أحمد المالكي",
+    "fullNamePlaceholder": "الاسم",
     "email": "البريد",
     "phone": "الجوال",
     "save": "حفظ التغييرات",

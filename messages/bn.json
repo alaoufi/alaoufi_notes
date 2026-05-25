@@ -134,7 +134,7 @@
       "handle": "ব্যবহারকারীর নাম বা মোবাইল"
     },
     "placeholders": {
-      "fullName": "আহমেদ আল-মালকি",
+      "fullName": "নাম",
       "handle": "ব্যবহারকারী নাম বা +9665XXXXXXXX"
     },
     "hints": {
@@ -429,7 +429,7 @@
     "addressNote": "আপনার ঠিকানা কাছের সেবাদাতাদের সঙ্গে মেলানোর জন্য ব্যবহৃত হয়। \"আমার অবস্থান শনাক্ত করুন\" বোতাম ব্যবহার করুন।",
     "addressSaved": "সংরক্ষিত",
     "addressEditNote": "সম্পূর্ণ সম্পাদনা Supabase-এর সাথে যুক্ত।",
-    "fullName": "পুরো নাম", "fullNamePlaceholder": "আহমেদ আল-মালকি",
+    "fullName": "পুরো নাম", "fullNamePlaceholder": "নাম",
     "email": "ইমেইল", "phone": "মোবাইল", "save": "পরিবর্তন সংরক্ষণ",
     "errors": {
       "updateFailed": "আপডেট ব্যর্থ",

@@ -163,7 +163,7 @@
       "handle": "Username or mobile"
     },
     "placeholders": {
-      "fullName": "Ahmed Al-Malki",
+      "fullName": "Name",
       "handle": "username or +9665XXXXXXXX"
     },
     "hints": {
@@ -537,7 +537,7 @@
     "addressSaved": "Saved",
     "addressEditNote": "Full editing (region → governorate → city → district + map) is wired to live Supabase.",
     "fullName": "Full name",
-    "fullNamePlaceholder": "Ahmed Al-Malki",
+    "fullNamePlaceholder": "Name",
     "email": "Email",
     "phone": "Mobile",
     "save": "Save changes",
