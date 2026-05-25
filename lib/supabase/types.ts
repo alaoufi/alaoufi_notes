@@ -11,6 +11,8 @@ export interface Profile {
   full_name: string | null;
   phone_e164: string | null;
   email_normalized: string | null;
+  username: string | null;
+  active_role: Role;
   preferred_locale: "ar" | "ur" | "en" | "hi" | "bn";
   preferred_theme: "navy" | "stc" | "fuchsia";
   avatar_path: string | null;

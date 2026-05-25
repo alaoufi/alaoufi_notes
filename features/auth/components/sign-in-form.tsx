@@ -5,11 +5,14 @@ import { useTranslations } from "next-intl";
 import { Button, Input } from "@syanah/ui";
 import { signInAction } from "../server/sign-in";
 import { useRouter } from "@/i18n/navigation";
+import { User, Lock } from "lucide-react";
 
 export function SignInForm({ returnTo }: { returnTo?: string }) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [handle, setHandle] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -17,13 +20,8 @@ export function SignInForm({ returnTo }: { returnTo?: string }) {
     event.preventDefault();
     setErrors({});
     setFormError(null);
-    const fd = new FormData(event.currentTarget);
-    const payload = {
-      email: String(fd.get("email") ?? ""),
-      password: String(fd.get("password") ?? ""),
-    };
     startTransition(async () => {
-      const res = await signInAction(payload);
+      const res = await signInAction({ handle, password });
       if (!res.ok) {
         setErrors(res.fieldErrors ?? {});
         if (res.errorKey) setFormError(res.errorKey);
@@ -36,21 +34,28 @@ export function SignInForm({ returnTo }: { returnTo?: string }) {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <Input
-        name="email"
-        type="email"
-        label={t("fields.email")}
-        placeholder="you@example.com"
-        error={errors.email ? t(errors.email) : undefined}
+        name="handle"
+        label={t("fields.handle")}
+        placeholder={t("placeholders.handle")}
+        value={handle}
+        onChange={(e) => setHandle(e.target.value)}
+        error={errors.handle ? t(errors.handle) : undefined}
+        hint={t("hints.handleHint")}
         required
-        autoComplete="email"
+        autoComplete="username"
+        iconStart={<User className="h-4 w-4" />}
+        dir="ltr"
       />
       <Input
         name="password"
         type="password"
         label={t("fields.password")}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
         error={errors.password ? t(errors.password) : undefined}
         required
         autoComplete="current-password"
+        iconStart={<Lock className="h-4 w-4" />}
       />
 
       {formError && (

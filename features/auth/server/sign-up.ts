@@ -11,6 +11,16 @@ export interface SignUpResult {
   fieldErrors?: Record<string, string>;
 }
 
+/**
+ * Phone is the required handle. If no email is provided we synthesize one
+ * so Supabase Auth still has the identifier it needs, while the user always
+ * signs in by phone or username.
+ */
+function synthesizeEmail(phoneE164: string): string {
+  const digits = phoneE164.replace(/\D/g, "");
+  return `${digits}@phone.syanah.app`;
+}
+
 export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
   const parsed = signUpSchema.safeParse(input);
   if (!parsed.success) {
@@ -23,7 +33,6 @@ export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
   }
 
   if (!hasSupabaseEnv()) {
-    // Demo / preview: pretend it worked so the user can see the rest of the flow.
     return { ok: true };
   }
 
@@ -32,7 +41,9 @@ export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
     password,
     fullName,
     phone,
-    role,
+    username,
+    roles,
+    activeRole,
     locale,
     regionSlug,
     governorateSlug,
@@ -44,13 +55,40 @@ export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
     lng,
   } = parsed.data;
 
+  const trimmedUsername = username?.trim() || null;
+  const trimmedEmail = email?.trim() || null;
+  const authEmail = trimmedEmail || synthesizeEmail(phone);
+
   const supabase = await createSupabaseServerClient();
 
+  // Reject duplicate username early — gives a better error than the auth call.
+  if (trimmedUsername) {
+    const { data: existing } = await supabase
+      .from("profiles" as never)
+      .select("user_id")
+      .eq("username", trimmedUsername)
+      .maybeSingle();
+    if (existing) {
+      return {
+        ok: false,
+        errorKey: "auth.errors.usernameTaken",
+        fieldErrors: { username: "auth.errors.usernameTaken" },
+      };
+    }
+  }
+
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    email,
+    email: authEmail,
     password,
     options: {
-      data: { full_name: fullName, phone_e164: phone, role, locale },
+      data: {
+        full_name: fullName,
+        phone_e164: phone,
+        username: trimmedUsername,
+        roles,
+        active_role: activeRole,
+        locale,
+      },
     },
   });
 
@@ -62,12 +100,34 @@ export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
   }
 
   const userId = signUpData.user?.id;
-  if (!userId) {
-    // Email confirmation pending — address saved later from profile page.
-    return { ok: true };
+  if (!userId) return { ok: true };
+
+  // Patch profile with username + email override + active role.
+  try {
+    await supabase
+      .from("profiles" as never)
+      .update({
+        username: trimmedUsername,
+        email_normalized: trimmedEmail ? trimmedEmail.toLowerCase() : null,
+        active_role: activeRole,
+      } as never)
+      .eq("user_id", userId);
+  } catch {
+    // non-fatal — handle_new_user trigger already created the row
   }
 
-  // Best-effort: resolve slugs → ids and store the first address.
+  // Make sure user_roles has every requested role.
+  try {
+    for (const role of roles) {
+      await supabase
+        .from("user_roles" as never)
+        .upsert({ user_id: userId, role } as never, { onConflict: "user_id,role" });
+    }
+  } catch {
+    // ignore — DB trigger handles a default role already
+  }
+
+  // Save the home address.
   try {
     const [regionRes, govRes, cityRes] = await Promise.all([
       supabase.from("regions" as never).select("id").eq("slug", regionSlug).maybeSingle(),
@@ -96,7 +156,7 @@ export async function signUpAction(input: SignUpInput): Promise<SignUpResult> {
       is_default: true,
     } as never);
   } catch {
-    // Non-fatal — user can fill the address from /profile later.
+    // non-fatal
   }
 
   return { ok: true };

@@ -83,15 +83,30 @@
     "fields": {
       "fullName": "پورا نام",
       "email": "ای میل",
+      "emailOptional": "ای میل (اختیاری)",
       "phone": "موبائل",
-      "password": "پاس ورڈ"
+      "username": "صارف نام (اختیاری)",
+      "password": "پاس ورڈ",
+      "handle": "صارف نام یا موبائل"
     },
     "placeholders": {
-      "fullName": "احمد المالکی"
+      "fullName": "احمد المالکی",
+      "handle": "صارف نام یا +9665XXXXXXXX"
     },
     "hints": {
-      "passwordPolicy": "کم از کم 8 حروف، بڑے، چھوٹے اور ایک عدد شامل ہو۔"
+      "passwordPolicy": "کم از کم 8 حروف، بڑے، چھوٹے اور ایک عدد شامل ہو۔",
+      "phonePrimary": "موبائل لازمی ہے اور سائن ان کے لیے استعمال ہوتا ہے۔",
+      "usernameOptional": "اختیاری — چھوٹے حروف، اعداد اور _ صرف، 3-30 حروف۔",
+      "emailOptional": "اختیاری — صرف بحالی کے لیے۔",
+      "handleHint": "صارف نام، فون نمبر یا ای میل درج کریں۔"
     },
+    "rolesLabel": "آپ صیانہ کیسے استعمال کریں گے؟",
+    "rolesHint": {
+      "requester": "میں اپنے گھر یا کاروبار کے لیے خدمات بک کرتا ہوں",
+      "provider": "میں صارفین کو خدمات فراہم کرتا ہوں",
+      "both": "آپ دونوں منتخب کر سکتے ہیں — ان کے درمیان سوئچ کرنے کا بٹن ظاہر ہوگا۔"
+    },
+    "activeRoleLabel": "بطور آغاز",
     "submit": {
       "signUp": "اکاؤنٹ بنائیں",
       "signIn": "سائن ان"
@@ -114,6 +129,11 @@
       "governorateRequired": "گورنریٹ منتخب کریں",
       "cityRequired": "شہر منتخب کریں",
       "locationRequired": "مقام مکمل کریں",
+      "usernameInvalid": "غلط صارف نام (چھوٹے حروف، اعداد اور _، 3-30)",
+      "usernameTaken": "صارف نام پہلے سے موجود",
+      "handleRequired": "صارف نام یا موبائل درج کریں",
+      "roleRequired": "کم از کم ایک کردار منتخب کریں",
+      "noBackend": "Supabase کنکشن درکار",
       "unknown": "غیر متوقع خرابی"
     },
     "forbidden": {
@@ -140,12 +160,17 @@
   },
   "providersList": {
     "title": "فراہم کنندگان",
-    "subtitle": "تلاش کریں، زمرے یا شہر کے مطابق فلٹر کریں، اور درجہ بندی کریں",
+    "subtitle": "اپنے نطاق کے مطابق تصدیق شدہ فراہم کنندگان دیکھیں۔",
+    "browsePublicHint": "براؤز کرنا سب کے لیے کھلا ہے۔ آرڈر دیتے وقت صرف لاگ ان کی ضرورت ہے۔",
     "searchPlaceholder": "فراہم کنندہ یا خدمت تلاش کریں",
     "anyCategory": "تمام زمرے",
     "anyCity": "تمام شہر",
     "emptyTitle": "ابھی کوئی نتیجہ نہیں",
-    "emptyBody": "زمرہ یا شہر منتخب کر کے دیکھیں، یا مشہور زمرے براؤز کریں:"
+    "emptyBody": "نطاق وسیع کریں یا فلٹر کم کریں۔",
+    "featured": "نمایاں",
+    "view": "پروفائل دیکھیں",
+    "completedShort": "{count} مکمل",
+    "orderRequiresSignup": "ابھی آرڈر کریں"
   },
   "admin": {
     "nav": { "title": "ایڈمن", "overview": "جائزہ", "categories": "زمرے", "regions": "علاقے", "users": "صارفین",
@@ -340,13 +365,32 @@
   },
   "profile": {
     "title": "میرا پروفائل",
-    "subtitle": "اپنی تفصیلات اور پتہ کسی بھی وقت اپ ڈیٹ کریں۔",
+    "subtitle": "اپنی تفصیلات، پتہ اور کردار کسی بھی وقت اپ ڈیٹ کریں۔",
+    "loginCreds": "لاگ ان کی تفصیلات",
+    "loginCredsIntro": "یہ وہ شناخت ہے جس سے آپ سائن ان کر سکتے ہیں۔",
+    "loginCredsHint": "موبائل لازمی۔ صارف نام اور ای میل اختیاری۔",
     "personal": "ذاتی معلومات",
+    "username": "صارف نام",
+    "usernameEditable": "صارف نام",
+    "emailEditable": "ای میل",
+    "phoneEditable": "موبائل",
+    "required": "لازمی",
+    "optional": "اختیاری",
+    "active": "اب فعال",
+    "roleMode": "استعمال کا انداز",
+    "roleCardIntro": "آپ ایک ہی وقت میں خواہشمند اور فراہم کنندہ دونوں ہو سکتے ہیں۔ کوئی بھی اختیار تھپتھپائیں۔",
+    "activeRoleSwitchLabel": "بطور آغاز",
+    "activeRoleSwitchHint": "طے کرتا ہے کہ کون سا ڈیش بورڈ کھلے۔",
     "address": "پتہ اور مقام",
     "addressNote": "آپ کا پتہ قریبی فراہم کنندگان کے ساتھ ملانے کے لیے استعمال ہوتا ہے۔",
-    "addressEditNote": "پتہ ترتیب (علاقہ → گورنریٹ → شہر → محلہ + نقشہ) Supabase سے جڑتا ہے۔",
+    "addressEditNote": "مکمل ترمیم Supabase سے جڑتی ہے۔",
     "fullName": "پورا نام", "fullNamePlaceholder": "احمد المالکی",
-    "email": "ای میل", "phone": "موبائل", "save": "تبدیلیاں محفوظ کریں"
+    "email": "ای میل", "phone": "موبائل", "save": "تبدیلیاں محفوظ کریں",
+    "errors": {
+      "updateFailed": "اپ ڈیٹ ناکام",
+      "roleNotHeld": "آپ کے پاس یہ کردار نہیں",
+      "cantRemoveLastRole": "آخری کردار نہیں ہٹا سکتے"
+    }
   },
   "location": {
     "region": "علاقہ", "selectRegion": "علاقہ منتخب کریں",

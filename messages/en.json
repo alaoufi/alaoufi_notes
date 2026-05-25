@@ -83,15 +83,30 @@
     "fields": {
       "fullName": "Full name",
       "email": "Email",
+      "emailOptional": "Email (optional)",
       "phone": "Mobile",
-      "password": "Password"
+      "username": "Username (optional)",
+      "password": "Password",
+      "handle": "Username or mobile"
     },
     "placeholders": {
-      "fullName": "Ahmed Al-Malki"
+      "fullName": "Ahmed Al-Malki",
+      "handle": "username or +9665XXXXXXXX"
     },
     "hints": {
-      "passwordPolicy": "8+ characters with uppercase, lowercase, and a number."
+      "passwordPolicy": "8+ characters with uppercase, lowercase, and a number.",
+      "phonePrimary": "Mobile is required and used to sign in.",
+      "usernameOptional": "Optional — lowercase letters, digits and _ only, 3-30 chars. Lets you sign in instead of using your phone.",
+      "emailOptional": "Optional — used for recovery only.",
+      "handleHint": "Enter your username or phone number (or email if you added one)."
     },
+    "rolesLabel": "How will you use Syanah?",
+    "rolesHint": {
+      "requester": "I book services for my home or business",
+      "provider": "I provide services to customers",
+      "both": "You can pick both — a switch will appear to toggle between them."
+    },
+    "activeRoleLabel": "Start as",
     "submit": {
       "signUp": "Create account",
       "signIn": "Sign in"
@@ -117,6 +132,11 @@
       "governorateRequired": "Pick a governorate",
       "cityRequired": "Pick a city",
       "locationRequired": "Complete your location",
+      "usernameInvalid": "Invalid username (lowercase letters, digits and _ only, 3-30 chars)",
+      "usernameTaken": "Username is taken, try another",
+      "handleRequired": "Enter your username or mobile",
+      "roleRequired": "Pick at least one role",
+      "noBackend": "Supabase connection required",
       "unknown": "An unexpected error occurred"
     },
     "forbidden": {
@@ -143,12 +163,17 @@
   },
   "providersList": {
     "title": "Providers",
-    "subtitle": "Search, filter by category or city, and rate after each job",
+    "subtitle": "Browse verified providers by your scope. Rate after each job.",
+    "browsePublicHint": "Browsing is open to everyone. You only need to sign in when placing an order.",
     "searchPlaceholder": "Search providers or services",
     "anyCategory": "All categories",
     "anyCity": "All cities",
     "emptyTitle": "No results yet",
-    "emptyBody": "Try selecting a category or city, or browse the most popular categories:"
+    "emptyBody": "Try widening the scope or removing some filters.",
+    "featured": "Featured",
+    "view": "View profile",
+    "completedShort": "{count} completed",
+    "orderRequiresSignup": "Order now"
   },
   "admin": {
     "nav": {
@@ -418,16 +443,35 @@
   },
   "profile": {
     "title": "My profile",
-    "subtitle": "Update your details and address anytime.",
+    "subtitle": "Update your details, address and role anytime.",
+    "loginCreds": "Login credentials",
+    "loginCredsIntro": "These are the identifiers you can sign in with.",
+    "loginCredsHint": "Mobile is required. Username and email are optional — add either to make signing in easier.",
     "personal": "Personal info",
+    "username": "Username",
+    "usernameEditable": "Username",
+    "emailEditable": "Email",
+    "phoneEditable": "Mobile",
+    "required": "Required",
+    "optional": "Optional",
+    "active": "Active now",
+    "roleMode": "Role mode",
+    "roleCardIntro": "You can be both requester and provider at the same time. Tap an option to enable/disable it. If you keep both, a switch appears to toggle between them.",
+    "activeRoleSwitchLabel": "Start as",
+    "activeRoleSwitchHint": "Decides which dashboard opens by default. You can switch anytime.",
     "address": "Address & location",
     "addressNote": "Your address is used to match you with nearby providers and deliver service.",
-    "addressEditNote": "Editing the full address chain (region → governorate → city → district + map) is wired to live Supabase.",
+    "addressEditNote": "Full editing (region → governorate → city → district + map) is wired to live Supabase.",
     "fullName": "Full name",
     "fullNamePlaceholder": "Ahmed Al-Malki",
     "email": "Email",
     "phone": "Mobile",
-    "save": "Save changes"
+    "save": "Save changes",
+    "errors": {
+      "updateFailed": "Update failed",
+      "roleNotHeld": "You don't hold this role",
+      "cantRemoveLastRole": "Can't remove your only role"
+    }
   },
   "location": {
     "region": "Region",
