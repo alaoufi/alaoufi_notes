@@ -1,0 +1,276 @@
+{
+  "brand": {
+    "name": "Syanah",
+    "tagline": "सऊदी अरब के शीर्ष रखरखाव सेवा प्रदाता, एक ऐप में"
+  },
+  "nav": {
+    "home": "होम",
+    "services": "सेवाएँ",
+    "providers": "प्रदाता",
+    "howItWorks": "कैसे काम करता है",
+    "about": "हमारे बारे में",
+    "signIn": "साइन इन",
+    "signUp": "साइन अप",
+    "language": "भाषा",
+    "theme": "थीम"
+  },
+  "themes": {
+    "soft-blue": "सॉफ्ट ब्लू",
+    "pink": "गुलाबी"
+  },
+  "home": {
+    "heroTitle": "विश्वसनीय रखरखाव, मिनटों में",
+    "heroSubtitle": "किसी भी सऊदी शहर में अपने घर, कार या व्यवसाय के लिए सत्यापित तकनीशियन बुक करें। लाइव ट्रैकिंग, पारदर्शी मूल्य, सेवा की गारंटी।",
+    "ctaPrimary": "सेवा बुक करें",
+    "ctaSecondary": "प्रदाता बनें",
+    "statsOrders": "पूर्ण ऑर्डर",
+    "statsProviders": "सत्यापित प्रदाता",
+    "statsCities": "शहर",
+    "statsRating": "औसत रेटिंग"
+  },
+  "categories": {
+    "title": "श्रेणी के अनुसार ब्राउज़ करें",
+    "subtitle": "हम आपके घर या व्यवसाय की हर ज़रूरत पूरी करते हैं",
+    "hvac": "एसी और कूलिंग",
+    "plumbing": "प्लंबिंग",
+    "electrical": "बिजली",
+    "appliances": "घरेलू उपकरण",
+    "home": "सामान्य रखरखाव",
+    "vehicle": "वाहन सेवा",
+    "cleaning": "सफ़ाई",
+    "pest": "कीट नियंत्रण"
+  },
+  "howItWorks": {
+    "title": "कैसे काम करता है",
+    "step1Title": "सेवा चुनें",
+    "step1Body": "श्रेणियाँ देखें या आवश्यक सेवा खोजें।",
+    "step2Title": "प्रदाता चुनें",
+    "step2Body": "बुक करने से पहले रेटिंग, अनुभव और मूल्य देखें।",
+    "step3Title": "ट्रैक करें और रेट करें",
+    "step3Body": "अपने तकनीशियन को लाइव ट्रैक करें और काम के बाद रेट करें।"
+  },
+  "providersCta": {
+    "title": "क्या आप सेवा प्रदाता हैं?",
+    "body": "हमारे नेटवर्क से जुड़ें और दैनिक वास्तविक बुकिंग प्राप्त करें। मिनटों में पंजीकरण करें, अपनी पहचान सत्यापित करें, और काम शुरू करें।",
+    "cta": "प्रदाता के रूप में पंजीकरण करें"
+  },
+  "footer": {
+    "tagline": "Syanah प्लेटफ़ॉर्म — सऊदी अरब साम्राज्य",
+    "rights": "सर्वाधिकार सुरक्षित",
+    "privacy": "गोपनीयता",
+    "terms": "शर्तें",
+    "contact": "संपर्क"
+  },
+  "common": {
+    "loading": "लोड हो रहा है...",
+    "error": "कुछ गलत हो गया",
+    "retry": "पुनः प्रयास करें",
+    "cancel": "रद्द करें",
+    "save": "सहेजें",
+    "next": "अगला",
+    "back": "वापस",
+    "search": "खोजें",
+    "comingSoon": "जल्द आ रहा है"
+  },
+  "auth": {
+    "roles": {
+      "requester": "मुझे सेवा चाहिए",
+      "provider": "मैं सेवाएँ देता हूँ"
+    },
+    "fields": {
+      "fullName": "पूरा नाम",
+      "email": "ईमेल",
+      "phone": "मोबाइल",
+      "password": "पासवर्ड"
+    },
+    "placeholders": {
+      "fullName": "अहमद अल-मालकी"
+    },
+    "hints": {
+      "passwordPolicy": "कम से कम 8 अक्षर, बड़े, छोटे और एक संख्या के साथ।"
+    },
+    "submit": {
+      "signUp": "खाता बनाएँ",
+      "signIn": "साइन इन"
+    },
+    "signInPrompt": "पहले से खाता है?",
+    "signUpPrompt": "खाता नहीं है?",
+    "errors": {
+      "invalidInput": "दर्ज डेटा जाँचें",
+      "fullNameTooShort": "नाम बहुत छोटा है",
+      "emailInvalid": "अमान्य ईमेल",
+      "phoneInvalid": "अमान्य मोबाइल",
+      "passwordTooShort": "पासवर्ड बहुत छोटा है",
+      "passwordWeak": "पासवर्ड कमज़ोर है",
+      "passwordRequired": "पासवर्ड आवश्यक है",
+      "userExists": "यह ईमेल पहले से पंजीकृत है",
+      "invalidCredentials": "अमान्य क्रेडेंशियल",
+      "unknown": "अप्रत्याशित त्रुटि हुई"
+    },
+    "forbidden": {
+      "title": "पहुँच अस्वीकृत",
+      "body": "इस पृष्ठ तक पहुँचने की अनुमति नहीं है।",
+      "cta": "होम"
+    }
+  },
+  "services": {
+    "title": "सेवाएँ",
+    "subtitle": "श्रेणी चुनें और सेवाएँ व प्रदाता देखें",
+    "categorySubtitle": "एक शहर चुनें; प्रत्येक कार्य के बाद रेट करें",
+    "filters": {
+      "city": "शहर",
+      "rating": "रेटिंग",
+      "starsAndUp": "{stars} सितारे और अधिक",
+      "fullListSoon": "पूरी सूची जल्द आ रही है"
+    },
+    "noProvidersYet": {
+      "title": "हम आपको इस श्रेणी के शीर्ष प्रदाताओं से जोड़ रहे हैं",
+      "body": "प्रदाताओं का पंजीकरण और सत्यापन हो रहा है। साइन अप करें ताकि सूचना मिल सके।",
+      "cta": "इस श्रेणी में पहला प्रदाता बनें"
+    }
+  },
+  "providersList": {
+    "title": "प्रदाता",
+    "subtitle": "खोजें, श्रेणी या शहर के आधार पर फ़िल्टर करें, और रेट करें",
+    "searchPlaceholder": "प्रदाता या सेवा खोजें",
+    "anyCategory": "सभी श्रेणियाँ",
+    "anyCity": "सभी शहर",
+    "emptyTitle": "अभी कोई परिणाम नहीं",
+    "emptyBody": "एक श्रेणी या शहर चुनें, या लोकप्रिय श्रेणियाँ देखें:"
+  },
+  "admin": {
+    "nav": { "title": "एडमिन", "overview": "अवलोकन", "categories": "श्रेणियाँ", "users": "उपयोगकर्ता",
+      "disputes": "विवाद", "translations": "अनुवाद", "settings": "सेटिंग्स" },
+    "overview": {
+      "title": "एडमिन अवलोकन", "subtitle": "प्लेटफ़ॉर्म गतिविधि एक नज़र में",
+      "kpi": { "ordersToday": "आज के ऑर्डर", "activeProviders": "सक्रिय प्रदाता",
+        "openDisputes": "खुले विवाद", "monthlyRevenue": "मासिक राजस्व" },
+      "recentActivity": "हाल की गतिविधि",
+      "recentActivityBody": "Supabase जुड़ने पर यहाँ लाइव ईवेंट दिखेंगे।"
+    },
+    "categories": { "title": "श्रेणियाँ प्रबंधित करें", "subtitle": "बनाएँ, संपादित करें, सक्षम/अक्षम",
+      "addCta": "श्रेणी जोड़ें", "edit": "संपादित" },
+    "users": { "title": "उपयोगकर्ता", "subtitle": "खोजें, सक्षम या अक्षम करें",
+      "searchPlaceholder": "नाम, फ़ोन, ईमेल से खोजें",
+      "role": { "provider": "प्रदाता", "requester": "अनुरोधकर्ता", "super_admin": "सुपर एडमिन", "section_admin": "सेक्शन एडमिन" },
+      "verified": "सत्यापित", "unverified": "असत्यापित" },
+    "disputes": { "title": "विवाद केंद्र", "subtitle": "खुले विवादों की समीक्षा",
+      "openedBy": "खोला", "review": "समीक्षा",
+      "status": { "open": "खुला", "under_review": "समीक्षाधीन", "resolved_requester": "अनुरोधकर्ता पक्ष",
+        "resolved_provider": "प्रदाता पक्ष", "dismissed": "खारिज" } },
+    "translations": { "title": "अनुवाद प्रबंधित करें", "subtitle": "redeploy के बिना संपादित",
+      "editTitle": "UI टेक्स्ट", "searchLabel": "खोजें", "searchPlaceholder": "जैसे home.heroTitle",
+      "keyHeader": "की", "placeholder": "अनुवाद", "save": "सहेजें" },
+    "settings": { "title": "प्लेटफ़ॉर्म सेटिंग्स", "subtitle": "भाषाएँ, थीम, विंडोज़, की",
+      "appTitle": "ऐप सेटिंग्स", "defaultLocale": "डिफ़ॉल्ट भाषा", "defaultTheme": "डिफ़ॉल्ट थीम",
+      "cancelWindow": "रद्द विंडो (मिनट)", "cancelWindowHint": "इस दौरान मुफ़्त रद्द",
+      "disputesWindow": "विवाद विंडो (घंटे)", "disputesWindowHint": "इसके बाद बंद",
+      "apiKeysTitle": "API कुंजियाँ", "apiKeysIntro": "सर्वर पर एन्क्रिप्टेड संग्रहीत।",
+      "apiKeysHint": "हर 60 दिन रोटेशन अनुशंसित।", "save": "सहेजें" }
+  },
+  "pricing": {
+    "title": "प्रदाता पैकेज",
+    "subtitle": "अपने व्यवसाय के लिए सही पैकेज चुनें। मुफ़्त शुरू करें, बड़े होने पर अपग्रेड करें।",
+    "popular": "सबसे लोकप्रिय",
+    "perMonth": "SAR/माह",
+    "commission": "पूर्ण ऑर्डर पर {pct}% कमीशन",
+    "cta": "प्रदाता के रूप में शुरू करें",
+    "tiers": {
+      "free": { "name": "मुफ़्त", "tagline": "बिना लागत के शुरू करें",
+        "features": { "0": "3 जॉब/दिन", "1": "मानक रैंकिंग" } },
+      "trusted": { "name": "सत्यापित", "tagline": "सत्यापित बैज + बेहतर रैंकिंग",
+        "features": { "0": "असीमित जॉब", "1": "सत्यापित बैज", "2": "प्राथमिकता सहायता" } },
+      "featured": { "name": "विशेष", "tagline": "परिणामों में विशेष + विज्ञापन",
+        "features": { "0": "असीमित जॉब", "1": "सत्यापित बैज", "2": "विशेष स्थान",
+          "3": "विज्ञापन क्रेडिट", "4": "समर्पित खाता प्रबंधक" } }
+    }
+  },
+  "ratings": {
+    "title": "अपना अनुभव रेट करें",
+    "breadcrumb": "रेटिंग",
+    "scorePrompt": "आप प्रदाता को कितने सितारे देंगे?",
+    "commentLabel": "टिप्पणी (वैकल्पिक)",
+    "commentPlaceholder": "अपना अनुभव बताएँ",
+    "submit": "रेटिंग जमा करें",
+    "thanks": "आपकी रेटिंग के लिए धन्यवाद!"
+  },
+  "disputes": {
+    "title": "विवाद खोलें",
+    "breadcrumb": "विवाद",
+    "intro": "यदि कोई समस्या आई तो विवाद खोलें। रेटिंग रुक जाएगी और एडमिन चैट के सबूत देखेंगे।",
+    "reasonLabel": "कारण",
+    "reasonPlaceholder": "जैसे: प्रदाता नहीं आया, या काम अधूरा",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "विस्तार से समझाएँ",
+    "descriptionHint": "यदि संभव हो, चैट में फ़ोटो या ऑडियो जोड़ें",
+    "submit": "विवाद खोलें",
+    "opened": "विवाद खुल गया। हमारी टीम जल्द संपर्क करेगी।"
+  },
+  "orders": {
+    "title": "मेरे आदेश",
+    "newOrderCta": "नया आदेश",
+    "currency": "SAR",
+    "liveTracking": "लाइव ट्रैकिंग",
+    "chatTitle": "बातचीत",
+    "summary": "आदेश सारांश",
+    "orderCode": "आदेश #",
+    "provider": "प्रदाता",
+    "estimated": "अनुमानित",
+    "total": "कुल",
+    "actions": "क्रियाएँ",
+    "contactProvider": "प्रदाता से संपर्क",
+    "openDispute": "विवाद खोलें",
+    "status": {
+      "draft": "ड्राफ़्ट", "pending": "लंबित", "accepted": "स्वीकृत", "rejected": "अस्वीकृत",
+      "en_route": "रास्ते में", "in_progress": "जारी", "completed": "पूर्ण",
+      "cancelled": "रद्द", "disputed": "विवाद"
+    },
+    "new": {
+      "title": "नया सेवा अनुरोध",
+      "subtitle": "चार त्वरित चरण",
+      "steps": { "1": "श्रेणी", "2": "स्थान", "3": "समय", "4": "समीक्षा" },
+      "pickCategory": "श्रेणी चुनें",
+      "pickLocation": "स्थान सेट करें",
+      "pickWhen": "समय चुनें",
+      "review": "समीक्षा और पुष्टि",
+      "addressLabel": "पता", "addressPlaceholder": "मोहल्ला, सड़क, भवन",
+      "cityLabel": "शहर", "cityPlaceholder": "शहर चुनें",
+      "pinLabel": "मानचित्र पर पिन", "pinSelected": "स्थान चयनित",
+      "scheduledAtLabel": "तारीख व समय",
+      "notesLabel": "प्रदाता के लिए नोट्स", "notesHint": "वैकल्पिक",
+      "when": {
+        "now": { "title": "अभी", "body": "स्वीकृति के मिनटों के भीतर" },
+        "scheduled": { "title": "अनुसूचित", "body": "तारीख व समय चुनें" }
+      },
+      "submit": "आदेश की पुष्टि",
+      "submittedTitle": "आपका आदेश बन गया",
+      "submittedBody": "यह जल्दी मेरे आदेश में दिखाई देगा।"
+    }
+  },
+  "chatDemo": {
+    "title": "चैट प्रीव्यू",
+    "subtitle": "ऑर्डर बातचीत का दृश्य मॉडल: टेक्स्ट, स्थान, आवाज़, और सिस्टम संदेश। रीयलटाइम Supabase से चरण 7 में जुड़ता है।"
+  },
+  "mapDemo": {
+    "title": "मानचित्र डेमो",
+    "subtitle": "स्थान चयनकर्ता का तकनीकी पूर्वावलोकन — बाद में आदेश बनाने और प्रदाता ट्रैकिंग में उपयोग होगा।",
+    "pickerTitle": "एक स्थान चुनें",
+    "pickerHint": "पिन ले जाने के लिए मानचित्र पर क्लिक करें। यदि Google Maps कुंजी सेट नहीं है, तो दृश्य प्लेसहोल्डर दिखता है।"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "signOut": "साइन आउट",
+    "accountTitle": "खाता",
+    "rolesTitle": "भूमिकाएँ",
+    "email": "ईमेल",
+    "userId": "उपयोगकर्ता आईडी",
+    "memberSince": "सदस्य बने",
+    "noRoles": "अभी कोई भूमिका असाइन नहीं।",
+    "roles": {
+      "super_admin": "सुपर एडमिन",
+      "section_admin": "सेक्शन एडमिन",
+      "provider": "प्रदाता",
+      "requester": "अनुरोधकर्ता"
+    }
+  }
+}

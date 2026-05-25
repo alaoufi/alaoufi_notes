@@ -1,0 +1,333 @@
+{
+  "brand": {
+    "name": "Syanah",
+    "tagline": "Saudi Arabia's top maintenance providers, in one app"
+  },
+  "nav": {
+    "home": "Home",
+    "services": "Services",
+    "providers": "Providers",
+    "howItWorks": "How it works",
+    "about": "About",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "themes": {
+    "soft-blue": "Soft Blue",
+    "pink": "Pink"
+  },
+  "home": {
+    "heroTitle": "Trusted maintenance, in minutes",
+    "heroSubtitle": "Book a verified technician for your home, car, or business in any Saudi city. Live tracking, transparent pricing, service guarantee.",
+    "ctaPrimary": "Book a service",
+    "ctaSecondary": "Become a provider",
+    "statsOrders": "completed orders",
+    "statsProviders": "verified providers",
+    "statsCities": "cities",
+    "statsRating": "average rating"
+  },
+  "categories": {
+    "title": "Browse by category",
+    "subtitle": "We cover everything your home or business needs",
+    "hvac": "HVAC",
+    "plumbing": "Plumbing",
+    "electrical": "Electrical",
+    "appliances": "Appliances",
+    "home": "General maintenance",
+    "vehicle": "Vehicle service",
+    "cleaning": "Cleaning",
+    "pest": "Pest control"
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "step1Title": "Pick a service",
+    "step1Body": "Browse categories or search for the service you need.",
+    "step2Title": "Choose a provider",
+    "step2Body": "See ratings, experience, and prices before you book.",
+    "step3Title": "Track and rate",
+    "step3Body": "Track your technician live and rate them when done."
+  },
+  "providersCta": {
+    "title": "Are you a service provider?",
+    "body": "Join our network and get real bookings daily. Register in minutes, verify your identity, and start working.",
+    "cta": "Register as a provider"
+  },
+  "footer": {
+    "tagline": "Syanah Platform — Kingdom of Saudi Arabia",
+    "rights": "All rights reserved",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "next": "Next",
+    "back": "Back",
+    "search": "Search",
+    "comingSoon": "Coming soon"
+  },
+  "auth": {
+    "roles": {
+      "requester": "I need a service",
+      "provider": "I provide services"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Mobile",
+      "password": "Password"
+    },
+    "placeholders": {
+      "fullName": "Ahmed Al-Malki"
+    },
+    "hints": {
+      "passwordPolicy": "8+ characters with uppercase, lowercase, and a number."
+    },
+    "submit": {
+      "signUp": "Create account",
+      "signIn": "Sign in"
+    },
+    "signInPrompt": "Already have an account?",
+    "signUpPrompt": "Don't have an account?",
+    "errors": {
+      "invalidInput": "Check the entered data",
+      "fullNameTooShort": "Name is too short",
+      "emailInvalid": "Invalid email",
+      "phoneInvalid": "Invalid mobile",
+      "passwordTooShort": "Password is too short",
+      "passwordWeak": "Password is too weak",
+      "passwordRequired": "Password is required",
+      "userExists": "This email is already registered",
+      "invalidCredentials": "Invalid credentials",
+      "unknown": "An unexpected error occurred"
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "body": "You don't have permission to view this page.",
+      "cta": "Go home"
+    }
+  },
+  "services": {
+    "title": "Services",
+    "subtitle": "Pick a category to browse services and providers",
+    "categorySubtitle": "Choose a city; rate providers after each job",
+    "filters": {
+      "city": "City",
+      "rating": "Rating",
+      "starsAndUp": "{stars} stars and up",
+      "fullListSoon": "Full list coming soon"
+    },
+    "noProvidersYet": {
+      "title": "We're matching you with top providers in this category",
+      "body": "Providers are being registered and verified. Sign up to be notified when one is available near you.",
+      "cta": "Be the first provider here"
+    }
+  },
+  "providersList": {
+    "title": "Providers",
+    "subtitle": "Search, filter by category or city, and rate after each job",
+    "searchPlaceholder": "Search providers or services",
+    "anyCategory": "All categories",
+    "anyCity": "All cities",
+    "emptyTitle": "No results yet",
+    "emptyBody": "Try selecting a category or city, or browse the most popular categories:"
+  },
+  "admin": {
+    "nav": {
+      "title": "Admin",
+      "overview": "Overview",
+      "categories": "Categories",
+      "users": "Users",
+      "disputes": "Disputes",
+      "translations": "Translations",
+      "settings": "Settings"
+    },
+    "overview": {
+      "title": "Admin overview",
+      "subtitle": "Platform activity at a glance",
+      "kpi": {
+        "ordersToday": "Orders today",
+        "activeProviders": "Active providers",
+        "openDisputes": "Open disputes",
+        "monthlyRevenue": "Monthly revenue"
+      },
+      "recentActivity": "Recent activity",
+      "recentActivityBody": "Live event stream will appear here once Supabase is wired."
+    },
+    "categories": {
+      "title": "Manage categories",
+      "subtitle": "Create, edit, enable/disable categories and subcategories",
+      "addCta": "Add category",
+      "edit": "Edit"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Search, enable, or disable any user",
+      "searchPlaceholder": "Search by name, phone, or email",
+      "role": { "provider": "Provider", "requester": "Requester", "super_admin": "Super admin", "section_admin": "Section admin" },
+      "verified": "Verified",
+      "unverified": "Unverified"
+    },
+    "disputes": {
+      "title": "Dispute center",
+      "subtitle": "Review and resolve open disputes",
+      "openedBy": "Opened by",
+      "review": "Review",
+      "status": {
+        "open": "Open",
+        "under_review": "Under review",
+        "resolved_requester": "Resolved · requester",
+        "resolved_provider": "Resolved · provider",
+        "dismissed": "Dismissed"
+      }
+    },
+    "translations": {
+      "title": "Manage translations",
+      "subtitle": "Edit any user-facing string without redeploying",
+      "editTitle": "UI strings",
+      "searchLabel": "Search keys",
+      "searchPlaceholder": "e.g. home.heroTitle",
+      "keyHeader": "Key",
+      "placeholder": "Translation",
+      "save": "Save changes"
+    },
+    "settings": {
+      "title": "Platform settings",
+      "subtitle": "Control languages, themes, windows, and API keys",
+      "appTitle": "App settings",
+      "defaultLocale": "Default locale",
+      "defaultTheme": "Default theme",
+      "cancelWindow": "Cancel window (minutes)",
+      "cancelWindowHint": "Requester can cancel free within this window",
+      "disputesWindow": "Dispute window after completion (hours)",
+      "disputesWindowHint": "After this, the dispute right closes",
+      "apiKeysTitle": "API keys",
+      "apiKeysIntro": "Stored encrypted server-side and never exposed to the browser.",
+      "apiKeysHint": "Rotation every 60 days is recommended.",
+      "save": "Save"
+    }
+  },
+  "pricing": {
+    "title": "Provider packages",
+    "subtitle": "Pick the tier that fits your business. Start free, upgrade when you grow.",
+    "popular": "Most popular",
+    "perMonth": "SAR/month",
+    "commission": "{pct}% commission on completed orders",
+    "cta": "Start as a provider",
+    "tiers": {
+      "free": { "name": "Free", "tagline": "Start with no cost",
+        "features": { "0": "3 jobs/day", "1": "Standard ranking" } },
+      "trusted": { "name": "Trusted", "tagline": "Verified badge + better ranking",
+        "features": { "0": "Unlimited jobs", "1": "Verified badge", "2": "Priority support" } },
+      "featured": { "name": "Featured", "tagline": "Featured in results + ad credits",
+        "features": {
+          "0": "Unlimited jobs", "1": "Verified badge", "2": "Featured placement",
+          "3": "Ad credits", "4": "Dedicated CSM"
+        } }
+    }
+  },
+  "ratings": {
+    "title": "Rate your experience",
+    "breadcrumb": "Rate",
+    "scorePrompt": "How many stars do you give the provider?",
+    "commentLabel": "Your comment (optional)",
+    "commentPlaceholder": "Describe your experience to help others",
+    "submit": "Submit rating",
+    "thanks": "Thanks for your rating!"
+  },
+  "disputes": {
+    "title": "Open a dispute",
+    "breadcrumb": "Dispute",
+    "intro": "Open a dispute if you faced an issue. Ratings will be frozen and admins will review chat evidence.",
+    "reasonLabel": "Reason",
+    "reasonPlaceholder": "e.g. Provider didn't show up; work incomplete",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Explain what happened with details that help the review team",
+    "descriptionHint": "Attach photos or audio in the chat before opening, if possible",
+    "submit": "Open dispute",
+    "opened": "Dispute opened. Our team will reach out shortly."
+  },
+  "orders": {
+    "title": "My orders",
+    "newOrderCta": "New order",
+    "currency": "SAR",
+    "liveTracking": "Live tracking",
+    "chatTitle": "Conversation",
+    "summary": "Order summary",
+    "orderCode": "Order #",
+    "provider": "Provider",
+    "estimated": "Estimated",
+    "total": "Total",
+    "actions": "Actions",
+    "contactProvider": "Call provider",
+    "openDispute": "Open dispute",
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "en_route": "En route",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "disputed": "Disputed"
+    },
+    "new": {
+      "title": "New service request",
+      "subtitle": "Four quick steps to complete your order",
+      "steps": { "1": "Category", "2": "Location", "3": "When", "4": "Review" },
+      "pickCategory": "Pick a category",
+      "pickLocation": "Set the location",
+      "pickWhen": "Pick a time",
+      "review": "Review & confirm",
+      "addressLabel": "Address",
+      "addressPlaceholder": "District, street, building",
+      "cityLabel": "City",
+      "cityPlaceholder": "Choose a city",
+      "pinLabel": "Pin on the map",
+      "pinSelected": "Location selected",
+      "scheduledAtLabel": "Date & time",
+      "notesLabel": "Notes for provider",
+      "notesHint": "Optional — anything that helps the provider",
+      "when": {
+        "now": { "title": "Now", "body": "Within minutes of acceptance" },
+        "scheduled": { "title": "Scheduled", "body": "Pick a date and time" }
+      },
+      "submit": "Confirm order",
+      "submittedTitle": "Your order was created",
+      "submittedBody": "It will appear in My Orders shortly."
+    }
+  },
+  "chatDemo": {
+    "title": "Chat preview",
+    "subtitle": "Visual prototype of an order conversation: text, location, voice, and system messages. Realtime is wired to Supabase in Phase 7."
+  },
+  "mapDemo": {
+    "title": "Maps demo",
+    "subtitle": "Technical preview of the location picker — used later in order creation and provider tracking.",
+    "pickerTitle": "Pick a location",
+    "pickerHint": "Click on the map to move the pin. If Google Maps key isn't set, a visual placeholder is shown."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "signOut": "Sign out",
+    "accountTitle": "Account",
+    "rolesTitle": "Roles",
+    "email": "Email",
+    "userId": "User ID",
+    "memberSince": "Member since",
+    "noRoles": "No roles assigned yet.",
+    "roles": {
+      "super_admin": "Super admin",
+      "section_admin": "Section admin",
+      "provider": "Provider",
+      "requester": "Requester"
+    }
+  }
+}
