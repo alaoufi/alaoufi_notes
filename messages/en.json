@@ -560,8 +560,15 @@
     "building": "Building #",
     "buildingPlaceholder": "e.g. 142",
     "mapTitle": "Pin your location on the map",
-    "useMyLocation": "Use my location",
+    "useMyLocation": "Detect my location",
+    "locating": "Locating…",
     "openMap": "Open map to pin location",
-    "pinCoords": "Coords"
+    "pinCoords": "Coords",
+    "autoFillTitle": "Detect my address",
+    "autoFillBody": "Tap to use your current location and we'll auto-fill region, governorate, city and district so you can review before saving.",
+    "autoFillOk": "Detected ✓ — please review the fields below.",
+    "autoFillPartial": "Detected partially. Please complete the missing fields manually.",
+    "autoFillFail": "Couldn't detect your location. Allow location access and retry, or pick manually.",
+    "noMapsKey": "Auto-fill needs the Google Maps API key to be configured."
   }
 }

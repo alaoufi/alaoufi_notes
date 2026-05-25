@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Menu, X, ChevronRight, Globe, Palette } from "lucide-react";
@@ -21,6 +22,12 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard client-mount detection so the portal target is available.
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -67,7 +74,7 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
         <Menu className="h-5 w-5" />
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <>
           {/* Scrim — separate fixed element so nothing renders on top of it */}
           <div
@@ -182,7 +189,8 @@ export function MobileMenu({ locale, theme }: { locale: Locale; theme: Theme }) 
               </Link>
             </div>
           </aside>
-        </>
+        </>,
+        document.body,
       )}
     </>
   );
