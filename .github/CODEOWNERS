@@ -1,0 +1,11 @@
+# Default owner — receives review requests for everything not matched below.
+* @saud9495
+
+# Database migrations need extra care.
+/supabase/migrations/  @saud9495
+/supabase/setup.sql    @saud9495
+
+# Auth and security-sensitive code.
+/lib/auth/      @saud9495
+/lib/security/  @saud9495
+/features/auth/ @saud9495
