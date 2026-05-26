@@ -422,7 +422,8 @@
         "noBackend": "يتطلّب ربط Supabase",
         "saveFailed": "فشل الحفظ في قاعدة البيانات",
         "noTranslateKey": "أضف GOOGLE_TRANSLATE_API_KEY في Vercel لتفعيل الترجمة الآلية",
-        "translateFailed": "فشل الاتصال بخدمة الترجمة"
+        "translateFailed": "فشل الاتصال بخدمة الترجمة",
+        "rateLimited": "تجاوزت الحد المسموح. حاول بعد دقيقة."
       }
     },
     "settings": {

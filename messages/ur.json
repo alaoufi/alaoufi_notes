@@ -349,7 +349,8 @@
         "noBackend": "Supabase کنکشن درکار",
         "saveFailed": "ڈیٹا بیس میں محفوظ ناکام",
         "noTranslateKey": "Vercel میں GOOGLE_TRANSLATE_API_KEY سیٹ کریں",
-        "translateFailed": "ترجمہ سروس ناکام"
+        "translateFailed": "ترجمہ سروس ناکام",
+        "rateLimited": "بہت زیادہ درخواستیں۔ ایک منٹ بعد کوشش کریں۔"
       }
     },
     "settings": { "title": "پلیٹ فارم ترتیبات", "subtitle": "زبانیں، تھیمز، نوافذ، اور کلیدیں",

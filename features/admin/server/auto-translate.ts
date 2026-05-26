@@ -3,6 +3,8 @@
 import { requireAdminSection } from "@/lib/auth/sections";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { locales, type Locale } from "@/i18n/locales";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+import { getCurrentUser } from "@/lib/auth/guard";
 
 const TARGET_LOCALES: Locale[] = ["en", "ur", "hi", "bn"];
 
@@ -39,6 +41,18 @@ export async function autoTranslateAction(
     return { ok: false, errorKey: "admin.translations.errors.noBackend" };
   }
   await requireAdminSection("translations");
+
+  // Cap to 20 translate batches / minute per admin so a runaway loop doesn't
+  // burn the Google Translation quota.
+  const user = await getCurrentUser();
+  const rate = checkRateLimit(user?.id ?? "anon", {
+    namespace: "auto-translate",
+    max: 20,
+    windowMs: 60_000,
+  });
+  if (!rate.ok) {
+    return { ok: false, errorKey: "admin.translations.errors.rateLimited" };
+  }
 
   const apiKey = getKey();
   if (!apiKey) {

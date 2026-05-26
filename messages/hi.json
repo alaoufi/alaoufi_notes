@@ -344,7 +344,8 @@
         "noBackend": "Supabase कनेक्शन आवश्यक",
         "saveFailed": "डेटाबेस सहेजना विफल",
         "noTranslateKey": "Vercel में GOOGLE_TRANSLATE_API_KEY सेट करें",
-        "translateFailed": "अनुवाद सेवा पहुँच नहीं"
+        "translateFailed": "अनुवाद सेवा पहुँच नहीं",
+        "rateLimited": "अनुरोध सीमा पार। एक मिनट बाद पुनः प्रयास।"
       }
     },
     "settings": { "title": "प्लेटफ़ॉर्म सेटिंग्स", "subtitle": "भाषाएँ, थीम, विंडोज़, की",

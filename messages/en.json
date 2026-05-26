@@ -422,7 +422,8 @@
         "noBackend": "Supabase connection required",
         "saveFailed": "Database write failed",
         "noTranslateKey": "Set GOOGLE_TRANSLATE_API_KEY in Vercel to enable auto-translate",
-        "translateFailed": "Translation service unreachable"
+        "translateFailed": "Translation service unreachable",
+        "rateLimited": "Too many requests. Try again in a minute."
       }
     },
     "settings": {
