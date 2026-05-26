@@ -1,4 +1,26 @@
 {
+  "mobileNav": {
+    "ariaLabel": "Primary navigation",
+    "home": "Home",
+    "services": "Services",
+    "orders": "Orders",
+    "chat": "Chat",
+    "profile": "Profile"
+  },
+  "pwa": {
+    "installPrompt": {
+      "title": "Install Syanah on your phone",
+      "body": "Quick access, opens without a browser, lighter on memory.",
+      "install": "Install",
+      "later": "Later",
+      "dismiss": "Dismiss"
+    }
+  },
+  "offline": {
+    "title": "You're offline",
+    "body": "We can't reach Syanah right now. Check your connection and try again.",
+    "retry": "Retry"
+  },
   "brand": {
     "name": "Syanah",
     "tagline": "Saudi Arabia's top maintenance providers, in one app"

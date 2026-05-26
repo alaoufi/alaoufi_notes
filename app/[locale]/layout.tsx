@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import { locales, getDirection, type Locale } from "@/i18n/locales";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { PwaRegister } from "@/components/pwa-register";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -36,8 +38,12 @@ export default async function LocaleLayout({
       <body className="min-h-dvh flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="Asia/Riyadh">
           <SiteHeader locale={locale} theme={theme} />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1 pb-[calc(env(safe-area-inset-bottom)+4rem)] md:pb-0">
+            {children}
+          </main>
           <SiteFooter />
+          <MobileBottomNav />
+          <PwaRegister />
         </NextIntlClientProvider>
       </body>
     </html>
