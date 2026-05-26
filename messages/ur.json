@@ -297,7 +297,14 @@
       "kpi": { "ordersToday": "آج کے آرڈر", "activeProviders": "فعال فراہم کنندگان",
         "openDisputes": "کھلے تنازعات", "monthlyRevenue": "ماہانہ آمدنی" },
       "recentActivity": "حالیہ سرگرمی",
-      "recentActivityBody": "Supabase جڑتے ہی یہاں براہِ راست واقعات ظاہر ہوں گے۔"
+      "recentActivityBody": "Supabase جڑتے ہی یہاں براہِ راست واقعات ظاہر ہوں گے۔",
+      "demoNote": "دکھائے گئے اعداد وضاحتی ہیں۔ ڈیٹابیس جڑنے پر اصل اعداد سے تبدیل ہو جائیں گے۔",
+      "topProviders": "بہترین فراہم کنندگان",
+      "recentOrders": "حالیہ آرڈرز",
+      "charts": {
+        "ordersWeek": "اس ہفتے کے آرڈرز",
+        "topCategories": "سب سے زیادہ بک شدہ زمرے"
+      }
     },
     "categories": { "title": "زمروں کی انتظامیہ", "subtitle": "زمرے بنائیں، ترمیم کریں، فعال/غیر فعال کریں",
       "addCta": "زمرہ شامل کریں", "edit": "ترمیم" },

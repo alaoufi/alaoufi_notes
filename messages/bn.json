@@ -289,7 +289,14 @@
       "kpi": { "ordersToday": "আজকের অর্ডার", "activeProviders": "সক্রিয় সেবাদাতা",
         "openDisputes": "খোলা বিবাদ", "monthlyRevenue": "মাসিক আয়" },
       "recentActivity": "সাম্প্রতিক কার্যকলাপ",
-      "recentActivityBody": "Supabase যুক্ত হলে এখানে লাইভ ইভেন্ট দেখাবে।"
+      "recentActivityBody": "Supabase যুক্ত হলে এখানে লাইভ ইভেন্ট দেখাবে।",
+      "demoNote": "দেখানো সংখ্যাগুলো নমুনা। ডাটাবেস যুক্ত হলে প্রকৃত সংখ্যায় বদলে যাবে।",
+      "topProviders": "সেরা সেবাদাতারা",
+      "recentOrders": "সাম্প্রতিক অর্ডারসমূহ",
+      "charts": {
+        "ordersWeek": "এই সপ্তাহের অর্ডার",
+        "topCategories": "সবচেয়ে বেশি বুক হওয়া শ্রেণীসমূহ"
+      }
     },
     "categories": { "title": "শ্রেণী ব্যবস্থাপনা", "subtitle": "তৈরি, সম্পাদনা, সক্রিয়/নিষ্ক্রিয়",
       "addCta": "শ্রেণী যোগ", "edit": "সম্পাদনা" },

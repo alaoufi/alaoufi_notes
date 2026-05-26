@@ -335,7 +335,14 @@
         "monthlyRevenue": "Monthly revenue"
       },
       "recentActivity": "Recent activity",
-      "recentActivityBody": "Live event stream will appear here once Supabase is wired."
+      "recentActivityBody": "Live event stream will appear here once Supabase is wired.",
+      "demoNote": "Numbers shown are illustrative. They'll be replaced with live aggregates once the database is connected.",
+      "topProviders": "Top providers",
+      "recentOrders": "Recent orders",
+      "charts": {
+        "ordersWeek": "Orders this week",
+        "topCategories": "Most-booked categories"
+      }
     },
     "categories": {
       "title": "Manage categories",

@@ -335,7 +335,14 @@
         "monthlyRevenue": "دخل الشهر"
       },
       "recentActivity": "آخر النشاط",
-      "recentActivityBody": "سيظهر هنا تدفّق الأحداث الحيّ بعد ربط Supabase."
+      "recentActivityBody": "سيظهر هنا تدفّق الأحداث الحيّ بعد ربط Supabase.",
+      "demoNote": "البيانات الظاهرة توضيحية. ستُستبدل بأرقام حقيقية فور ربط قاعدة البيانات.",
+      "topProviders": "أفضل المزوّدين",
+      "recentOrders": "آخر الطلبات",
+      "charts": {
+        "ordersWeek": "الطلبات خلال الأسبوع",
+        "topCategories": "أكثر الفئات طلباً"
+      }
     },
     "categories": {
       "title": "إدارة الفئات",

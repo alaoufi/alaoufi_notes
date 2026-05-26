@@ -292,7 +292,14 @@
       "kpi": { "ordersToday": "आज के ऑर्डर", "activeProviders": "सक्रिय प्रदाता",
         "openDisputes": "खुले विवाद", "monthlyRevenue": "मासिक राजस्व" },
       "recentActivity": "हाल की गतिविधि",
-      "recentActivityBody": "Supabase जुड़ने पर यहाँ लाइव ईवेंट दिखेंगे।"
+      "recentActivityBody": "Supabase जुड़ने पर यहाँ लाइव ईवेंट दिखेंगे।",
+      "demoNote": "दिखाए गए आँकड़े नमूना हैं। डेटाबेस जुड़ने पर वास्तविक आँकड़ों से बदले जाएँगे।",
+      "topProviders": "शीर्ष प्रदाता",
+      "recentOrders": "हाल के ऑर्डर",
+      "charts": {
+        "ordersWeek": "इस सप्ताह के ऑर्डर",
+        "topCategories": "सर्वाधिक बुक की गई श्रेणियाँ"
+      }
     },
     "categories": { "title": "श्रेणियाँ प्रबंधित करें", "subtitle": "बनाएँ, संपादित करें, सक्षम/अक्षम",
       "addCta": "श्रेणी जोड़ें", "edit": "संपादित" },
