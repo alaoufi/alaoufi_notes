@@ -25,6 +25,8 @@ export function SignUpForm({
 }) {
   const t = useTranslations("auth");
   const common = useTranslations("common");
+  // Server errors come back as full dotted paths; resolve them at the root.
+  const tRoot = useTranslations();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [step, setStep] = useState<1 | 2>(1);
@@ -295,7 +297,7 @@ export function SignUpForm({
 
           {formError && (
             <p role="alert" className="text-sm text-danger">
-              {t(formError)}
+              {tRoot.has(formError) ? tRoot(formError) : formError}
             </p>
           )}
 

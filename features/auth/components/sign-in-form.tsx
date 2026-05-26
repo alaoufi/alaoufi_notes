@@ -9,6 +9,9 @@ import { User, Lock } from "lucide-react";
 
 export function SignInForm({ returnTo }: { returnTo?: string }) {
   const t = useTranslations("auth");
+  // Server errors come back as full dotted paths (e.g. "auth.errors.noBackend").
+  // We need a root-scoped translator so the namespace isn't doubled up.
+  const tRoot = useTranslations();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [handle, setHandle] = useState("");
@@ -60,7 +63,7 @@ export function SignInForm({ returnTo }: { returnTo?: string }) {
 
       {formError && (
         <p role="alert" className="text-sm text-danger">
-          {t(formError)}
+          {tRoot.has(formError) ? tRoot(formError) : formError}
         </p>
       )}
 
