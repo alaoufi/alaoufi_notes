@@ -690,7 +690,28 @@
     "contactProvider": "Call provider",
     "trust": "Trust",
     "identityVerified": "Identity verified",
-    "guaranteed": "Service guaranteed"
+    "guaranteed": "Service guaranteed",
+    "stats": {
+      "title": "Provider performance",
+      "completionRate": "Completion rate",
+      "responseTime": "Avg. response",
+      "rebookRate": "Repeat customers",
+      "yearsActive": "Years experience",
+      "responseUnit": "min",
+      "yearsUnit": "yrs"
+    },
+    "portfolio": {
+      "title": "Portfolio",
+      "empty": "This provider hasn't added work samples yet"
+    },
+    "ratings": {
+      "title": "Detailed ratings",
+      "based": "Based on {count} reviews",
+      "overall": "Overall",
+      "punctuality": "Punctuality",
+      "quality": "Quality of work",
+      "communication": "Communication"
+    }
   },
   "customerDetail": {
     "notFound": "Customer not found",

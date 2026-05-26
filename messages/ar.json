@@ -713,7 +713,28 @@
     "contactProvider": "اتصال بالمزوّد",
     "trust": "ضمانات",
     "identityVerified": "هوية متحقّق منها",
-    "guaranteed": "خدمة مضمونة"
+    "guaranteed": "خدمة مضمونة",
+    "stats": {
+      "title": "أداء المزوّد",
+      "completionRate": "نسبة الإنجاز",
+      "responseTime": "متوسّط الردّ",
+      "rebookRate": "إعادة التعاقد",
+      "yearsActive": "سنوات الخبرة",
+      "responseUnit": "د",
+      "yearsUnit": "سنة"
+    },
+    "portfolio": {
+      "title": "معرض الأعمال",
+      "empty": "لم يضف هذا المزوّد أعمالاً بعد"
+    },
+    "ratings": {
+      "title": "التقييمات التفصيلية",
+      "based": "بناءً على {count} تقييم",
+      "overall": "التقييم العام",
+      "punctuality": "الالتزام بالموعد",
+      "quality": "جودة العمل",
+      "communication": "التواصل"
+    }
   },
   "customerDetail": {
     "notFound": "هذا العميل غير موجود",

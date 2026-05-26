@@ -576,7 +576,28 @@
     "contactProvider": "رابطہ کریں",
     "trust": "ضمانتیں",
     "identityVerified": "شناخت تصدیق شدہ",
-    "guaranteed": "خدمت کی ضمانت"
+    "guaranteed": "خدمت کی ضمانت",
+    "stats": {
+      "title": "فراہم کنندہ کی کارکردگی",
+      "completionRate": "تکمیل کی شرح",
+      "responseTime": "اوسط جواب",
+      "rebookRate": "دوبارہ بکنگ",
+      "yearsActive": "سال تجربہ",
+      "responseUnit": "منٹ",
+      "yearsUnit": "سال"
+    },
+    "portfolio": {
+      "title": "کام کا نمونہ",
+      "empty": "ابھی نمونہ شامل نہیں کیا گیا"
+    },
+    "ratings": {
+      "title": "تفصیلی درجہ بندی",
+      "based": "{count} جائزوں کی بنیاد پر",
+      "overall": "مجموعی",
+      "punctuality": "وقت کی پابندی",
+      "quality": "کام کا معیار",
+      "communication": "رابطہ"
+    }
   },
   "customerDetail": {
     "notFound": "گاہک نہیں ملا",

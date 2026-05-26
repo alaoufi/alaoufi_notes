@@ -571,7 +571,28 @@
     "contactProvider": "संपर्क करें",
     "trust": "गारंटी",
     "identityVerified": "पहचान सत्यापित",
-    "guaranteed": "सेवा गारंटी"
+    "guaranteed": "सेवा गारंटी",
+    "stats": {
+      "title": "प्रदाता प्रदर्शन",
+      "completionRate": "पूर्णता दर",
+      "responseTime": "औसत प्रतिक्रिया",
+      "rebookRate": "पुनः बुकिंग",
+      "yearsActive": "वर्षों का अनुभव",
+      "responseUnit": "मिनट",
+      "yearsUnit": "वर्ष"
+    },
+    "portfolio": {
+      "title": "कार्य संग्रह",
+      "empty": "इस प्रदाता ने अभी तक कार्य नमूने नहीं जोड़े हैं"
+    },
+    "ratings": {
+      "title": "विस्तृत रेटिंग",
+      "based": "{count} समीक्षाओं पर आधारित",
+      "overall": "कुल",
+      "punctuality": "समय पालन",
+      "quality": "कार्य गुणवत्ता",
+      "communication": "संचार"
+    }
   },
   "customerDetail": {
     "notFound": "ग्राहक नहीं मिला",

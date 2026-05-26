@@ -568,7 +568,28 @@
     "contactProvider": "যোগাযোগ",
     "trust": "গ্যারান্টি",
     "identityVerified": "পরিচয় যাচাইকৃত",
-    "guaranteed": "সেবার গ্যারান্টি"
+    "guaranteed": "সেবার গ্যারান্টি",
+    "stats": {
+      "title": "সেবাদাতার পারফরম্যান্স",
+      "completionRate": "সম্পন্নের হার",
+      "responseTime": "গড় সাড়া",
+      "rebookRate": "পুনরায় বুকিং",
+      "yearsActive": "বছরের অভিজ্ঞতা",
+      "responseUnit": "মি",
+      "yearsUnit": "বছর"
+    },
+    "portfolio": {
+      "title": "কাজের নমুনা",
+      "empty": "এখনো কোনো কাজের নমুনা যুক্ত করা হয়নি"
+    },
+    "ratings": {
+      "title": "বিস্তারিত রেটিং",
+      "based": "{count} পর্যালোচনার ভিত্তিতে",
+      "overall": "মোট",
+      "punctuality": "সময়ানুবর্তিতা",
+      "quality": "কাজের মান",
+      "communication": "যোগাযোগ"
+    }
   },
   "customerDetail": {
     "notFound": "গ্রাহক পাওয়া যায়নি",
