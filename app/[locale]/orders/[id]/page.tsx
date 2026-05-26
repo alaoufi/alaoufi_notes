@@ -2,6 +2,7 @@ import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Container, Card, CardHeader, CardTitle, CardBody, Button } from "@syanah/ui";
 import { Link } from "@/i18n/navigation";
 import { OrderStatusBadge } from "@/features/orders/components/order-status-badge";
+import { OrderTimeline } from "@/features/orders/components/order-timeline";
 import { TrackingMap } from "@/components/map/tracking-map";
 import { ChatThread } from "@/features/chat/components/chat-thread";
 import { type Locale } from "@/i18n/locales";
@@ -34,6 +35,16 @@ export default async function OrderDetailPage({
   const t = await getTranslations("orders");
 
   const order = SAMPLE_ORDER;
+  // Server components are re-executed per request, so Date.now() is fine here;
+  // the purity rule is geared at client components.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const timelineEvents = [
+    { key: "pending"     as const, at: new Date(now - 1000 * 60 * 90).toISOString() },
+    { key: "accepted"    as const, at: new Date(now - 1000 * 60 * 60).toISOString() },
+    { key: "en_route"    as const, at: new Date(now - 1000 * 60 * 30).toISOString() },
+    { key: "in_progress" as const, at: new Date(now - 1000 * 60 * 10).toISOString() },
+  ];
 
   return (
     <Container className="py-10">
@@ -57,6 +68,26 @@ export default async function OrderDetailPage({
 
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div className="space-y-6">
+          <Card>
+            <CardHeader><CardTitle>{t("timelineTitle")}</CardTitle></CardHeader>
+            <CardBody>
+              <OrderTimeline
+                status={order.status}
+                events={timelineEvents}
+                labels={{
+                  pending:    t("timeline.pending"),
+                  accepted:   t("timeline.accepted"),
+                  enRoute:    t("timeline.enRoute"),
+                  inProgress: t("timeline.inProgress"),
+                  completed:  t("timeline.completed"),
+                  cancelled:  t("timeline.cancelled"),
+                  rejected:   t("timeline.rejected"),
+                  disputed:   t("timeline.disputed"),
+                }}
+              />
+            </CardBody>
+          </Card>
+
           <Card>
             <CardHeader><CardTitle>{t("liveTracking")}</CardTitle></CardHeader>
             <CardBody>

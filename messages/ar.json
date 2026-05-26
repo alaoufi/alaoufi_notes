@@ -3,6 +3,13 @@
     "name": "صيانة",
     "tagline": "أفضل مزوّدي خدمات الصيانة في المملكة، في تطبيق واحد"
   },
+  "notifications": {
+    "ariaLabel": "الإشعارات",
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات بعد",
+    "markAllRead": "تعليم الكل كمقروء",
+    "unreadCount": "{count} غير مقروء"
+  },
   "mobileNav": {
     "ariaLabel": "التنقّل الرئيسي",
     "home": "الرئيسية",
@@ -484,6 +491,17 @@
     "newOrderCta": "طلب جديد",
     "currency": "ر.س",
     "liveTracking": "تتبّع مباشر",
+    "timelineTitle": "مسار الطلب",
+    "timeline": {
+      "pending": "بانتظار قبول المزوّد",
+      "accepted": "تمّ قبول الطلب",
+      "enRoute": "المزوّد في الطريق إليك",
+      "inProgress": "العمل قيد التنفيذ",
+      "completed": "الطلب مكتمل",
+      "cancelled": "تمّ إلغاء الطلب",
+      "rejected": "رفض المزوّد الطلب",
+      "disputed": "الطلب في نزاع — راجِع مركز الدعم"
+    },
     "chatTitle": "المحادثة",
     "summary": "ملخّص الطلب",
     "orderCode": "رقم الطلب",

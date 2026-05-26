@@ -7,6 +7,7 @@ import { Wrench } from "lucide-react";
 import { LanguageSwitcher } from "./language-switcher";
 import { ThemeSwitcher } from "./theme-switcher";
 import { MobileMenu } from "./mobile-menu";
+import { NotificationsBell } from "@/features/notifications/notifications-bell";
 import type { Locale } from "@/i18n/locales";
 
 export function SiteHeader({
@@ -50,6 +51,7 @@ export function SiteHeader({
 
         {/* desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
+          <NotificationsBell />
           <LanguageSwitcher currentLocale={locale} />
           <ThemeSwitcher currentTheme={theme} />
           <Link
@@ -67,10 +69,11 @@ export function SiteHeader({
         </div>
 
         {/* mobile actions */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-1 md:hidden">
+          <NotificationsBell />
           <Link
             href="/sign-up"
-            className="inline-flex h-10 items-center rounded-md bg-primary px-3 text-sm font-medium text-primary-contrast shadow-sm hover:bg-primary-hover"
+            className="inline-flex h-9 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-contrast shadow-sm hover:bg-primary-hover"
           >
             {t("signUp")}
           </Link>

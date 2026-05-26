@@ -1,4 +1,11 @@
 {
+  "notifications": {
+    "ariaLabel": "सूचनाएँ",
+    "title": "सूचनाएँ",
+    "empty": "अभी कोई सूचना नहीं",
+    "markAllRead": "सभी को पढ़ा हुआ चिह्नित करें",
+    "unreadCount": "{count} अपठित"
+  },
   "mobileNav": {
     "ariaLabel": "मुख्य नेविगेशन",
     "home": "होम",
@@ -383,6 +390,17 @@
     "newOrderCta": "नया आदेश",
     "currency": "SAR",
     "liveTracking": "लाइव ट्रैकिंग",
+    "timelineTitle": "ऑर्डर टाइमलाइन",
+    "timeline": {
+      "pending": "प्रदाता की स्वीकृति की प्रतीक्षा",
+      "accepted": "ऑर्डर स्वीकृत",
+      "enRoute": "प्रदाता रास्ते में है",
+      "inProgress": "कार्य प्रगति पर",
+      "completed": "ऑर्डर पूर्ण",
+      "cancelled": "ऑर्डर रद्द",
+      "rejected": "प्रदाता ने ऑर्डर अस्वीकार किया",
+      "disputed": "ऑर्डर विवाद में — सहायता देखें"
+    },
     "chatTitle": "बातचीत",
     "summary": "आदेश सारांश",
     "orderCode": "आदेश #",

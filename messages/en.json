@@ -1,4 +1,11 @@
 {
+  "notifications": {
+    "ariaLabel": "Notifications",
+    "title": "Notifications",
+    "empty": "No notifications yet",
+    "markAllRead": "Mark all read",
+    "unreadCount": "{count} unread"
+  },
   "mobileNav": {
     "ariaLabel": "Primary navigation",
     "home": "Home",
@@ -472,6 +479,17 @@
     "newOrderCta": "New order",
     "currency": "SAR",
     "liveTracking": "Live tracking",
+    "timelineTitle": "Order timeline",
+    "timeline": {
+      "pending": "Awaiting provider acceptance",
+      "accepted": "Order accepted",
+      "enRoute": "Provider is on the way",
+      "inProgress": "Work in progress",
+      "completed": "Order completed",
+      "cancelled": "Order cancelled",
+      "rejected": "Provider declined the order",
+      "disputed": "Order under dispute — see Support"
+    },
     "chatTitle": "Conversation",
     "summary": "Order summary",
     "orderCode": "Order #",

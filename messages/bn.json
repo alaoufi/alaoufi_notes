@@ -1,4 +1,11 @@
 {
+  "notifications": {
+    "ariaLabel": "বিজ্ঞপ্তি",
+    "title": "বিজ্ঞপ্তি",
+    "empty": "এখনো কোনো বিজ্ঞপ্তি নেই",
+    "markAllRead": "সব পঠিত হিসেবে চিহ্নিত করুন",
+    "unreadCount": "{count} অপঠিত"
+  },
   "mobileNav": {
     "ariaLabel": "প্রধান নেভিগেশন",
     "home": "হোম",
@@ -380,6 +387,17 @@
     "newOrderCta": "নতুন অর্ডার",
     "currency": "SAR",
     "liveTracking": "লাইভ ট্র্যাকিং",
+    "timelineTitle": "অর্ডারের পথচিত্র",
+    "timeline": {
+      "pending": "সেবাদাতার গ্রহণের অপেক্ষায়",
+      "accepted": "অর্ডার গৃহীত",
+      "enRoute": "সেবাদাতা পথে আছেন",
+      "inProgress": "কাজ চলছে",
+      "completed": "অর্ডার সম্পন্ন",
+      "cancelled": "অর্ডার বাতিল",
+      "rejected": "সেবাদাতা অর্ডার প্রত্যাখ্যান করেছেন",
+      "disputed": "অর্ডার বিতর্কাধীন — সহায়তা দেখুন"
+    },
     "chatTitle": "কথোপকথন",
     "summary": "অর্ডার সারসংক্ষেপ",
     "orderCode": "অর্ডার #",

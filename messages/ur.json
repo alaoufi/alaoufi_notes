@@ -1,4 +1,11 @@
 {
+  "notifications": {
+    "ariaLabel": "اطلاعات",
+    "title": "اطلاعات",
+    "empty": "ابھی کوئی اطلاع نہیں",
+    "markAllRead": "سب کو پڑھا ہوا نشان زد کریں",
+    "unreadCount": "{count} غیر پڑھے"
+  },
   "mobileNav": {
     "ariaLabel": "اہم نیویگیشن",
     "home": "ہوم",
@@ -388,6 +395,17 @@
     "newOrderCta": "نیا آرڈر",
     "currency": "ر.س",
     "liveTracking": "براہِ راست ٹریکنگ",
+    "timelineTitle": "آرڈر کا مرحلہ",
+    "timeline": {
+      "pending": "فراہم کنندہ کی قبولیت کا انتظار",
+      "accepted": "آرڈر قبول کر لیا گیا",
+      "enRoute": "فراہم کنندہ راستے میں ہے",
+      "inProgress": "کام جاری ہے",
+      "completed": "آرڈر مکمل",
+      "cancelled": "آرڈر منسوخ",
+      "rejected": "فراہم کنندہ نے آرڈر مسترد کر دیا",
+      "disputed": "آرڈر زیرِ تنازع — معاونت دیکھیں"
+    },
     "chatTitle": "گفتگو",
     "summary": "آرڈر کا خلاصہ",
     "orderCode": "آرڈر نمبر",
