@@ -1,6 +1,8 @@
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Card, CardHeader, CardTitle, CardBody, Input, Button } from "@syanah/ui";
 import { type Locale } from "@/i18n/locales";
+import { requireAdminSection } from "@/lib/auth/sections";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +13,7 @@ export default async function AdminSettingsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale as Locale);
+  if (hasSupabaseEnv()) await requireAdminSection("settings");
   const t = await getTranslations("admin.settings");
 
   return (

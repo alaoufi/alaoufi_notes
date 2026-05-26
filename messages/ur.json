@@ -226,7 +226,42 @@
   },
   "admin": {
     "nav": { "title": "ایڈمن", "overview": "جائزہ", "categories": "زمرے", "regions": "علاقے", "users": "صارفین",
-      "disputes": "تنازعات", "translations": "ترجمے", "settings": "ترتیبات" },
+      "disputes": "تنازعات", "translations": "ترجمے", "settings": "ترتیبات", "permissions": "اختیارات" },
+    "permissions": {
+      "title": "ایڈمن کے اختیارات",
+      "subtitle": "سپر ایڈمن کے پاس ہر چیز تک رسائی ہوتی ہے۔ سیکشن ایڈمن کے لیے صرف انہی شعبوں کو فعال کریں جن کا وہ انتظام کرتا ہے۔",
+      "badge": "سیکشن ایڈمن",
+      "addAdmin": {
+        "title": "نیا ایڈمن مقرر کریں",
+        "subtitle": "نام، فون یا ای میل سے صارف تلاش کریں اور پہلا شعبہ تفویض کریں۔",
+        "searchPlaceholder": "صارف تلاش کریں…",
+        "searching": "تلاش جاری ہے…",
+        "noResults": "کوئی نتیجہ نہیں"
+      },
+      "list": {
+        "title": "موجودہ سیکشن ایڈمنز",
+        "empty": "ابھی کوئی سیکشن ایڈمن نہیں۔ اوپر سے صارف تلاش کر کے پہلا مقرر کریں۔",
+        "noSections": "کوئی شعبہ نہیں — آخری شعبے کا انتخاب ہٹانے سے ایڈمن ہٹ جائے گا۔"
+      },
+      "sections": {
+        "categories": "زمرے اور خدمات",
+        "geography": "علاقے اور گورنریٹس",
+        "users": "صارفین",
+        "disputes": "تنازعات",
+        "translations": "ترجمے",
+        "settings": "ترتیبات",
+        "orders": "آرڈرز",
+        "payments": "ادائیگیاں",
+        "ads": "اشتہارات"
+      },
+      "errors": {
+        "noBackend": "Supabase درکار ہے",
+        "invalidSection": "غلط شعبہ",
+        "invalidUser": "غلط صارف",
+        "grantFailed": "اجازت دینے میں ناکامی",
+        "revokeFailed": "اجازت واپس لینے میں ناکامی"
+      }
+    },
     "overview": {
       "title": "ایڈمن جائزہ", "subtitle": "پلیٹ فارم کی سرگرمی ایک نظر میں",
       "kpi": { "ordersToday": "آج کے آرڈر", "activeProviders": "فعال فراہم کنندگان",

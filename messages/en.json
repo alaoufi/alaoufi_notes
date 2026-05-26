@@ -257,7 +257,43 @@
       "users": "Users",
       "disputes": "Disputes",
       "translations": "Translations",
-      "settings": "Settings"
+      "settings": "Settings",
+      "permissions": "Permissions"
+    },
+    "permissions": {
+      "title": "Admin permissions",
+      "subtitle": "Super admin can access everything. For section admins, enable only the areas they manage.",
+      "badge": "Section admin",
+      "addAdmin": {
+        "title": "Assign a new admin",
+        "subtitle": "Search a user by name, phone, or email, then grant their first section.",
+        "searchPlaceholder": "Search users…",
+        "searching": "Searching…",
+        "noResults": "No matches"
+      },
+      "list": {
+        "title": "Current section admins",
+        "empty": "No section admins yet. Search a user above to assign the first one.",
+        "noSections": "No sections — unchecking the last section removes the admin."
+      },
+      "sections": {
+        "categories": "Categories & services",
+        "geography": "Regions & governorates",
+        "users": "Users",
+        "disputes": "Disputes",
+        "translations": "Translations",
+        "settings": "Settings",
+        "orders": "Orders",
+        "payments": "Payments",
+        "ads": "Ads"
+      },
+      "errors": {
+        "noBackend": "Requires Supabase",
+        "invalidSection": "Invalid section",
+        "invalidUser": "Invalid user",
+        "grantFailed": "Failed to grant permission",
+        "revokeFailed": "Failed to revoke permission"
+      }
     },
     "overview": {
       "title": "Admin overview",

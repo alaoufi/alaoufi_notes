@@ -1,6 +1,6 @@
 "use server";
 
-import { requireRole } from "@/lib/auth/guard";
+import { requireAdminSection } from "@/lib/auth/sections";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { locales, type Locale } from "@/i18n/locales";
 
@@ -38,7 +38,7 @@ export async function autoTranslateAction(
   if (!hasSupabaseEnv()) {
     return { ok: false, errorKey: "admin.translations.errors.noBackend" };
   }
-  await requireRole(["super_admin", "section_admin"]);
+  await requireAdminSection("translations");
 
   const apiKey = getKey();
   if (!apiKey) {

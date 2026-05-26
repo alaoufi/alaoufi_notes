@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { requireRole } from "@/lib/auth/guard";
+import { requireAdminSection } from "@/lib/auth/sections";
 
 interface Result {
   ok: boolean;
@@ -21,7 +21,7 @@ export async function setRegionActive(regionId: string, isActive: boolean): Prom
   if (!hasSupabaseEnv()) {
     return { ok: false, errorKey: "admin.regions.errors.noBackend" };
   }
-  await requireRole("super_admin");
+  await requireAdminSection("geography");
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("regions" as never)
@@ -43,7 +43,7 @@ export async function setGovernorateActive(
   if (!hasSupabaseEnv()) {
     return { ok: false, errorKey: "admin.regions.errors.noBackend" };
   }
-  await requireRole("super_admin");
+  await requireAdminSection("geography");
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase
     .from("governorates" as never)

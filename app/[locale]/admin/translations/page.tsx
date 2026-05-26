@@ -4,6 +4,8 @@ import { locales, type Locale } from "@/i18n/locales";
 import { flattenMessages, type FlatMessages } from "@/lib/i18n/cms";
 import { fetchAllOverrides } from "@/lib/i18n/cms-loader";
 import { TranslationsEditor, type EditorRow } from "@/features/admin/components/translations-editor";
+import { requireAdminSection } from "@/lib/auth/sections";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,7 @@ export default async function AdminTranslationsPage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale as Locale);
+  if (hasSupabaseEnv()) await requireAdminSection("translations");
   const t = await getTranslations("admin.translations");
 
   const [defaults, overrides] = await Promise.all([

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { requireRole } from "@/lib/auth/guard";
+import { requireAdminSection } from "@/lib/auth/sections";
 import { locales, type Locale } from "@/i18n/locales";
 
 export interface SaveTranslationInput {
@@ -24,7 +24,7 @@ export async function saveTranslations(
   if (!hasSupabaseEnv()) {
     return { ok: false, errorKey: "admin.translations.errors.noBackend" };
   }
-  await requireRole(["super_admin", "section_admin"]);
+  await requireAdminSection("translations");
 
   if (!Array.isArray(updates) || updates.length === 0) {
     return { ok: true, saved: 0 };

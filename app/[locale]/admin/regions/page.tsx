@@ -3,6 +3,8 @@ import { Card, CardBody, Badge } from "@syanah/ui";
 import { listAllRegions, listGovernorates, localized } from "@/lib/catalog/queries";
 import { RegionToggle, GovernorateToggle } from "@/features/admin/components/region-toggle";
 import { type Locale } from "@/i18n/locales";
+import { requireAdminSection } from "@/lib/auth/sections";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,7 @@ export default async function AdminRegionsPage({
   const { locale: localeRaw } = await params;
   const locale = localeRaw as Locale;
   setRequestLocale(locale);
+  if (hasSupabaseEnv()) await requireAdminSection("geography");
   const t = await getTranslations("admin.regions");
 
   const regions = await listAllRegions();

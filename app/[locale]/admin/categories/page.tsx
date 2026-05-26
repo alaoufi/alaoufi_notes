@@ -4,6 +4,8 @@ import { listCategories, localized } from "@/lib/catalog/queries";
 import { CategoryIcon } from "@/components/category-icon";
 import { type Locale } from "@/i18n/locales";
 import { Plus } from "lucide-react";
+import { requireAdminSection } from "@/lib/auth/sections";
+import { hasSupabaseEnv } from "@/lib/supabase/env";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +17,7 @@ export default async function AdminCategoriesPage({
   const { locale: localeRaw } = await params;
   const locale = localeRaw as Locale;
   setRequestLocale(locale);
+  if (hasSupabaseEnv()) await requireAdminSection("categories");
   const t = await getTranslations("admin.categories");
   const cats = await listCategories();
 
