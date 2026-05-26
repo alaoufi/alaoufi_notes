@@ -122,21 +122,26 @@ export function Hero() {
 
           <div className="relative aspect-square rounded-xl border border-border bg-surface p-5 shadow-lg">
             <div className="grid h-full grid-cols-2 grid-rows-2 gap-3">
-              <DemoTile color="primary" label={t("demo.hvac")} symbol="❄" />
-              <DemoTile color="success" label={t("demo.plumbing")} symbol="💧" />
-              <DemoTile color="warning" label={t("demo.electrical")} symbol="⚡" />
-              <DemoTile color="accent" label={t("demo.vehicle")} symbol="🛠" />
+              <DemoTile slug="hvac"       color="primary" label={t("demo.hvac")}       symbol="❄" />
+              <DemoTile slug="plumbing"   color="success" label={t("demo.plumbing")}   symbol="💧" />
+              <DemoTile slug="electrical" color="warning" label={t("demo.electrical")} symbol="⚡" />
+              <DemoTile slug="vehicle"    color="accent"  label={t("demo.vehicle")}    symbol="🛠" />
             </div>
           </div>
         </div>
       </Container>
 
       <Container className="mt-14">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border shadow-sm sm:grid-cols-4">
-          <Stat value="12,000+" label={t("statsOrders")} />
-          <Stat value="850+" label={t("statsProviders")} />
-          <Stat value="14" label={t("statsCities")} />
-          <Stat value="4.8 ★" label={t("statsRating")} />
+        <div className="relative">
+          <span className="absolute -top-3 start-1/2 -translate-x-1/2 rounded-pill border border-border bg-surface px-3 py-0.5 text-[11px] font-medium text-text-muted shadow-sm">
+            {t("statsNote")}
+          </span>
+          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border opacity-70 shadow-sm sm:grid-cols-4">
+            <Stat value="12,000+" label={t("statsOrders")} />
+            <Stat value="850+"    label={t("statsProviders")} />
+            <Stat value="14"      label={t("statsCities")} />
+            <Stat value="4.8 ★"   label={t("statsRating")} />
+          </div>
         </div>
       </Container>
     </section>
@@ -146,17 +151,19 @@ export function Hero() {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div className="bg-surface px-4 py-5 text-center sm:px-6 sm:py-6 sm:text-start">
-      <p className="text-2xl font-bold text-text sm:text-3xl">{value}</p>
+      <p className="text-2xl font-bold text-text-muted sm:text-3xl">{value}</p>
       <p className="mt-1 text-xs text-text-muted sm:text-sm">{label}</p>
     </div>
   );
 }
 
 function DemoTile({
+  slug,
   color,
   label,
   symbol,
 }: {
+  slug: string;
   color: "primary" | "success" | "warning" | "accent";
   label: string;
   symbol: string;
@@ -168,11 +175,12 @@ function DemoTile({
     accent: "bg-accent/10 text-accent",
   };
   return (
-    <div
-      className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-border/40 font-semibold transition-transform hover:scale-[1.02] ${palette[color]}`}
+    <Link
+      href={`/services/${slug}`}
+      className={`flex flex-col items-center justify-center gap-2 rounded-lg border border-border/40 font-semibold transition-transform hover:scale-[1.02] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${palette[color]}`}
     >
       <span className="text-3xl" aria-hidden>{symbol}</span>
       <span className="text-sm">{label}</span>
-    </div>
+    </Link>
   );
 }

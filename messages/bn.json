@@ -42,7 +42,8 @@
     "statsOrders": "সম্পন্ন অর্ডার",
     "statsProviders": "যাচাইকৃত সেবাদাতা",
     "statsCities": "শহর",
-    "statsRating": "গড় রেটিং"
+    "statsRating": "গড় রেটিং",
+    "statsNote": "নমুনা সংখ্যা — উদ্বোধনে প্রকৃত তথ্য দিয়ে প্রতিস্থাপিত হবে"
   },
   "categories": {
     "eyebrow": "আমাদের সেবা",

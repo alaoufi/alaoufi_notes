@@ -50,7 +50,8 @@
     "statsOrders": "completed orders",
     "statsProviders": "verified providers",
     "statsCities": "cities",
-    "statsRating": "average rating"
+    "statsRating": "average rating",
+    "statsNote": "Illustrative figures — replaced with live data at launch"
   },
   "categories": {
     "eyebrow": "Our services",

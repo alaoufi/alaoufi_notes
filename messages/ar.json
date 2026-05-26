@@ -50,7 +50,8 @@
     "statsOrders": "طلب مكتمل",
     "statsProviders": "مزوّد معتمد",
     "statsCities": "مدينة",
-    "statsRating": "متوسّط التقييم"
+    "statsRating": "متوسّط التقييم",
+    "statsNote": "بيانات توضيحية حتى انطلاق المنصة"
   },
   "categories": {
     "eyebrow": "خدماتنا",

@@ -50,7 +50,8 @@
     "statsOrders": "مکمل آرڈرز",
     "statsProviders": "تصدیق شدہ فراہم کنندگان",
     "statsCities": "شہر",
-    "statsRating": "اوسط درجہ بندی"
+    "statsRating": "اوسط درجہ بندی",
+    "statsNote": "وضاحتی اعداد — اجرا پر اصل ڈیٹا سے بدل دیے جائیں گے"
   },
   "categories": {
     "eyebrow": "ہماری خدمات",

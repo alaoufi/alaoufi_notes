@@ -45,7 +45,8 @@
     "statsOrders": "पूर्ण ऑर्डर",
     "statsProviders": "सत्यापित प्रदाता",
     "statsCities": "शहर",
-    "statsRating": "औसत रेटिंग"
+    "statsRating": "औसत रेटिंग",
+    "statsNote": "नमूना आँकड़े — लॉन्च पर वास्तविक डेटा से बदले जाएँगे"
   },
   "categories": {
     "eyebrow": "हमारी सेवाएँ",
