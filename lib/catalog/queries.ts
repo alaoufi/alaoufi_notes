@@ -18,23 +18,23 @@ const FALLBACK_CATEGORIES: Category[] = [
 ];
 
 // All 13 Saudi regions — mirrors the seed in migration 0016.
-// Default activation pattern in the fallback: four major regions on, others off,
-// so the public site already shows realistic governorates even before Supabase
-// is wired and an admin has flipped the toggles.
+// Default activation pattern in the fallback: every region is active out
+// of the box. Admins can disable any region from /admin/regions later;
+// migration 0022 mirrors that policy in the database.
 const FALLBACK_REGIONS: Region[] = [
-  { slug: "riyadh",           name: { ar: "منطقة الرياض",            en: "Riyadh Region" },     is_active: true,  display_order: 10  },
-  { slug: "makkah",           name: { ar: "منطقة مكة المكرمة",       en: "Makkah Region" },     is_active: true,  display_order: 20  },
-  { slug: "madinah",          name: { ar: "منطقة المدينة المنورة",   en: "Madinah Region" },    is_active: true,  display_order: 30  },
-  { slug: "eastern",          name: { ar: "المنطقة الشرقية",          en: "Eastern Province" },  is_active: true,  display_order: 40  },
-  { slug: "asir",             name: { ar: "منطقة عسير",              en: "Asir Region" },       is_active: false, display_order: 50  },
-  { slug: "qassim",           name: { ar: "منطقة القصيم",            en: "Qassim Region" },     is_active: false, display_order: 60  },
-  { slug: "tabuk",            name: { ar: "منطقة تبوك",              en: "Tabuk Region" },      is_active: false, display_order: 70  },
-  { slug: "hail",             name: { ar: "منطقة حائل",              en: "Hail Region" },       is_active: false, display_order: 80  },
-  { slug: "northern-borders", name: { ar: "منطقة الحدود الشمالية",   en: "Northern Borders" },  is_active: false, display_order: 90  },
-  { slug: "jazan",            name: { ar: "منطقة جازان",             en: "Jazan Region" },      is_active: false, display_order: 100 },
-  { slug: "najran",           name: { ar: "منطقة نجران",             en: "Najran Region" },     is_active: false, display_order: 110 },
-  { slug: "bahah",            name: { ar: "منطقة الباحة",            en: "Al-Bahah Region" },   is_active: false, display_order: 120 },
-  { slug: "jouf",             name: { ar: "منطقة الجوف",             en: "Al-Jawf Region" },    is_active: false, display_order: 130 },
+  { slug: "riyadh",           name: { ar: "منطقة الرياض",            en: "Riyadh Region" },     is_active: true, display_order: 10  },
+  { slug: "makkah",           name: { ar: "منطقة مكة المكرمة",       en: "Makkah Region" },     is_active: true, display_order: 20  },
+  { slug: "madinah",          name: { ar: "منطقة المدينة المنورة",   en: "Madinah Region" },    is_active: true, display_order: 30  },
+  { slug: "eastern",          name: { ar: "المنطقة الشرقية",          en: "Eastern Province" },  is_active: true, display_order: 40  },
+  { slug: "asir",             name: { ar: "منطقة عسير",              en: "Asir Region" },       is_active: true, display_order: 50  },
+  { slug: "qassim",           name: { ar: "منطقة القصيم",            en: "Qassim Region" },     is_active: true, display_order: 60  },
+  { slug: "tabuk",            name: { ar: "منطقة تبوك",              en: "Tabuk Region" },      is_active: true, display_order: 70  },
+  { slug: "hail",             name: { ar: "منطقة حائل",              en: "Hail Region" },       is_active: true, display_order: 80  },
+  { slug: "northern-borders", name: { ar: "منطقة الحدود الشمالية",   en: "Northern Borders" },  is_active: true, display_order: 90  },
+  { slug: "jazan",            name: { ar: "منطقة جازان",             en: "Jazan Region" },      is_active: true, display_order: 100 },
+  { slug: "najran",           name: { ar: "منطقة نجران",             en: "Najran Region" },     is_active: true, display_order: 110 },
+  { slug: "bahah",            name: { ar: "منطقة الباحة",            en: "Al-Bahah Region" },   is_active: true, display_order: 120 },
+  { slug: "jouf",             name: { ar: "منطقة الجوف",             en: "Al-Jawf Region" },    is_active: true, display_order: 130 },
 ];
 
 const FALLBACK_GOVERNORATES: Governorate[] = [
@@ -62,19 +62,19 @@ const FALLBACK_GOVERNORATES: Governorate[] = [
   { region_slug: "eastern", slug: "jubail",       name: { ar: "الجبيل",       en: "Jubail" },         is_active: true,  display_order: 50 },
   { region_slug: "eastern", slug: "qatif",        name: { ar: "القطيف",       en: "Qatif" },          is_active: true,  display_order: 60 },
   // Asir — inactive
-  { region_slug: "asir",   slug: "abha",           name: { ar: "أبها",         en: "Abha" },           is_active: false, display_order: 10 },
-  { region_slug: "asir",   slug: "khamis-mushait", name: { ar: "خميس مشيط",    en: "Khamis Mushait" }, is_active: false, display_order: 20 },
+  { region_slug: "asir",   slug: "abha",           name: { ar: "أبها",         en: "Abha" },           is_active: true, display_order: 10 },
+  { region_slug: "asir",   slug: "khamis-mushait", name: { ar: "خميس مشيط",    en: "Khamis Mushait" }, is_active: true, display_order: 20 },
   // Qassim — inactive
-  { region_slug: "qassim", slug: "buraidah",      name: { ar: "بريدة",        en: "Buraidah" },       is_active: false, display_order: 10 },
-  { region_slug: "qassim", slug: "unaizah",       name: { ar: "عنيزة",        en: "Unaizah" },        is_active: false, display_order: 20 },
+  { region_slug: "qassim", slug: "buraidah",      name: { ar: "بريدة",        en: "Buraidah" },       is_active: true, display_order: 10 },
+  { region_slug: "qassim", slug: "unaizah",       name: { ar: "عنيزة",        en: "Unaizah" },        is_active: true, display_order: 20 },
   // Others (each region's main governorate, all inactive)
-  { region_slug: "tabuk",  slug: "tabuk",         name: { ar: "تبوك",         en: "Tabuk" },          is_active: false, display_order: 10 },
-  { region_slug: "hail",   slug: "hail",          name: { ar: "حائل",         en: "Hail" },           is_active: false, display_order: 10 },
-  { region_slug: "northern-borders", slug: "arar",name: { ar: "عرعر",         en: "Arar" },           is_active: false, display_order: 10 },
-  { region_slug: "jazan",  slug: "jazan",         name: { ar: "جازان",        en: "Jazan" },          is_active: false, display_order: 10 },
-  { region_slug: "najran", slug: "najran",        name: { ar: "نجران",        en: "Najran" },         is_active: false, display_order: 10 },
-  { region_slug: "bahah",  slug: "bahah",         name: { ar: "الباحة",       en: "Al-Bahah" },       is_active: false, display_order: 10 },
-  { region_slug: "jouf",   slug: "sakaka",        name: { ar: "سكاكا",        en: "Sakaka" },         is_active: false, display_order: 10 },
+  { region_slug: "tabuk",  slug: "tabuk",         name: { ar: "تبوك",         en: "Tabuk" },          is_active: true, display_order: 10 },
+  { region_slug: "hail",   slug: "hail",          name: { ar: "حائل",         en: "Hail" },           is_active: true, display_order: 10 },
+  { region_slug: "northern-borders", slug: "arar",name: { ar: "عرعر",         en: "Arar" },           is_active: true, display_order: 10 },
+  { region_slug: "jazan",  slug: "jazan",         name: { ar: "جازان",        en: "Jazan" },          is_active: true, display_order: 10 },
+  { region_slug: "najran", slug: "najran",        name: { ar: "نجران",        en: "Najran" },         is_active: true, display_order: 10 },
+  { region_slug: "bahah",  slug: "bahah",         name: { ar: "الباحة",       en: "Al-Bahah" },       is_active: true, display_order: 10 },
+  { region_slug: "jouf",   slug: "sakaka",        name: { ar: "سكاكا",        en: "Sakaka" },         is_active: true, display_order: 10 },
 ];
 
 // Cities visible to the public = governorates whose parent region is active and
