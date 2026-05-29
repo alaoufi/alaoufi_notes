@@ -1,0 +1,61 @@
+name: بناء APK لتطبيق مذكراتي
+
+# يبني ملف APK تلقائيًا على خوادم GitHub (فيها Android SDK واتصال إنترنت)،
+# ثم ينشره في صفحة Releases ليُحمّل مباشرة من متصفّح الجوال — دون حاسوب.
+
+on:
+  push:
+    branches:
+      - claude/modhkrati-notes-app-KS0zZ
+    paths:
+      - 'mudhakkarati/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch: {}   # يسمح بالتشغيل اليدوي من تبويب Actions
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تهيئة Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: تهيئة Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.0
+          cache: true
+
+      - name: جلب الحزم
+        working-directory: mudhakkarati
+        run: flutter pub get
+
+      - name: بناء APK (release)
+        working-directory: mudhakkarati
+        run: flutter build apk --release
+
+      - name: رفع APK كـ Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mudhakkarati-apk
+          path: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: نشر APK في Releases (للتحميل من الجوال)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: مذكراتي — أحدث APK
+          body: |
+            ملف APK جاهز للتثبيت لتطبيق "مذكراتي".
+            حمّل الملف app-release.apk أدناه وثبّته على جوالك
+            (فعّل «السماح بتثبيت تطبيقات غير معروفة» عند الطلب).
+          files: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
