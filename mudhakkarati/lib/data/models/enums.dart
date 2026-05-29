@@ -6,6 +6,7 @@ enum NoteType {
   audio, // ملاحظة صوتية
   pdf, // ملاحظة مع ملف PDF
   drawing, // رسم / كتابة يدوية
+  password, // ملاحظة كلمات مرور (حقول منظمة، كلمة المرور مشفّرة)
 }
 
 extension NoteTypeX on NoteType {

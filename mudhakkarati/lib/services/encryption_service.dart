@@ -67,4 +67,31 @@ class EncryptionService {
   String hashSecret(String secret, String salt) {
     return sha256.convert(utf8.encode('$salt::$secret')).toString();
   }
+
+  // ---------------------------------------------------------------------------
+  // تشفير حقول قصيرة بمفتاح خام ثابت (لحقول كلمات المرور) — سريع.
+  // التنسيق المُعاد (Base64): iv(16) | ciphertext
+  // ---------------------------------------------------------------------------
+
+  String encryptWithKey(String plain, Uint8List key) {
+    final iv = enc.IV.fromSecureRandom(16);
+    final encrypter = enc.Encrypter(enc.AES(enc.Key(key), mode: enc.AESMode.cbc));
+    final encrypted = encrypter.encrypt(plain, iv: iv);
+    final packed = Uint8List.fromList(iv.bytes + encrypted.bytes);
+    return base64Encode(packed);
+  }
+
+  String decryptWithKey(String packedBase64, Uint8List key) {
+    if (packedBase64.isEmpty) return '';
+    try {
+      final packed = base64Decode(packedBase64);
+      final iv = enc.IV(Uint8List.fromList(packed.sublist(0, 16)));
+      final cipher = Uint8List.fromList(packed.sublist(16));
+      final encrypter =
+          enc.Encrypter(enc.AES(enc.Key(key), mode: enc.AESMode.cbc));
+      return encrypter.decrypt(enc.Encrypted(cipher), iv: iv);
+    } catch (_) {
+      return '';
+    }
+  }
 }

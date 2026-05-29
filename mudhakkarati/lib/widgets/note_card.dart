@@ -6,6 +6,7 @@ import '../core/theme/app_colors.dart';
 import '../data/models/category.dart';
 import '../data/models/enums.dart';
 import '../data/models/note.dart';
+import '../data/models/password_entry.dart';
 
 /// بطاقة عرض ملاحظة في الصفحة الرئيسية.
 class NoteCard extends StatelessWidget {
@@ -90,6 +91,7 @@ class NoteCard extends StatelessWidget {
         NoteType.audio => Icons.mic,
         NoteType.pdf => Icons.picture_as_pdf,
         NoteType.drawing => Icons.brush,
+        NoteType.password => Icons.vpn_key,
       };
 
   Widget _lockedBody(BuildContext context, Color onBg) {
@@ -184,6 +186,26 @@ class NoteCard extends StatelessWidget {
                 ),
               ]);
             }).toList(),
+          ),
+        );
+      case NoteType.password:
+        final entry = PasswordEntry.fromStoredJson(note.content);
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(entry.displayTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: onBg, fontWeight: FontWeight.w600)),
+              if (entry.username.trim().isNotEmpty)
+                Text(entry.username,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: onBg.withOpacity(0.8))),
+              Text('••••••••', style: TextStyle(color: onBg.withOpacity(0.6))),
+            ],
           ),
         );
       case NoteType.text:

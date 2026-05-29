@@ -17,6 +17,7 @@ Future<NoteType?> showTypePicker(BuildContext context) {
         (NoteType.audio, Icons.mic, s.t('note_audio')),
         (NoteType.pdf, Icons.picture_as_pdf, s.t('note_pdf')),
         (NoteType.drawing, Icons.brush, s.t('note_drawing')),
+        (NoteType.password, Icons.vpn_key, s.t('note_password')),
       ];
       return SafeArea(
         child: Padding(

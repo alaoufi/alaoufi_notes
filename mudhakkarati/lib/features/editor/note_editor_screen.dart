@@ -9,6 +9,9 @@ import '../../core/theme/app_colors.dart';
 import '../../data/models/checklist_item.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
+import '../../data/models/password_entry.dart';
+import '../../services/vault_service.dart';
+import 'password_form.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/note_actions.dart';
 import '../drawing/drawing_screen.dart';
@@ -40,6 +43,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   late Note _note;
   List<ChecklistItem> _checklist = [];
   final List<TextEditingController> _itemCtrls = [];
+  PasswordEntry _passwordEntry = const PasswordEntry();
 
   Timer? _debounce;
   bool _loaded = false;
@@ -54,6 +58,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Future<void> _load() async {
     final provider = context.read<NotesProvider>();
+    await VaultService.instance.ensureKey();
     if (widget.noteId != null) {
       final n = await provider.notes.getNote(widget.noteId!);
       if (n != null) {
@@ -64,6 +69,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           _checklist = await provider.notes.getChecklist(n.id!);
           if (_checklist.isEmpty) _checklist = [ChecklistItem(noteId: n.id!, text: '')];
           _rebuildItemCtrls();
+        } else if (n.type == NoteType.password) {
+          _passwordEntry = PasswordEntry.fromStoredJson(n.content);
         }
       } else {
         _note = Note.create(type: widget.initialType);
@@ -74,6 +81,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       if (_note.type == NoteType.checklist) {
         _checklist = [const ChecklistItem(noteId: 0, text: '')];
         _rebuildItemCtrls();
+      } else if (_note.type == NoteType.password) {
+        // ملاحظات كلمات المرور مقفلة افتراضيًا (تتطلب فتح القفل لعرضها).
+        _note = _note.copyWith(isLocked: true);
       }
     }
     setState(() => _loaded = true);
@@ -111,12 +121,21 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
     final title = _titleCtrl.text;
     var content = _contentCtrl.text;
+    var emptyPassword = false;
     if (_note.type == NoteType.checklist) {
       // زامن النصوص من الحقول.
       for (var i = 0; i < _checklist.length && i < _itemCtrls.length; i++) {
         _checklist[i] = _checklist[i].copyWith(text: _itemCtrls[i].text);
       }
       content = _checklistToContent();
+    } else if (_note.type == NoteType.password) {
+      final e = _passwordEntry;
+      emptyPassword = e.site.trim().isEmpty &&
+          e.app.trim().isEmpty &&
+          e.username.trim().isEmpty &&
+          e.password.trim().isEmpty &&
+          e.notes.trim().isEmpty;
+      content = e.toStoredJson();
     }
 
     final candidate = _note.copyWith(
@@ -126,7 +145,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
 
     // لا تحفظ ملاحظة فارغة تمامًا.
-    if (candidate.isEmpty && !force) return;
+    final isEmpty = _note.type == NoteType.password
+        ? (title.trim().isEmpty && emptyPassword)
+        : candidate.isEmpty;
+    if (isEmpty && !force) return;
 
     final id = await provider.saveNote(
       candidate,
@@ -332,6 +354,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         return _pdfBody(s);
       case NoteType.drawing:
         return _drawingBody(s);
+      case NoteType.password:
+        return [
+          PasswordForm(
+            initial: _passwordEntry,
+            onChanged: (entry) {
+              _passwordEntry = entry;
+              _onChanged();
+            },
+          ),
+        ];
       case NoteType.text:
         return [_contentField(s)];
     }

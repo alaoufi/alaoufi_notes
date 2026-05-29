@@ -11,6 +11,7 @@ import 'features/home/notes_provider.dart';
 import 'features/reminders/reminders_provider.dart';
 import 'features/settings/settings_provider.dart';
 import 'services/notification_service.dart';
+import 'services/vault_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +19,9 @@ Future<void> main() async {
   // تهيئة بيانات التواريخ (للتقويم بالعربية والإنجليزية).
   await initializeDateFormatting('ar');
   await initializeDateFormatting('en');
+
+  // تهيئة مفتاح تشفير كلمات المرور (يُخزَّن في تخزين الجهاز الآمن).
+  await VaultService.instance.ensureKey();
 
   // تهيئة الإشعارات المحلية (بدون إنترنت).
   await NotificationService.instance.init();
