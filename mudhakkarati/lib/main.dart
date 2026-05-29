@@ -36,6 +36,31 @@ Future<void> main() async {
       startupErrors.add('FlutterError: ${details.exceptionAsString()}');
     };
 
+    // بدل شاشة رمادية/انهيار عند فشل بناء أي واجهة، نعرض نص الخطأ ليُصوَّر.
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return Directionality(
+        textDirection: TextDirection.rtl,
+        child: Material(
+          color: Colors.white,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('⚠️ خطأ في الواجهة — صوّر هذه الرسالة وأرسلها:',
+                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                  const SizedBox(height: 8),
+                  SelectableText('${details.exception}',
+                      style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    };
+
     // تهيئة بيانات التواريخ (للتقويم بالعربية والإنجليزية).
     await _safe('dates', () async {
       await initializeDateFormatting('ar');

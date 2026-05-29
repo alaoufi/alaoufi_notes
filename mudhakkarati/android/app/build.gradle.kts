@@ -39,6 +39,9 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // نعطّل التقليص حتى لا تُحذف أكواد تحتاجها الإضافات (سبب محتمل للانهيار).
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
