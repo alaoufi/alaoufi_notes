@@ -14,6 +14,7 @@ class Note {
   final int? color;
 
   final bool isPinned;
+  final bool isFavorite;
   final bool isArchived;
   final bool isLocked;
 
@@ -42,6 +43,7 @@ class Note {
     this.type = NoteType.text,
     this.color,
     this.isPinned = false,
+    this.isFavorite = false,
     this.isArchived = false,
     this.isLocked = false,
     this.isDeleted = false,
@@ -82,6 +84,7 @@ class Note {
       'type': type.dbValue,
       'color': color,
       'is_pinned': isPinned ? 1 : 0,
+      'is_favorite': isFavorite ? 1 : 0,
       'is_archived': isArchived ? 1 : 0,
       'is_locked': isLocked ? 1 : 0,
       'is_deleted': isDeleted ? 1 : 0,
@@ -104,6 +107,7 @@ class Note {
       type: NoteTypeX.fromDb(map['type'] as String?),
       color: map['color'] as int?,
       isPinned: (map['is_pinned'] as int? ?? 0) == 1,
+      isFavorite: (map['is_favorite'] as int? ?? 0) == 1,
       isArchived: (map['is_archived'] as int? ?? 0) == 1,
       isLocked: (map['is_locked'] as int? ?? 0) == 1,
       isDeleted: (map['is_deleted'] as int? ?? 0) == 1,
@@ -129,6 +133,7 @@ class Note {
     int? color,
     bool clearColor = false,
     bool? isPinned,
+    bool? isFavorite,
     bool? isArchived,
     bool? isLocked,
     bool? isDeleted,
@@ -151,6 +156,7 @@ class Note {
       type: type ?? this.type,
       color: clearColor ? null : (color ?? this.color),
       isPinned: isPinned ?? this.isPinned,
+      isFavorite: isFavorite ?? this.isFavorite,
       isArchived: isArchived ?? this.isArchived,
       isLocked: isLocked ?? this.isLocked,
       isDeleted: isDeleted ?? this.isDeleted,

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../core/theme/app_colors.dart';
 import '../data/models/category.dart';
@@ -15,12 +16,16 @@ class NoteCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
+  /// عند true تُعرض محتويات الملاحظة المقفلة (داخل القسم السري بعد فتح القفل).
+  final bool revealLocked;
+
   const NoteCard({
     super.key,
     required this.note,
     required this.category,
     required this.onTap,
     required this.onLongPress,
+    this.revealLocked = false,
   });
 
   @override
@@ -46,6 +51,12 @@ class NoteCard extends StatelessWidget {
                 children: [
                   Icon(_typeIcon, size: 18, color: onBg.withOpacity(0.6)),
                   const Spacer(),
+                  if (note.isFavorite)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Icon(Icons.star,
+                          size: 16, color: Colors.amber.shade700),
+                    ),
                   if (note.isLocked)
                     Icon(Icons.lock, size: 16, color: onBg.withOpacity(0.6)),
                   if (note.isPinned)
@@ -69,14 +80,12 @@ class NoteCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (note.isLocked)
+              if (note.isLocked && !revealLocked)
                 _lockedBody(context, onBg)
               else
                 _body(context, onBg),
-              if (category != null || note.tags.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                _footer(context, onBg),
-              ],
+              const SizedBox(height: 10),
+              _footer(context, onBg),
             ],
           ),
         ),
@@ -227,13 +236,27 @@ class NoteCard extends StatelessWidget {
   }
 
   Widget _footer(BuildContext context, Color onBg) {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 6,
+    final hasChips = category != null || note.tags.isNotEmpty;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (category != null)
-          _chip(category!.name, Color(category!.color), onBg),
-        ...note.tags.take(3).map((t) => _chip('#$t', null, onBg)),
+        if (hasChips)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                if (category != null)
+                  _chip(category!.name, Color(category!.color), onBg),
+                ...note.tags.take(3).map((t) => _chip('#$t', null, onBg)),
+              ],
+            ),
+          ),
+        Text(
+          DateFormat('yyyy/MM/dd').format(note.updatedAt),
+          style: TextStyle(fontSize: 11, color: onBg.withOpacity(0.55)),
+        ),
       ],
     );
   }

@@ -7,6 +7,7 @@ import '../core/l10n/app_strings.dart';
 import '../data/models/note.dart';
 import '../features/home/notes_provider.dart';
 import '../features/reminders/reminder_dialog.dart';
+import '../features/security/pin_setup.dart';
 import 'color_picker_sheet.dart';
 
 /// شيت إجراءات الملاحظة (عند الضغط المطوّل أو من المحرر).
@@ -38,6 +39,15 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
                 await provider.togglePin(note);
               },
             ),
+            tile(
+              note.isFavorite ? Icons.star : Icons.star_border,
+              note.isFavorite ? s.t('unfavorite') : s.t('favorite'),
+              () async {
+                Navigator.pop(context);
+                await provider.toggleFavorite(note);
+              },
+              color: note.isFavorite ? Colors.amber.shade700 : null,
+            ),
             tile(Icons.palette_outlined, s.t('color'), () async {
               Navigator.pop(context);
               final res = await showColorPicker(context, note.color);
@@ -52,6 +62,11 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
               note.isLocked ? s.t('unlock') : s.t('lock'),
               () async {
                 Navigator.pop(context);
+                if (!note.isLocked) {
+                  // قبل قفل ملاحظة لأول مرة، تأكد من وجود رقم سري.
+                  final ok = await ensurePinConfigured(context);
+                  if (!ok) return;
+                }
                 await provider.setLocked(note, !note.isLocked);
               },
             ),

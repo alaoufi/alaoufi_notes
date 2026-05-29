@@ -18,6 +18,7 @@ class ManageCategoriesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final provider = context.watch<NotesProvider>();
+    final cats = provider.categories;
 
     return Scaffold(
       appBar: AppBar(title: Text(s.t('categories'))),
@@ -25,15 +26,32 @@ class ManageCategoriesScreen extends StatelessWidget {
         onPressed: () => _edit(context, null),
         child: const Icon(Icons.add),
       ),
-      body: ListView(
-        children: provider.categories.map((c) {
+      body: ReorderableListView.builder(
+        padding: const EdgeInsets.only(bottom: 90),
+        itemCount: cats.length,
+        onReorder: (oldIndex, newIndex) {
+          final list = List<Category>.from(cats);
+          if (newIndex > oldIndex) newIndex -= 1;
+          final item = list.removeAt(oldIndex);
+          list.insert(newIndex, item);
+          provider.reorderCategories(list);
+        },
+        itemBuilder: (context, i) {
+          final c = cats[i];
           return ListTile(
+            key: ValueKey(c.id),
             leading: CircleAvatar(
               backgroundColor: Color(c.color),
               child: Icon(categoryIconByIndex(c.iconCode),
                   color: Colors.white, size: 20),
             ),
             title: Text(c.name),
+            subtitle: FutureBuilder<int>(
+              future: provider.countByCategory(c.id!),
+              builder: (context, snap) => Text(
+                  '${snap.data ?? 0} ${s.t('notes_count')}',
+                  style: Theme.of(context).textTheme.bodySmall),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -45,10 +63,11 @@ class ManageCategoriesScreen extends StatelessWidget {
                   icon: const Icon(Icons.delete_outline),
                   onPressed: () => provider.deleteCategory(c.id!),
                 ),
+                const Icon(Icons.drag_handle),
               ],
             ),
           );
-        }).toList(),
+        },
       ),
     );
   }

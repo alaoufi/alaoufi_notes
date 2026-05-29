@@ -15,17 +15,26 @@ class NoteRepository {
   // قراءة الملاحظات
   // ---------------------------------------------------------------------------
 
-  /// الملاحظات النشطة (غير محذوفة وغير مؤرشفة) مع فلترة اختيارية.
+  /// الملاحظات النشطة (غير محذوفة وغير مؤرشفة وغير مقفلة) مع فلترة اختيارية.
+  ///
+  /// الملاحظات المقفلة (السرية وكلمات المرور) تُستبعد من القائمة الرئيسية
+  /// وتظهر فقط في القسم السري المحمي. [onlyFavorites] لقسم المفضلة.
   Future<List<Note>> getNotes({
     int? categoryId,
     String? tag,
     String? search,
+    bool onlyFavorites = false,
   }) async {
     final db = await _db;
 
-    final where = <String>['n.is_deleted = 0', 'n.is_archived = 0'];
+    final where = <String>[
+      'n.is_deleted = 0',
+      'n.is_archived = 0',
+      'n.is_locked = 0',
+    ];
     final args = <dynamic>[];
 
+    if (onlyFavorites) where.add('n.is_favorite = 1');
     if (categoryId != null) {
       where.add('n.category_id = ?');
       args.add(categoryId);
@@ -68,6 +77,17 @@ class NoteRepository {
       'notes',
       where: 'is_deleted = 1',
       orderBy: 'deleted_at DESC',
+    );
+    return _attachTags(db, rows);
+  }
+
+  /// الملاحظات السرية المقفلة (للقسم المحمي).
+  Future<List<Note>> getLocked() async {
+    final db = await _db;
+    final rows = await db.query(
+      'notes',
+      where: 'is_locked = 1 AND is_deleted = 0 AND is_archived = 0',
+      orderBy: 'is_pinned DESC, updated_at DESC',
     );
     return _attachTags(db, rows);
   }
@@ -126,6 +146,16 @@ class NoteRepository {
     await db.update(
       'notes',
       {'is_pinned': note.isPinned ? 0 : 1, 'updated_at': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
+  }
+
+  Future<void> toggleFavorite(Note note) async {
+    final db = await _db;
+    await db.update(
+      'notes',
+      {'is_favorite': note.isFavorite ? 0 : 1, 'updated_at': DateTime.now().millisecondsSinceEpoch},
       where: 'id = ?',
       whereArgs: [note.id],
     );

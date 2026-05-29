@@ -10,6 +10,7 @@ import '../../data/models/checklist_item.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../data/models/password_entry.dart';
+import '../../services/secure_screen.dart';
 import '../../services/vault_service.dart';
 import 'password_form.dart';
 import '../../widgets/color_picker_sheet.dart';
@@ -49,6 +50,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   bool _loaded = false;
   bool _dirty = false;
   bool _drawingPrompted = false;
+  bool _secured = false;
 
   @override
   void initState() {
@@ -90,6 +92,12 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
     _titleCtrl.addListener(_onChanged);
     _contentCtrl.addListener(_onChanged);
+
+    // منع التصوير للملاحظات الحسّاسة (سرية/كلمات مرور).
+    if (_note.type == NoteType.password || _note.isLocked) {
+      _secured = true;
+      SecureScreen.enable();
+    }
   }
 
   void _rebuildItemCtrls() {
@@ -168,6 +176,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   void dispose() {
+    if (_secured) SecureScreen.disable();
     _debounce?.cancel();
     _titleCtrl.dispose();
     _contentCtrl.dispose();
@@ -267,6 +276,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   await _ensureSaved();
                   await context.read<NotesProvider>().setColor(_note, res.value);
                 }
+              },
+            ),
+            IconButton(
+              tooltip: _note.isFavorite ? s.t('unfavorite') : s.t('favorite'),
+              icon: Icon(_note.isFavorite ? Icons.star : Icons.star_border,
+                  color: _note.isFavorite ? Colors.amber : null),
+              onPressed: () async {
+                await _ensureSaved();
+                final updated = _note.copyWith(isFavorite: !_note.isFavorite);
+                setState(() => _note = updated);
+                await context.read<NotesProvider>().toggleFavorite(_note.copyWith(isFavorite: !updated.isFavorite));
               },
             ),
             IconButton(

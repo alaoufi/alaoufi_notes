@@ -99,6 +99,14 @@ class NotesProvider extends ChangeNotifier {
     await refresh();
   }
 
+  Future<void> toggleFavorite(Note note) async {
+    await notes.toggleFavorite(note);
+    await refresh();
+  }
+
+  Future<List<Note>> getFavorites() => notes.getNotes(onlyFavorites: true);
+  Future<List<Note>> getLocked() => notes.getLocked();
+
   Future<void> setArchived(Note note, bool archived) async {
     await notes.setArchived(note.id!, archived);
     await refresh();
@@ -143,6 +151,13 @@ class NotesProvider extends ChangeNotifier {
     await loadCategories();
     await refresh();
   }
+
+  Future<void> reorderCategories(List<Category> ordered) async {
+    await categoriesRepo.reorder(ordered);
+    await loadCategories();
+  }
+
+  Future<int> countByCategory(int categoryId) => notes.countByCategory(categoryId);
 
   // ---- سلة المحذوفات ----
 

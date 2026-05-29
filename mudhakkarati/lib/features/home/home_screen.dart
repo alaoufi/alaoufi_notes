@@ -4,11 +4,14 @@ import 'package:provider/provider.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
+import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../../widgets/type_picker_sheet.dart';
+import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../security/note_unlock.dart';
+import '../security/pin_setup.dart';
 import '../settings/settings_provider.dart';
 import 'notes_provider.dart';
 
@@ -43,6 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _addNote() async {
     final type = await showTypePicker(context);
     if (type == null || !mounted) return;
+    // ملاحظات كلمات المرور تتطلب رقمًا سريًا أولًا (محتوى محمي).
+    if (type == NoteType.password) {
+      final ok = await ensurePinConfigured(context);
+      if (!ok || !mounted) return;
+    }
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => NoteEditorScreen(initialType: type)),
@@ -56,6 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.watch<NotesProvider>();
 
     return Scaffold(
+      drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addNote,
         icon: const Icon(Icons.add),
@@ -100,10 +109,23 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             children: [
+              Builder(
+                builder: (context) => IconButton(
+                  tooltip: 'القائمة',
+                  icon: const Icon(Icons.menu),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
               Text(s.t('app_name'),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold)),
               const Spacer(),
+              IconButton(
+                tooltip: s.t('calendar'),
+                icon: const Icon(Icons.calendar_month_outlined),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const CalendarScreen())),
+              ),
               IconButton(
                 tooltip: s.t('layout'),
                 icon: Icon(settings.layout == NoteLayout.grid
