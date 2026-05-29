@@ -49,6 +49,21 @@ jobs:
           name: mudhakkarati-apk
           path: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
 
+      - name: دفع APK إلى فرع apk-dist (لتسليمه عبر المحادثة)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/apkout
+          cp mudhakkarati/build/app/outputs/flutter-apk/app-release.apk /tmp/apkout/mudhakkarati.apk
+          cd /tmp/apkout
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b apk-dist
+          git add mudhakkarati.apk
+          git commit -q -m "APK build ${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" apk-dist
+
       - name: نشر APK في Releases (للتحميل من الجوال)
         uses: softprops/action-gh-release@v2
         with:
