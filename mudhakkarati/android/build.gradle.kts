@@ -23,7 +23,7 @@ subprojects {
 // بينما تبعية flutter_plugin_android_lifecycle تتطلب 36. نفرض 36 على كل
 // وحدات الإضافات عبر الانعكاس (بدون الحاجة لاستيراد أنواع AGP).
 subprojects {
-    afterEvaluate {
+    val forceCompileSdk = {
         val androidExt = extensions.findByName("android")
         if (androidExt != null) {
             runCatching {
@@ -35,8 +35,11 @@ subprojects {
                     }
                     ?.invoke(androidExt, 36)
             }
+            Unit
         }
     }
+    // إن كان المشروع قد قُيِّم مسبقًا (مثل :app) نضبطه مباشرة، وإلا بعد التقييم.
+    if (state.executed) forceCompileSdk() else afterEvaluate { forceCompileSdk() }
 }
 
 tasks.register<Delete>("clean") {
