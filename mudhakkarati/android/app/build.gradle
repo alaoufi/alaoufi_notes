@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.mudhakkarati.app"
-    compileSdk = 34
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -41,7 +41,7 @@ android {
     defaultConfig {
         applicationId = "com.mudhakkarati.app"
         minSdk = 26          // Android 8.0
-        targetSdk = 34
+        targetSdk = 35
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
         multiDexEnabled = true
@@ -63,5 +63,5 @@ flutter {
 }
 
 dependencies {
-    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4"
 }

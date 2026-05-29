@@ -82,7 +82,7 @@ cp ../mudhakkarati/android/app/src/main/kotlin/com/mudhakkarati/app/*.kt \
 # 4) في android/app/build.gradle فعّل تكسير الحلوى (desugaring):
 #    compileOptions { coreLibraryDesugaringEnabled true }
 #    minSdk = 26
-#    dependencies { coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4" }
+#    dependencies { coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.4" }
 
 # 5) ابنِ
 flutter pub get
