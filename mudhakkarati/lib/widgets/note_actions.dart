@@ -85,7 +85,7 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
             }),
             tile(Icons.share, s.t('share'), () async {
               Navigator.pop(context);
-              await Share.share(_asText(note));
+              await SharePlus.instance.share(ShareParams(text: _asText(note)));
             }),
             tile(
               note.isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,

@@ -8,6 +8,7 @@ import '../data/models/category.dart';
 import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../data/models/password_entry.dart';
+import '../features/editor/rich_text_field.dart';
 
 /// بطاقة عرض ملاحظة في الصفحة الرئيسية.
 class NoteCard extends StatelessWidget {
@@ -223,11 +224,12 @@ class NoteCard extends StatelessWidget {
   }
 
   Widget _text(Color onBg) {
-    if (note.content.trim().isEmpty) return const SizedBox.shrink();
+    final plain = richToPlainText(note.content);
+    if (plain.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 6),
       child: Text(
-        note.content,
+        plain,
         maxLines: 6,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(color: onBg.withOpacity(0.85), height: 1.4),

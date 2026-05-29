@@ -19,6 +19,7 @@ import '../drawing/drawing_screen.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminder_dialog.dart';
 import 'editor_attachments.dart';
+import 'rich_text_field.dart';
 
 /// محرّر الملاحظة لكل الأنواع، مع حفظ تلقائي أثناء الكتابة.
 class NoteEditorScreen extends StatefulWidget {
@@ -45,6 +46,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   List<ChecklistItem> _checklist = [];
   final List<TextEditingController> _itemCtrls = [];
   PasswordEntry _passwordEntry = const PasswordEntry();
+  String _richContent = ''; // محتوى النص الغني (Delta JSON) لنوع النص
 
   Timer? _debounce;
   bool _loaded = false;
@@ -73,6 +75,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           _rebuildItemCtrls();
         } else if (n.type == NoteType.password) {
           _passwordEntry = PasswordEntry.fromStoredJson(n.content);
+        } else if (n.type == NoteType.text) {
+          _richContent = n.content;
         }
       } else {
         _note = Note.create(type: widget.initialType);
@@ -130,12 +134,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     final title = _titleCtrl.text;
     var content = _contentCtrl.text;
     var emptyPassword = false;
+    var emptyRich = false;
     if (_note.type == NoteType.checklist) {
       // زامن النصوص من الحقول.
       for (var i = 0; i < _checklist.length && i < _itemCtrls.length; i++) {
         _checklist[i] = _checklist[i].copyWith(text: _itemCtrls[i].text);
       }
       content = _checklistToContent();
+    } else if (_note.type == NoteType.text) {
+      content = _richContent;
+      emptyRich = richToPlainText(_richContent).trim().isEmpty;
     } else if (_note.type == NoteType.password) {
       final e = _passwordEntry;
       emptyPassword = e.site.trim().isEmpty &&
@@ -153,9 +161,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
 
     // لا تحفظ ملاحظة فارغة تمامًا.
-    final isEmpty = _note.type == NoteType.password
-        ? (title.trim().isEmpty && emptyPassword)
-        : candidate.isEmpty;
+    final bool isEmpty;
+    if (_note.type == NoteType.password) {
+      isEmpty = title.trim().isEmpty && emptyPassword;
+    } else if (_note.type == NoteType.text) {
+      isEmpty = title.trim().isEmpty && emptyRich;
+    } else {
+      isEmpty = candidate.isEmpty;
+    }
     if (isEmpty && !force) return;
 
     final id = await provider.saveNote(
@@ -385,7 +398,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
         ];
       case NoteType.text:
-        return [_contentField(s)];
+        return [
+          RichTextField(
+            initialContent: _richContent,
+            onChanged: (json) {
+              _richContent = json;
+              _onChanged();
+            },
+          ),
+        ];
     }
   }
 
