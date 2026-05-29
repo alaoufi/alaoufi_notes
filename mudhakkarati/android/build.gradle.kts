@@ -19,6 +19,26 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// بعض الإضافات (مثل file_picker) تبقى على compileSdk 34 ولا يرفعها Flutter،
+// بينما تبعية flutter_plugin_android_lifecycle تتطلب 36. نفرض 36 على كل
+// وحدات الإضافات عبر الانعكاس (بدون الحاجة لاستيراد أنواع AGP).
+subprojects {
+    afterEvaluate {
+        val androidExt = extensions.findByName("android")
+        if (androidExt != null) {
+            runCatching {
+                androidExt.javaClass.methods
+                    .firstOrNull {
+                        it.name == "compileSdkVersion" &&
+                            it.parameterTypes.size == 1 &&
+                            it.parameterTypes[0] == Int::class.javaPrimitiveType
+                    }
+                    ?.invoke(androidExt, 36)
+            }
+        }
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
