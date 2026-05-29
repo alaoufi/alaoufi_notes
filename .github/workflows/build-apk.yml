@@ -1,7 +1,7 @@
 name: بناء APK لتطبيق مذكراتي
 
-# يبني ملف APK تلقائيًا على خوادم GitHub (فيها Android SDK واتصال إنترنت)،
-# ثم ينشره في صفحة Releases ليُحمّل مباشرة من متصفّح الجوال — دون حاسوب.
+# يبني ملف APK تلقائيًا على خوادم GitHub، يدفعه إلى فرع apk-dist للتسليم،
+# وينشر سجل البناء إلى فرع build-log دائمًا (للتشخيص عند الفشل).
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
     paths:
       - 'mudhakkarati/**'
       - '.github/workflows/build-apk.yml'
-  workflow_dispatch: {}   # يسمح بالتشغيل اليدوي من تبويب Actions
+  workflow_dispatch: {}
 
 permissions:
   contents: write
@@ -35,44 +35,52 @@ jobs:
           flutter-version: 3.44.0
           cache: true
 
-      - name: جلب الحزم
+      - name: بناء APK (مع التقاط السجل)
         working-directory: mudhakkarati
-        run: flutter pub get
+        run: |
+          set -o pipefail
+          {
+            echo "===== flutter pub get ====="
+            flutter pub get
+            echo "===== flutter build apk ====="
+            flutter build apk --release --build-number=${{ github.run_number }}
+          } 2>&1 | tee /tmp/build.log
 
-      - name: بناء APK (release)
-        working-directory: mudhakkarati
-        # build-number = رقم تشغيل العمل، ليزيد versionCode مع كل بناء
-        # فيُثبَّت الإصدار الجديد فوق القديم كتحديث.
-        run: flutter build apk --release --build-number=${{ github.run_number }}
+      - name: نشر سجل البناء إلى فرع build-log (تشخيص)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/logout
+          tail -n 500 /tmp/build.log > /tmp/logout/build.log 2>/dev/null || echo "no log captured" > /tmp/logout/build.log
+          cd /tmp/logout
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b build-log
+          git add build.log
+          git commit -q -m "build log #${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" build-log
 
-      - name: رفع APK كـ Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mudhakkarati-apk
-          path: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
-
-      - name: دفع APK إلى فرع apk-dist (لتسليمه عبر المحادثة)
+      - name: دفع APK إلى فرع apk-dist (تسليم)
+        if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           mkdir -p /tmp/apkout
-          cp mudhakkarati/build/app/outputs/flutter-apk/app-release.apk /tmp/apkout/mudhakkarati.apk
+          cp mudhakkarati/build/app/outputs/flutter-apk/app-release.apk /tmp/apkout/AlaoufiNotes.apk
           cd /tmp/apkout
           git init -q
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           git checkout -q -b apk-dist
-          git add mudhakkarati.apk
-          git commit -q -m "APK build ${{ github.run_number }}"
+          git add AlaoufiNotes.apk
+          git commit -q -m "Alaoufi Notes APK #${{ github.run_number }}"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" apk-dist
 
-      - name: نشر APK في Releases (للتحميل من الجوال)
-        uses: softprops/action-gh-release@v2
+      - name: رفع APK كـ Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: apk-latest
-          name: مذكراتي — أحدث APK
-          body: |
-            ملف APK جاهز للتثبيت لتطبيق "مذكراتي".
-            حمّل الملف app-release.apk أدناه وثبّته على جوالك
-            (فعّل «السماح بتثبيت تطبيقات غير معروفة» عند الطلب).
-          files: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
+          name: AlaoufiNotes-apk
+          path: mudhakkarati/build/app/outputs/flutter-apk/app-release.apk
