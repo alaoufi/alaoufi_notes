@@ -22,8 +22,8 @@ class NotificationService {
 
     tz.initializeTimeZones();
     try {
-      final localName = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(localName));
+      final info = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(info.identifier));
     } catch (_) {
       // في حال تعذّر تحديد المنطقة الزمنية بالاسم، نستخدم الافتراضي.
     }
