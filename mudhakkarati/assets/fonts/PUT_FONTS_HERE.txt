@@ -1,0 +1,9 @@
+ضع هنا ملفات خط Cairo (أو أي خط عربي تفضّله):
+  - Cairo-Regular.ttf
+  - Cairo-Bold.ttf
+  - Cairo-SemiBold.ttf
+
+ثم ألغِ التعليق عن قسم fonts في ملف pubspec.yaml ونفّذ: flutter pub get
+
+رابط تحميل الخط: https://fonts.google.com/specimen/Cairo
+التطبيق يعمل بدون هذه الخطوة باستخدام خط النظام.

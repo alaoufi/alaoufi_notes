@@ -1,0 +1,242 @@
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+
+import '../core/theme/app_colors.dart';
+import '../data/models/category.dart';
+import '../data/models/enums.dart';
+import '../data/models/note.dart';
+
+/// بطاقة عرض ملاحظة في الصفحة الرئيسية.
+class NoteCard extends StatelessWidget {
+  final Note note;
+  final Category? category;
+  final VoidCallback onTap;
+  final VoidCallback onLongPress;
+
+  const NoteCard({
+    super.key,
+    required this.note,
+    required this.category,
+    required this.onTap,
+    required this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = AppColors.resolveNoteColor(note.color, isDark);
+    final onBg = ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
+
+    return Card(
+      color: bg,
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Icon(_typeIcon, size: 18, color: onBg.withOpacity(0.6)),
+                  const Spacer(),
+                  if (note.isLocked)
+                    Icon(Icons.lock, size: 16, color: onBg.withOpacity(0.6)),
+                  if (note.isPinned)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Icon(Icons.push_pin,
+                          size: 16, color: onBg.withOpacity(0.7)),
+                    ),
+                ],
+              ),
+              if (note.title.trim().isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text(
+                  note.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: onBg,
+                  ),
+                ),
+              ],
+              if (note.isLocked)
+                _lockedBody(context, onBg)
+              else
+                _body(context, onBg),
+              if (category != null || note.tags.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                _footer(context, onBg),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData get _typeIcon => switch (note.type) {
+        NoteType.text => Icons.notes,
+        NoteType.checklist => Icons.checklist,
+        NoteType.image => Icons.image,
+        NoteType.audio => Icons.mic,
+        NoteType.pdf => Icons.picture_as_pdf,
+        NoteType.drawing => Icons.brush,
+      };
+
+  Widget _lockedBody(BuildContext context, Color onBg) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Row(
+        children: [
+          Icon(Icons.lock_outline, size: 18, color: onBg.withOpacity(0.6)),
+          const SizedBox(width: 8),
+          Text('ملاحظة مقفلة', style: TextStyle(color: onBg.withOpacity(0.7))),
+        ],
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context, Color onBg) {
+    switch (note.type) {
+      case NoteType.image:
+        if (note.imagePath != null && File(note.imagePath!).existsSync()) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.file(File(note.imagePath!),
+                  height: 120, width: double.infinity, fit: BoxFit.cover),
+            ),
+          );
+        }
+        return _text(onBg);
+      case NoteType.drawing:
+        if (note.drawingPath != null && File(note.drawingPath!).existsSync()) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.file(File(note.drawingPath!),
+                  height: 120, width: double.infinity, fit: BoxFit.contain),
+            ),
+          );
+        }
+        return _text(onBg);
+      case NoteType.audio:
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Row(children: [
+            Icon(Icons.play_circle_fill, color: onBg.withOpacity(0.8)),
+            const SizedBox(width: 8),
+            Text('ملاحظة صوتية', style: TextStyle(color: onBg.withOpacity(0.8))),
+          ]),
+        );
+      case NoteType.pdf:
+        return Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Row(children: [
+            Icon(Icons.picture_as_pdf, color: onBg.withOpacity(0.8)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('ملف PDF مرفق',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: onBg.withOpacity(0.8))),
+            ),
+          ]),
+        );
+      case NoteType.checklist:
+        final lines = note.content
+            .split('\n')
+            .where((l) => l.trim().isNotEmpty)
+            .take(4)
+            .toList();
+        if (lines.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: lines.map((l) {
+              final done = l.startsWith('[x]');
+              final text = l.replaceFirst(RegExp(r'^\[.\]\s?'), '');
+              return Row(children: [
+                Icon(done ? Icons.check_box : Icons.check_box_outline_blank,
+                    size: 16, color: onBg.withOpacity(0.7)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(text,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: onBg.withOpacity(0.85),
+                        decoration:
+                            done ? TextDecoration.lineThrough : null,
+                      )),
+                ),
+              ]);
+            }).toList(),
+          ),
+        );
+      case NoteType.text:
+        return _text(onBg);
+    }
+  }
+
+  Widget _text(Color onBg) {
+    if (note.content.trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Text(
+        note.content,
+        maxLines: 6,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: onBg.withOpacity(0.85), height: 1.4),
+      ),
+    );
+  }
+
+  Widget _footer(BuildContext context, Color onBg) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        if (category != null)
+          _chip(category!.name, Color(category!.color), onBg),
+        ...note.tags.take(3).map((t) => _chip('#$t', null, onBg)),
+      ],
+    );
+  }
+
+  Widget _chip(String label, Color? dot, Color onBg) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: onBg.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (dot != null) ...[
+            Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
+            const SizedBox(width: 4),
+          ],
+          Text(label,
+              style: TextStyle(fontSize: 11, color: onBg.withOpacity(0.8))),
+        ],
+      ),
+    );
+  }
+}
