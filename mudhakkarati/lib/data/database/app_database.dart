@@ -133,12 +133,13 @@ class AppDatabase {
 
   /// التصنيفات الافتراضية المطلوبة: شخصي، عمل، مهم، مواعيد، أفكار.
   Future<void> _seedDefaultCategories(Database db) async {
+    // icon_code يخزّن *فهرس* الأيقونة في kCategoryIcons (وليس codePoint).
     final defaults = <Map<String, dynamic>>[
-      {'name': 'شخصي', 'color': 0xFF42A5F5, 'icon_code': 0xe7fd, 'position': 0},
-      {'name': 'عمل', 'color': 0xFF7E57C2, 'icon_code': 0xe8f9, 'position': 1},
-      {'name': 'مهم', 'color': 0xFFEF5350, 'icon_code': 0xe838, 'position': 2},
-      {'name': 'مواعيد', 'color': 0xFF26A69A, 'icon_code': 0xe935, 'position': 3},
-      {'name': 'أفكار', 'color': 0xFFFFA726, 'icon_code': 0xe90f, 'position': 4},
+      {'name': 'شخصي', 'color': 0xFF42A5F5, 'icon_code': 0, 'position': 0},
+      {'name': 'عمل', 'color': 0xFF7E57C2, 'icon_code': 1, 'position': 1},
+      {'name': 'مهم', 'color': 0xFFEF5350, 'icon_code': 2, 'position': 2},
+      {'name': 'مواعيد', 'color': 0xFF26A69A, 'icon_code': 3, 'position': 3},
+      {'name': 'أفكار', 'color': 0xFFFFA726, 'icon_code': 4, 'position': 4},
     ];
     for (final c in defaults) {
       await db.insert('categories', c);

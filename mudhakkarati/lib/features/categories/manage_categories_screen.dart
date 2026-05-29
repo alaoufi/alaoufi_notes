@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/constants/category_icons.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/category.dart';
 import '../home/notes_provider.dart';
@@ -11,10 +12,6 @@ class ManageCategoriesScreen extends StatelessWidget {
   static const _palette = [
     0xFF42A5F5, 0xFF7E57C2, 0xFFEF5350, 0xFF26A69A,
     0xFFFFA726, 0xFF66BB6A, 0xFFEC407A, 0xFF8D6E63,
-  ];
-
-  static const _icons = [
-    0xe7fd, 0xe8f9, 0xe838, 0xe935, 0xe90f, 0xe0c9, 0xe55b, 0xe87d,
   ];
 
   @override
@@ -33,7 +30,7 @@ class ManageCategoriesScreen extends StatelessWidget {
           return ListTile(
             leading: CircleAvatar(
               backgroundColor: Color(c.color),
-              child: Icon(IconData(c.iconCode, fontFamily: 'MaterialIcons'),
+              child: Icon(categoryIconByIndex(c.iconCode),
                   color: Colors.white, size: 20),
             ),
             title: Text(c.name),
@@ -61,7 +58,7 @@ class ManageCategoriesScreen extends StatelessWidget {
     final provider = context.read<NotesProvider>();
     final nameCtrl = TextEditingController(text: existing?.name ?? '');
     int color = existing?.color ?? _palette.first;
-    int icon = existing?.iconCode ?? _icons.first;
+    int icon = existing?.iconCode ?? 0; // فهرس في kCategoryIcons
 
     await showModalBottomSheet(
       context: context,
@@ -102,20 +99,19 @@ class ManageCategoriesScreen extends StatelessWidget {
               const SizedBox(height: 16),
               Wrap(
                 spacing: 8,
-                children: _icons.map((ic) {
-                  final selected = icon == ic;
+                runSpacing: 8,
+                children: List.generate(kCategoryIcons.length, (idx) {
+                  final selected = icon == idx;
                   return GestureDetector(
-                    onTap: () => setSheet(() => icon = ic),
+                    onTap: () => setSheet(() => icon = idx),
                     child: CircleAvatar(
                       backgroundColor: selected
                           ? Theme.of(context).colorScheme.primaryContainer
                           : Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Icon(
-                          IconData(ic, fontFamily: 'MaterialIcons'),
-                          size: 20),
+                      child: Icon(kCategoryIcons[idx], size: 20),
                     ),
                   );
-                }).toList(),
+                }),
               ),
               const SizedBox(height: 20),
               SizedBox(

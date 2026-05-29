@@ -47,7 +47,7 @@
 ```bash
 flutter pub get
 flutter run                       # للتجربة على جهاز موصول
-flutter build apk --release --no-tree-shake-icons   # إنشاء APK جاهز للتثبيت
+flutter build apk --release        # إنشاء APK جاهز للتثبيت
 ```
 
 سيظهر ملف الـ APK في:
@@ -86,7 +86,7 @@ cp ../mudhakkarati/android/app/src/main/kotlin/com/mudhakkarati/app/*.kt \
 
 # 5) ابنِ
 flutter pub get
-flutter build apk --release --no-tree-shake-icons
+flutter build apk --release
 ```
 
 ### فتح المشروع في Android Studio

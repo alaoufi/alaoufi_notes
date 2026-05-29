@@ -29,7 +29,7 @@ class Category {
       id: map['id'] as int?,
       name: (map['name'] as String?) ?? '',
       color: map['color'] as int? ?? 0xFF9E9E9E,
-      iconCode: map['icon_code'] as int? ?? 0xe574,
+      iconCode: map['icon_code'] as int? ?? 7,
       position: map['position'] as int? ?? 0,
     );
   }
