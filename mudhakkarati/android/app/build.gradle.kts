@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.mudhakkarati.app"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36 // مطلوب من بعض الإضافات (flutter_plugin_android_lifecycle)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
