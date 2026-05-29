@@ -25,10 +25,20 @@ android {
         multiDexEnabled = true
     }
 
+    // مفتاح توقيع ثابت يُلتزم في المستودع، حتى تُثبَّت التحديثات فوق بعضها
+    // دون خطأ «توقيع غير متطابق» (مشروع شخصي — لا يُنشر على المتجر).
+    signingConfigs {
+        create("release") {
+            storeFile = file("alaoufi-release.jks")
+            storePassword = "alaoufi2026"
+            keyAlias = "alaoufi"
+            keyPassword = "alaoufi2026"
+        }
+    }
+
     buildTypes {
         release {
-            // توقيع بمفتاح debug ليكون APK قابلًا للتثبيت مباشرة (مشروع شخصي).
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 }
