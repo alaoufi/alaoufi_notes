@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
@@ -13,39 +15,97 @@ import 'features/settings/settings_provider.dart';
 import 'services/notification_service.dart';
 import 'services/vault_service.dart';
 
+/// أخطاء التهيئة (إن وُجدت) — لا تمنع إقلاع التطبيق، وتُعرض للمستخدم عند الطلب.
+final List<String> startupErrors = [];
+
+/// تنفّذ خطوة تهيئة بأمان: أي فشل يُسجَّل ولا يُعطّل التطبيق.
+Future<void> _safe(String name, Future<void> Function() step) async {
+  try {
+    await step();
+  } catch (e) {
+    startupErrors.add('$name: $e');
+  }
+}
+
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // نلتقط أي خطأ غير متوقع بدل أن يتعطّل التطبيق بصمت.
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // تهيئة بيانات التواريخ (للتقويم بالعربية والإنجليزية).
-  await initializeDateFormatting('ar');
-  await initializeDateFormatting('en');
+    FlutterError.onError = (details) {
+      startupErrors.add('FlutterError: ${details.exceptionAsString()}');
+    };
 
-  // تهيئة مفتاح تشفير كلمات المرور (يُخزَّن في تخزين الجهاز الآمن).
-  await VaultService.instance.ensureKey();
+    // تهيئة بيانات التواريخ (للتقويم بالعربية والإنجليزية).
+    await _safe('dates', () async {
+      await initializeDateFormatting('ar');
+      await initializeDateFormatting('en');
+    });
 
-  // تهيئة الإشعارات المحلية (بدون إنترنت).
-  await NotificationService.instance.init();
-  await NotificationService.instance.requestPermissions();
+    // مفتاح تشفير كلمات المرور (قد يفشل على بعض الأجهزة — لا يجب أن يُعطّل التطبيق).
+    await _safe('vault', () => VaultService.instance.ensureKey());
 
-  final db = AppDatabase.instance;
-  final noteRepo = NoteRepository(db);
-  final categoryRepo = CategoryRepository(db);
-  final reminderRepo = ReminderRepository(db);
+    // الإشعارات المحلية.
+    await _safe('notifications', () async {
+      await NotificationService.instance.init();
+      await NotificationService.instance.requestPermissions();
+    });
 
-  final settings = SettingsProvider();
-  await settings.load();
+    final db = AppDatabase.instance;
+    final noteRepo = NoteRepository(db);
+    final categoryRepo = CategoryRepository(db);
+    final reminderRepo = ReminderRepository(db);
 
-  final notesProvider = NotesProvider(noteRepo, categoryRepo);
-  final remindersProvider = RemindersProvider(reminderRepo, noteRepo);
+    final settings = SettingsProvider();
+    await _safe('settings', () => settings.load());
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider.value(value: settings),
-        ChangeNotifierProvider.value(value: notesProvider),
-        ChangeNotifierProvider.value(value: remindersProvider),
-      ],
-      child: const MudhakkaratiApp(),
-    ),
-  );
+    final notesProvider = NotesProvider(noteRepo, categoryRepo);
+    final remindersProvider = RemindersProvider(reminderRepo, noteRepo);
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: settings),
+          ChangeNotifierProvider.value(value: notesProvider),
+          ChangeNotifierProvider.value(value: remindersProvider),
+        ],
+        child: const MudhakkaratiApp(),
+      ),
+    );
+  }, (error, stack) {
+    startupErrors.add('Uncaught: $error');
+    // إن تعطّل قبل عرض أي شيء، نعرض شاشة الخطأ بدل توقّف التطبيق.
+    runApp(_StartupErrorApp(error: '$error\n\n$stack'));
+  });
+}
+
+/// شاشة احتياطية تعرض الخطأ بدل أن «يتوقف التطبيق» دون معلومة.
+class _StartupErrorApp extends StatelessWidget {
+  final String error;
+  const _StartupErrorApp({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          appBar: AppBar(title: const Text('تعذّر بدء التطبيق')),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('حدث خطأ أثناء الإقلاع. صوّر هذه الرسالة وأرسلها للمطوّر:'),
+                const SizedBox(height: 12),
+                SelectableText(error,
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 12)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
