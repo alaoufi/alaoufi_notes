@@ -41,7 +41,9 @@ jobs:
 
       - name: بناء APK (release)
         working-directory: mudhakkarati
-        run: flutter build apk --release
+        # build-number = رقم تشغيل العمل، ليزيد versionCode مع كل بناء
+        # فيُثبَّت الإصدار الجديد فوق القديم كتحديث.
+        run: flutter build apk --release --build-number=${{ github.run_number }}
 
       - name: رفع APK كـ Artifact
         uses: actions/upload-artifact@v4
