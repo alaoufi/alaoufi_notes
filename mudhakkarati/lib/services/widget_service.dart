@@ -23,7 +23,7 @@ class WidgetService {
 
       final title = target?.title.trim().isNotEmpty == true
           ? target!.title
-          : 'مذكراتي';
+          : 'Alaoufi Notes';
       final body = target == null
           ? 'لا توجد ملاحظات بعد'
           : (target.content.trim().isNotEmpty

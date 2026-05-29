@@ -72,7 +72,7 @@ class NotificationService {
     final scheduled = tz.TZDateTime.from(reminder.time, tz.local);
 
     final safeTitle = title.trim().isEmpty ? 'تذكير' : title.trim();
-    final safeBody = body.trim().isEmpty ? 'لديك تذكير من مذكراتي' : body.trim();
+    final safeBody = body.trim().isEmpty ? 'لديك تذكير من Alaoufi Notes' : body.trim();
 
     DateTimeComponents? match;
     switch (reminder.repeat) {

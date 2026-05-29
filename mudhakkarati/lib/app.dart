@@ -15,7 +15,7 @@ class MudhakkaratiApp extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
 
     return MaterialApp(
-      title: 'مذكراتي',
+      title: 'Alaoufi Notes',
       debugShowCheckedModeBanner: false,
       themeMode: settings.themeMode,
       theme: AppTheme.light(settings.seedColor, settings.fontScale),

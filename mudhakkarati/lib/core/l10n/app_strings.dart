@@ -19,7 +19,7 @@ class S {
   }
 
   static const Map<String, String> _ar = {
-    'app_name': 'مذكراتي',
+    'app_name': 'Alaoufi Notes',
     // التنقل
     'nav_notes': 'الملاحظات',
     'nav_reminders': 'التذكيرات',
@@ -151,7 +151,7 @@ class S {
   };
 
   static const Map<String, String> _en = {
-    'app_name': 'My Notes',
+    'app_name': 'Alaoufi Notes',
     'nav_notes': 'Notes',
     'nav_reminders': 'Reminders',
     'nav_calendar': 'Calendar',
