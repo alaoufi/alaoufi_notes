@@ -100,6 +100,15 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
+  Future<void> _shareToCloud() async {
+    final pwd = await _askPassword('مشاركة إلى السحابة');
+    if (pwd == null || pwd.isEmpty) return;
+    setState(() => _busy = true);
+    final result = await BackupService.instance.shareBackupToCloud(pwd);
+    setState(() => _busy = false);
+    _toast(result.message);
+  }
+
   Future<void> _importEasyNotes() async {
     final provider = context.read<NotesProvider>();
 
@@ -148,6 +157,17 @@ class _BackupScreenState extends State<BackupScreen> {
                   subtitle: const Text(
                       'حفظ نسخة مشفّرة من كل ملاحظاتك ومرفقاتك في ملفات الجهاز.'),
                   onTap: _busy ? null : _export,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: ListTile(
+                  leading: const Icon(Icons.cloud_upload_outlined),
+                  title: const Text('مشاركة إلى السحابة'),
+                  subtitle: const Text(
+                      'إرسال نسخة مشفّرة مباشرة إلى Google Drive أو سحابة هواوي أو أي تطبيق.'),
+                  onTap: _busy ? null : _shareToCloud,
                 ),
               ),
               const SizedBox(height: 8),

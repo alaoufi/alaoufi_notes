@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/database/app_database.dart';
 import 'encryption_service.dart';
@@ -85,6 +86,53 @@ class BackupService {
     } catch (e) {
       return BackupResult(false, 'فشل التصدير: $e');
     }
+  }
+
+  /// إنشاء نسخة مشفّرة ومشاركتها مباشرة إلى أي تطبيق سحابي
+  /// (Google Drive / سحابة هواوي / Telegram / البريد...) بضغطة واحدة.
+  Future<BackupResult> shareBackupToCloud(String password) async {
+    try {
+      final encrypted = await _buildEncrypted(password);
+      final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
+      final fileName = 'mudhakkarati_$stamp.$_ext';
+      final tmpDir = await getTemporaryDirectory();
+      final tmpPath = p.join(tmpDir.path, fileName);
+      await File(tmpPath).writeAsBytes(encrypted, flush: true);
+
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(tmpPath, mimeType: 'application/octet-stream')],
+        text: 'نسخة Alaoufi Notes الاحتياطية المشفّرة',
+        subject: fileName,
+      ));
+      return BackupResult(true, 'تمت مشاركة النسخة', filePath: tmpPath);
+    } catch (e) {
+      return BackupResult(false, 'فشل المشاركة: $e');
+    }
+  }
+
+  /// يبني أرشيف (قاعدة بيانات + مرفقات) مشفّرًا بكلمة المرور.
+  Future<Uint8List> _buildEncrypted(String password) async {
+    final archive = Archive();
+    final dbPath = await AppDatabase.instance.path;
+    final dbFile = File(dbPath);
+    if (await dbFile.exists()) {
+      final bytes = await dbFile.readAsBytes();
+      archive.addFile(ArchiveFile('database.db', bytes.length, bytes));
+    }
+    final attDir = await FileService.instance.attachmentsDir();
+    if (await attDir.exists()) {
+      for (final entity in attDir.listSync()) {
+        if (entity is File) {
+          final bytes = await entity.readAsBytes();
+          archive.addFile(ArchiveFile(
+              'attachments/${p.basename(entity.path)}', bytes.length, bytes));
+        }
+      }
+    }
+    final zipped = ZipEncoder().encode(archive);
+    if (zipped == null) throw Exception('تعذّر إنشاء الأرشيف');
+    return EncryptionService.instance
+        .encryptBytes(Uint8List.fromList(zipped), password);
   }
 
   /// استعادة نسخة احتياطية من ملف يختاره المستخدم.
