@@ -9,6 +9,7 @@ import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../data/models/password_entry.dart';
 import '../features/editor/rich_text_field.dart';
+import '../features/editor/rich_text_field.dart';
 
 /// بطاقة عرض ملاحظة في الصفحة الرئيسية.
 class NoteCard extends StatelessWidget {
@@ -43,7 +44,7 @@ class NoteCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,

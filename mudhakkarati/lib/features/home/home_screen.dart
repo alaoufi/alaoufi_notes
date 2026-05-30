@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -7,7 +8,6 @@ import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
-import '../../widgets/type_picker_sheet.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../security/note_unlock.dart';
@@ -43,17 +43,31 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// زر + : ملاحظة نصية عادية مباشرة في القسم المفتوح حاليًا.
   Future<void> _addNote() async {
-    final type = await showTypePicker(context);
-    if (type == null || !mounted) return;
-    // ملاحظات كلمات المرور تتطلب رقمًا سريًا أولًا (محتوى محمي).
+    final catId = context.read<NotesProvider>().filterCategoryId;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NoteEditorScreen(
+            initialType: NoteType.text, initialCategoryId: catId),
+      ),
+    );
+  }
+
+  /// إنشاء نوع ملاحظة محدّد (من قائمة ⋮).
+  Future<void> _addTypedNote(NoteType type) async {
+    final catId = context.read<NotesProvider>().filterCategoryId;
     if (type == NoteType.password) {
       final ok = await ensurePinConfigured(context);
       if (!ok || !mounted) return;
     }
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => NoteEditorScreen(initialType: type)),
+      MaterialPageRoute(
+        builder: (_) =>
+            NoteEditorScreen(initialType: type, initialCategoryId: catId),
+      ),
     );
   }
 
@@ -87,7 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _empty(context, s),
                 )
               else
-                SliverToBoxAdapter(child: _notesBody(context, settings, provider)),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  sliver: SliverMasonryGrid.count(
+                    crossAxisCount:
+                        settings.layout == NoteLayout.grid ? 2 : 1,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childCount: provider.items.length,
+                    itemBuilder: (context, i) =>
+                        _card(context, provider.items[i]),
+                  ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 90)),
             ],
           ),
@@ -133,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : Icons.grid_view_outlined),
                 onPressed: settings.toggleLayout,
               ),
+              _overflowMenu(context, s, provider),
             ],
           ),
           const SizedBox(height: 8),

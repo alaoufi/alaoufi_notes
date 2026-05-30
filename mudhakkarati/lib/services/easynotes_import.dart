@@ -293,13 +293,26 @@ class EasyNotesImporter {
     if (s.startsWith('#')) {
       final hex = s.substring(1);
       if (hex.length == 6) {
-        return int.tryParse('FF$hex', radix: 16);
+        final v = int.tryParse(hex, radix: 16);
+        return v == null ? null : (0xFF000000 | v);
       } else if (hex.length == 8) {
-        // #AARRGGBB في Easy Notes → نفرض ألفا كاملة لوضوح البطاقة.
-        return int.tryParse('FF${hex.substring(2)}', radix: 16);
+        // #AARRGGBB في Easy Notes — ندمجه فوق الأبيض ليطابق مظهره الفاتح الأصلي.
+        final v = int.tryParse(hex, radix: 16);
+        return v == null ? null : _overWhite(v);
       }
     }
     return _gridColors[s];
+  }
+
+  /// يدمج لونًا شبه شفّاف فوق خلفية بيضاء ويعيد لونًا معتمًا مكافئًا.
+  int _overWhite(int argb) {
+    final a = (argb >> 24) & 0xFF;
+    final r = (argb >> 16) & 0xFF;
+    final g = (argb >> 8) & 0xFF;
+    final b = argb & 0xFF;
+    final af = a / 255.0;
+    int mix(int c) => (c * af + 255 * (1 - af)).round().clamp(0, 255);
+    return (0xFF << 24) | (mix(r) << 16) | (mix(g) << 8) | mix(b);
   }
 
   Future<String?> _extractFirstImage(
