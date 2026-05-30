@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
 import 'encryption_service.dart';
@@ -29,6 +30,31 @@ class BackupService {
   static final BackupService instance = BackupService._();
 
   static const _ext = 'mdkbak';
+
+  // مفاتيح حفظ وقت آخر عملية لكل وجهة.
+  static const _kLastLocal = 'last_backup_local';
+  static const _kLastShare = 'last_backup_share';
+  static const _kLastDrive = 'last_backup_drive';
+  static const _kLastRestore = 'last_restore';
+
+  Future<void> _stamp(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(key, DateTime.now().millisecondsSinceEpoch);
+  }
+
+  Future<DateTime?> _readStamp(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final ms = prefs.getInt(key);
+    return ms == null ? null : DateTime.fromMillisecondsSinceEpoch(ms);
+  }
+
+  Future<DateTime?> lastLocalBackup() => _readStamp(_kLastLocal);
+  Future<DateTime?> lastShareBackup() => _readStamp(_kLastShare);
+  Future<DateTime?> lastDriveBackup() => _readStamp(_kLastDrive);
+  Future<DateTime?> lastRestore() => _readStamp(_kLastRestore);
+
+  /// يُستدعى بعد رفع ناجح إلى Drive لتسجيل الوقت.
+  Future<void> markDriveBackup() => _stamp(_kLastDrive);
 
   /// إنشاء نسخة احتياطية مشفّرة وحفظها عبر منتقي الملفات.
   Future<BackupResult> exportBackup(String password) async {
@@ -78,6 +104,7 @@ class BackupService {
         bytes: encrypted,
       );
 
+      await _stamp(_kLastLocal);
       return BackupResult(
         true,
         'تم إنشاء النسخة الاحتياطية',
@@ -104,6 +131,7 @@ class BackupService {
         text: 'نسخة Alaoufi Notes الاحتياطية المشفّرة',
         subject: fileName,
       ));
+      await _stamp(_kLastShare);
       return BackupResult(true, 'تمت مشاركة النسخة', filePath: tmpPath);
     } catch (e) {
       return BackupResult(false, 'فشل المشاركة: $e');
@@ -187,6 +215,7 @@ class BackupService {
       // إعادة فتح قاعدة البيانات بالبيانات المستعادة.
       await AppDatabase.instance.reopen();
 
+      await _stamp(_kLastRestore);
       return const BackupResult(true, 'تمت الاستعادة بنجاح');
     } catch (e) {
       return BackupResult(false, 'فشل الاستيراد: $e');
@@ -226,6 +255,7 @@ class BackupService {
         }
       }
       await AppDatabase.instance.reopen();
+      await _stamp(_kLastRestore);
       return const BackupResult(true, 'تمت الاستعادة من السحابة');
     } catch (e) {
       return BackupResult(false, 'فشل الاستعادة: $e');

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../services/backup_service.dart';
@@ -59,6 +60,7 @@ class _BackupScreenState extends State<BackupScreen> {
     try {
       final bytes = await BackupService.instance.buildEncryptedBytes(pwd);
       final ok = await DriveSyncService.instance.upload(bytes);
+      if (ok) await BackupService.instance.markDriveBackup();
       _toast(ok ? 'تم رفع النسخة إلى Drive' : 'فشل الرفع');
     } catch (e) {
       _toast('فشل الرفع: $e');
@@ -139,6 +141,64 @@ class _BackupScreenState extends State<BackupScreen> {
     if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  /// بطاقة تعرض تاريخ ووقت آخر العمليات (محلي/مشاركة/Drive/استعادة).
+  Widget _statusCard(BuildContext context) {
+    final bs = BackupService.instance;
+    String fmt(DateTime? d) =>
+        d == null ? '—' : DateFormat('yyyy/MM/dd  HH:mm').format(d);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.history, size: 20),
+                const SizedBox(width: 8),
+                Text('آخر النسخ',
+                    style: Theme.of(context).textTheme.titleSmall),
+              ],
+            ),
+            const SizedBox(height: 8),
+            FutureBuilder<List<DateTime?>>(
+              future: Future.wait([
+                bs.lastLocalBackup(),
+                bs.lastShareBackup(),
+                bs.lastDriveBackup(),
+                bs.lastRestore(),
+              ]),
+              builder: (context, snap) {
+                final d = snap.data ?? const [null, null, null, null];
+                Widget row(IconData i, String label, DateTime? t) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        children: [
+                          Icon(i, size: 16, color: Theme.of(context).hintColor),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(label)),
+                          Text(fmt(t),
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                    );
+                return Column(
+                  children: [
+                    row(Icons.save_alt, 'حفظ محلي', d[0]),
+                    row(Icons.ios_share, 'مشاركة سحابية', d[1]),
+                    row(Icons.add_to_drive, 'رفع إلى Drive', d[2]),
+                    row(Icons.restore, 'آخر استعادة', d[3]),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _export() async {
@@ -235,6 +295,8 @@ class _BackupScreenState extends State<BackupScreen> {
           ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              _statusCard(context),
+              const SizedBox(height: 8),
               // ===== Google Drive =====
               Card(
                 child: Column(
