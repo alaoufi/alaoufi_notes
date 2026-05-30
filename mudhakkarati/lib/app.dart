@@ -7,6 +7,7 @@ import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/security/app_lock_gate.dart';
 import 'features/settings/settings_provider.dart';
+import 'services/notification_service.dart';
 
 class MudhakkaratiApp extends StatelessWidget {
   const MudhakkaratiApp({super.key});
@@ -17,6 +18,7 @@ class MudhakkaratiApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Alaoufi Notes',
+      navigatorKey: appNavigatorKey,
       debugShowCheckedModeBanner: false,
       themeMode: settings.themeMode,
       theme: AppTheme.light(settings.seedColor, settings.fontScale),

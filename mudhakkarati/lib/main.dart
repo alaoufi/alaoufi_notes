@@ -9,6 +9,7 @@ import 'data/database/app_database.dart';
 import 'data/repositories/category_repository.dart';
 import 'data/repositories/note_repository.dart';
 import 'data/repositories/reminder_repository.dart';
+import 'features/editor/note_editor_screen.dart';
 import 'features/home/notes_provider.dart';
 import 'features/reminders/reminders_provider.dart';
 import 'features/settings/settings_provider.dart';
@@ -70,10 +71,16 @@ Future<void> main() async {
     // مفتاح تشفير كلمات المرور (قد يفشل على بعض الأجهزة — لا يجب أن يُعطّل التطبيق).
     await _safe('vault', () => VaultService.instance.ensureKey());
 
-    // الإشعارات المحلية.
+    // الإشعارات/المنبّه المحلي.
     await _safe('notifications', () async {
       await NotificationService.instance.init();
       await NotificationService.instance.requestPermissions();
+      // فتح الملاحظة عند الضغط على التذكير.
+      NotificationService.instance.onOpenNote = (noteId) {
+        appNavigatorKey.currentState?.push(
+          MaterialPageRoute(builder: (_) => NoteEditorScreen(noteId: noteId)),
+        );
+      };
     });
 
     final db = AppDatabase.instance;
