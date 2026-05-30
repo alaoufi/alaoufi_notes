@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -166,7 +167,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _empty(context, s),
                 )
               else
-                SliverToBoxAdapter(child: _notesBody(context, settings, provider)),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  sliver: SliverMasonryGrid.count(
+                    crossAxisCount: settings.layout == NoteLayout.grid ? 2 : 1,
+                    mainAxisSpacing: 8,
+                    crossAxisSpacing: 8,
+                    childCount: provider.items.length,
+                    itemBuilder: (context, i) {
+                      final n = provider.items[i];
+                      return NoteCard(
+                        note: n,
+                        category: provider.categoryById(n.categoryId),
+                        onTap: () => _openNote(n),
+                        onLongPress: () => showNoteActions(context, n),
+                      );
+                    },
+                  ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 90)),
             ],
           ),
@@ -300,88 +318,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _notesBody(
-    BuildContext context,
-    SettingsProvider settings,
-    NotesProvider provider,
-  ) {
-    final s = S.of(context);
-    final pinned = provider.pinned;
-    final others = provider.unpinned;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (pinned.isNotEmpty) ...[
-            _sectionLabel(context, s.t('pinned')),
-            _grid(context, settings, provider, pinned),
-            if (others.isNotEmpty) _sectionLabel(context, s.t('others')),
-          ],
-          _grid(context, settings, provider, others),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionLabel(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
-      child: Text(text,
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(color: Theme.of(context).hintColor)),
-    );
-  }
-
-  Widget _grid(
-    BuildContext context,
-    SettingsProvider settings,
-    NotesProvider provider,
-    List<Note> notes,
-  ) {
-    if (notes.isEmpty) return const SizedBox.shrink();
-
-    Widget cardFor(Note n) => NoteCard(
-          note: n,
-          category: provider.categoryById(n.categoryId),
-          onTap: () => _openNote(n),
-          onLongPress: () => showNoteActions(context, n),
-        );
-
-    if (settings.layout == NoteLayout.list) {
-      return Column(
-        children: notes
-            .map((n) => Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: cardFor(n),
-                ))
-            .toList(),
-      );
-    }
-
-    // عرض شبكي بعمودين (Masonry بسيط).
-    final left = <Note>[];
-    final right = <Note>[];
-    for (var i = 0; i < notes.length; i++) {
-      (i.isEven ? left : right).add(notes[i]);
-    }
-    Widget column(List<Note> col) => Expanded(
-          child: Column(
-            children: col
-                .map((n) => Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: cardFor(n),
-                    ))
-                .toList(),
-          ),
-        );
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [column(left), column(right)],
-    );
-  }
 }

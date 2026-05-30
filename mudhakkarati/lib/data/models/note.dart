@@ -30,6 +30,9 @@ class Note {
   final String? pdfPath;
   final String? drawingPath;
 
+  /// نمط خلفية الصفحة: 0=سادة، 1=مسطّر، 2=شبكي، 3=نقاط.
+  final int bgStyle;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -53,6 +56,7 @@ class Note {
     this.audioPath,
     this.pdfPath,
     this.drawingPath,
+    this.bgStyle = 0,
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
@@ -94,6 +98,7 @@ class Note {
       'audio_path': audioPath,
       'pdf_path': pdfPath,
       'drawing_path': drawingPath,
+      'bg_style': bgStyle,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
     };
@@ -119,6 +124,7 @@ class Note {
       audioPath: map['audio_path'] as String?,
       pdfPath: map['pdf_path'] as String?,
       drawingPath: map['drawing_path'] as String?,
+      bgStyle: (map['bg_style'] as int?) ?? 0,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
       tags: tags,
@@ -145,6 +151,7 @@ class Note {
     String? audioPath,
     String? pdfPath,
     String? drawingPath,
+    int? bgStyle,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
@@ -166,6 +173,7 @@ class Note {
       audioPath: audioPath ?? this.audioPath,
       pdfPath: pdfPath ?? this.pdfPath,
       drawingPath: drawingPath ?? this.drawingPath,
+      bgStyle: bgStyle ?? this.bgStyle,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tags: tags ?? this.tags,

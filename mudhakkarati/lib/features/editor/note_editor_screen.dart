@@ -15,6 +15,7 @@ import '../../services/vault_service.dart';
 import 'password_form.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/note_actions.dart';
+import '../../widgets/paper_background.dart';
 import '../drawing/drawing_screen.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminder_dialog.dart';
@@ -266,6 +267,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = AppColors.resolveNoteColor(_note.color, isDark);
+    final onBg = ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+        ? Colors.white
+        : Colors.black87;
 
     return PopScope(
       canPop: false,
@@ -293,11 +297,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               tooltip: s.t('color'),
               icon: const Icon(Icons.palette_outlined),
               onPressed: () async {
-                final res = await showColorPicker(context, _note.color);
+                final res = await showColorPicker(context, _note.color,
+                    currentStyle: _note.bgStyle);
                 if (res != null) {
-                  setState(() => _note = _note.copyWith(color: res.value, clearColor: res.value == null));
+                  setState(() => _note = _note.copyWith(
+                        color: res.value,
+                        clearColor: res.value == null,
+                        bgStyle: res.bgStyle,
+                      ));
+                  _dirty = true;
                   await _ensureSaved();
-                  await context.read<NotesProvider>().setColor(_note, res.value);
+                  await _save(force: true);
                 }
               },
             ),
@@ -332,7 +342,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ),
           ],
         ),
-        body: SafeArea(
+        body: PaperBackground(
+          style: _note.bgStyle,
+          lineColor: onBg.withValues(alpha: 0.12),
+          child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
             children: [
@@ -361,6 +374,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               _tagsEditor(s),
             ],
           ),
+        ),
         ),
         // شريط أدوات التنسيق مثبّت أسفل الشاشة (لنوع النص) — يبقى ظاهرًا فوق
         // لوحة المفاتيح ولا يختفي عند تحديد النص.
