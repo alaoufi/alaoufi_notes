@@ -62,11 +62,23 @@ class RichTextEditorBody extends StatelessWidget {
       child: QuillEditor.basic(
         controller: controller.quill,
         focusNode: controller.focus,
-        config: const QuillEditorConfig(
+        config: QuillEditorConfig(
           autoFocus: false,
           expands: false,
-          padding: EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           placeholder: 'اكتب ملاحظتك هنا...',
+          // قائمة (قص/نسخ/لصق) مثبّتة أعلى الشاشة حتى لا تغطّي شريط التنسيق
+          // في الأسفل عند «تحديد الكل».
+          contextMenuBuilder: (context, state) {
+            final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
+            final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
+            return TextFieldTapRegion(
+              child: AdaptiveTextSelectionToolbar.buttonItems(
+                anchors: TextSelectionToolbarAnchors(primaryAnchor: anchor),
+                buttonItems: state.contextMenuButtonItems,
+              ),
+            );
+          },
         ),
       ),
     );
