@@ -33,6 +33,24 @@ class _RichTextFieldState extends State<RichTextField> {
       selection: const TextSelection.collapsed(offset: 0),
     );
     _controller.addListener(_onChanged);
+    // لتحديث رقم حجم الخط المعروض عند تحريك المؤشّر.
+    _controller.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  int _currentSize() {
+    final v = _controller.getSelectionStyle().attributes['size']?.value;
+    return int.tryParse(v?.toString() ?? '') ?? 16;
+  }
+
+  void _setSize(int size) {
+    final clamped = size.clamp(8, 96);
+    _controller.formatSelection(
+        Attribute('size', AttributeScope.inline, '$clamped'));
+    if (mounted) setState(() {});
   }
 
   static Document _documentFrom(String content) {
@@ -62,6 +80,7 @@ class _RichTextFieldState extends State<RichTextField> {
   void dispose() {
     _debounce?.cancel();
     _controller.removeListener(_onChanged);
+    _controller.removeListener(_refresh);
     _controller.dispose();
     _focus.dispose();
     super.dispose();
@@ -77,7 +96,7 @@ class _RichTextFieldState extends State<RichTextField> {
           config: const QuillSimpleToolbarConfig(
             multiRowsDisplay: false,
             showFontFamily: false,
-            showFontSize: true,
+            showFontSize: false,
             showBoldButton: true,
             showItalicButton: true,
             showUnderLineButton: true,
@@ -106,6 +125,7 @@ class _RichTextFieldState extends State<RichTextField> {
             showRedo: true,
           ),
         ),
+        _fontSizeBar(context),
         const SizedBox(height: 8),
         Container(
           constraints: const BoxConstraints(minHeight: 220),
@@ -121,6 +141,59 @@ class _RichTextFieldState extends State<RichTextField> {
           ),
         ),
       ],
+    );
+  }
+
+  /// متحكّم رقمي بحجم الخط (− 16 +) كما في تطبيقات المذكّرات الاحترافية.
+  Widget _fontSizeBar(BuildContext context) {
+    final size = _currentSize();
+    final scheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Icon(Icons.format_size, size: 18, color: scheme.primary),
+          const SizedBox(width: 8),
+          Material(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(24),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.remove),
+                  tooltip: 'تصغير',
+                  onPressed: () => _setSize(size - 2),
+                ),
+                SizedBox(
+                  width: 32,
+                  child: Text('$size',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                ),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.add),
+                  tooltip: 'تكبير',
+                  onPressed: () => _setSize(size + 2),
+                ),
+              ],
+            ),
+          ),
+          const Spacer(),
+          // أزرار سريعة لأحجام شائعة.
+          for (final s in const [14, 18, 24, 32])
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: ActionChip(
+                label: Text('$s'),
+                visualDensity: VisualDensity.compact,
+                onPressed: () => _setSize(s),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
