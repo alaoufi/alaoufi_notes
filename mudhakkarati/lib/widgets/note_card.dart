@@ -43,7 +43,7 @@ class NoteCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -227,12 +227,13 @@ class NoteCard extends StatelessWidget {
     final plain = richToPlainText(note.content);
     if (plain.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
-      padding: const EdgeInsets.only(top: 6),
+      padding: const EdgeInsets.only(top: 4),
       child: Text(
         plain,
-        maxLines: 6,
+        maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: onBg.withOpacity(0.85), height: 1.4),
+        style: TextStyle(
+            color: onBg.withOpacity(0.8), height: 1.3, fontSize: 13),
       ),
     );
   }

@@ -7,7 +7,6 @@ import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
-import '../../widgets/type_picker_sheet.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../security/note_unlock.dart';
@@ -43,17 +42,97 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// زر + : ملاحظة نصية عادية مباشرة داخل القسم المفتوح حاليًا.
   Future<void> _addNote() async {
-    final type = await showTypePicker(context);
-    if (type == null || !mounted) return;
-    // ملاحظات كلمات المرور تتطلب رقمًا سريًا أولًا (محتوى محمي).
+    final catId = context.read<NotesProvider>().filterCategoryId;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NoteEditorScreen(
+            initialType: NoteType.text, initialCategoryId: catId),
+      ),
+    );
+  }
+
+  /// إنشاء نوع ملاحظة محدّد (من قائمة النقاط الثلاث).
+  Future<void> _addTypedNote(NoteType type) async {
+    final catId = context.read<NotesProvider>().filterCategoryId;
     if (type == NoteType.password) {
       final ok = await ensurePinConfigured(context);
       if (!ok || !mounted) return;
     }
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => NoteEditorScreen(initialType: type)),
+      MaterialPageRoute(
+        builder: (_) =>
+            NoteEditorScreen(initialType: type, initialCategoryId: catId),
+      ),
+    );
+  }
+
+
+  Widget _overflowMenu(BuildContext context, S s, NotesProvider provider) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert),
+      tooltip: 'المزيد',
+      onSelected: (v) {
+        if (v.startsWith('type_')) {
+          _addTypedNote(NoteType.values.byName(v.substring(5)));
+        } else if (v.startsWith('sort_')) {
+          provider.setSort(NoteSort.values.byName(v.substring(5)));
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem<String>(
+            enabled: false, child: Text('إضافة نوع آخر')),
+        PopupMenuItem<String>(
+            value: 'type_checklist',
+            child: _menuRow(Icons.checklist, s.t('note_checklist'))),
+        PopupMenuItem<String>(
+            value: 'type_image',
+            child: _menuRow(Icons.image, s.t('note_image'))),
+        PopupMenuItem<String>(
+            value: 'type_audio', child: _menuRow(Icons.mic, s.t('note_audio'))),
+        PopupMenuItem<String>(
+            value: 'type_pdf',
+            child: _menuRow(Icons.picture_as_pdf, s.t('note_pdf'))),
+        PopupMenuItem<String>(
+            value: 'type_drawing',
+            child: _menuRow(Icons.brush, s.t('note_drawing'))),
+        PopupMenuItem<String>(
+            value: 'type_password',
+            child: _menuRow(Icons.vpn_key, s.t('note_password'))),
+        const PopupMenuDivider(),
+        const PopupMenuItem<String>(enabled: false, child: Text('فرز حسب')),
+        _sortItem('sort_updatedDesc', 'الأحدث تعديلًا', provider),
+        _sortItem('sort_createdDesc', 'الأحدث إنشاءً', provider),
+        _sortItem('sort_createdAsc', 'الأقدم إنشاءً', provider),
+        _sortItem('sort_titleAsc', 'العنوان (أ-ي)', provider),
+      ],
+    );
+  }
+
+  Widget _menuRow(IconData icon, String label) => Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      );
+
+  PopupMenuItem<String> _sortItem(
+      String value, String label, NotesProvider provider) {
+    final selected = 'sort_${provider.sort.name}' == value;
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        children: [
+          Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              size: 18),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      ),
     );
   }
 
@@ -133,6 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : Icons.grid_view_outlined),
                 onPressed: settings.toggleLayout,
               ),
+              _overflowMenu(context, s, provider),
             ],
           ),
           const SizedBox(height: 8),
