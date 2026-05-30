@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../data/models/enums.dart';
+import '../../services/notification_service.dart';
 
 /// إعدادات المظهر واللغة والعرض. تُحفظ محليًا في SharedPreferences.
 class SettingsProvider extends ChangeNotifier {
@@ -11,18 +12,21 @@ class SettingsProvider extends ChangeNotifier {
   double _fontScale = 1.0;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
+  String _alarmTone = 'alarm';
 
   ThemeMode get themeMode => _themeMode;
   Color get seedColor => _seedColor;
   double get fontScale => _fontScale;
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
+  String get alarmTone => _alarmTone;
 
   static const _kMode = 'theme_mode';
   static const _kSeed = 'seed_color';
   static const _kFont = 'font_scale';
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
+  static const _kTone = 'alarm_tone';
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -37,7 +41,17 @@ class SettingsProvider extends ChangeNotifier {
     _fontScale = prefs.getDouble(_kFont) ?? 1.0;
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
+    _alarmTone = prefs.getString(_kTone) ?? 'alarm';
+    NotificationService.instance.tone = _alarmTone;
     notifyListeners();
+  }
+
+  Future<void> setAlarmTone(String tone) async {
+    _alarmTone = tone;
+    NotificationService.instance.tone = tone;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTone, tone);
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {

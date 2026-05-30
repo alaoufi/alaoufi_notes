@@ -118,6 +118,24 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
+          // نغمة التنبيه
+          ListTile(
+            leading: const Icon(Icons.notifications_active_outlined),
+            title: const Text('نغمة التنبيه'),
+            trailing: DropdownButton<String>(
+              value: settings.alarmTone,
+              underline: const SizedBox.shrink(),
+              items: const [
+                DropdownMenuItem(value: 'alarm', child: Text('إنذار')),
+                DropdownMenuItem(value: 'chime', child: Text('لطيفة')),
+                DropdownMenuItem(value: 'bell', child: Text('جرس')),
+              ],
+              onChanged: (v) {
+                if (v != null) settings.setAlarmTone(v);
+              },
+            ),
+          ),
+
           const Divider(),
           _section(context, s.t('security')),
           _nav(context, Icons.lock_outline, s.t('security'),

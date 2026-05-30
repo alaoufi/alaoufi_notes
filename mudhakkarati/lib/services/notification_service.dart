@@ -29,8 +29,6 @@ class NotificationService {
   bool _initialized = false;
 
   // قناة المنبّه (صوت إنذار متواصل + اهتزاز + أهمية قصوى).
-  static const _alarmChannelId = 'alaoufi_alarm';
-  static const _alarmChannelName = 'المنبّه والتذكيرات';
 
   static const _snoozeAction = 'snooze';
   static const _dismissAction = 'dismiss';
@@ -60,20 +58,33 @@ class NotificationService {
 
     final androidImpl = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
-    await androidImpl?.createNotificationChannel(
-      const AndroidNotificationChannel(
-        _alarmChannelId,
-        _alarmChannelName,
-        description: 'تنبيهات المنبّه والتذكيرات',
-        importance: Importance.max,
-        playSound: true,
-        sound: RawResourceAndroidNotificationSound('alarm'),
-        audioAttributesUsage: AudioAttributesUsage.alarm,
-        enableVibration: true,
-      ),
-    );
+    // قناة لكل نغمة (أندرويد يربط الصوت بالقناة).
+    for (final tone in alarmTones) {
+      await androidImpl?.createNotificationChannel(
+        AndroidNotificationChannel(
+          'alaoufi_alarm_$tone',
+          'المنبّه ($tone)',
+          description: 'تنبيهات المنبّه والتذكيرات',
+          importance: Importance.max,
+          playSound: true,
+          sound: RawResourceAndroidNotificationSound(tone),
+          audioAttributesUsage: AudioAttributesUsage.alarm,
+          enableVibration: true,
+        ),
+      );
+    }
 
     _initialized = true;
+  }
+
+  /// النغمات المتاحة (أسماء ملفات raw).
+  static const alarmTones = ['alarm', 'chime', 'bell'];
+
+  /// النغمة المختارة حاليًا (افتراضي alarm) — تُضبط من الإعدادات.
+  String _tone = 'alarm';
+  String get tone => _tone;
+  set tone(String t) {
+    if (alarmTones.contains(t)) _tone = t;
   }
 
   Future<void> requestPermissions() async {
@@ -84,15 +95,15 @@ class NotificationService {
   }
 
   AndroidNotificationDetails get _alarmDetails => AndroidNotificationDetails(
-        _alarmChannelId,
-        _alarmChannelName,
+        'alaoufi_alarm_$_tone',
+        'المنبّه ($_tone)',
         channelDescription: 'تنبيهات المنبّه والتذكيرات',
         importance: Importance.max,
         priority: Priority.max,
         category: AndroidNotificationCategory.alarm,
         fullScreenIntent: true,
         playSound: true,
-        sound: const RawResourceAndroidNotificationSound('alarm'),
+        sound: RawResourceAndroidNotificationSound(_tone),
         audioAttributesUsage: AudioAttributesUsage.alarm,
         enableVibration: true,
         vibrationPattern: Int64List.fromList([0, 600, 300, 600, 300, 600]),
