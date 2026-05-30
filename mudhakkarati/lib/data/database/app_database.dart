@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_sqlcipher/sqflite.dart';
+
+import 'db_key.dart';
 
 /// مدير قاعدة بيانات SQLite المحلية.
 ///
-/// كل البيانات تُخزَّن داخل الجهاز فقط — لا اتصال بأي خادم.
+/// كل البيانات تُخزَّن داخل الجهاز فقط — لا اتصال بأي خادم، والملف نفسه
+/// مشفّر بالكامل عبر SQLCipher (AES-256) بمفتاح محفوظ في التخزين الآمن.
 class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
@@ -27,8 +32,14 @@ class AppDatabase {
 
   Future<Database> _open() async {
     final dbPath = await path;
+    final key = await DbKeyManager.instance.getOrCreateKey();
+
+    // ترحيل آمن للقاعدة غير المشفّرة (نسخة قديمة) إلى مشفّرة — لمرة واحدة.
+    await _migrateToEncryptedIfNeeded(dbPath, key);
+
     return openDatabase(
       dbPath,
+      password: key,
       version: _dbVersion,
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -38,12 +49,99 @@ class AppDatabase {
     );
   }
 
+  /// يحوّل قاعدة بيانات نصّية (غير مشفّرة) إلى مشفّرة بأمان دون فقدان البيانات.
+  ///
+  /// لا يحذف الأصل إلا بعد التحقق من فتح النسخة المشفّرة وتطابق عدد الصفوف.
+  Future<void> _migrateToEncryptedIfNeeded(String dbPath, String key) async {
+    if (await DbKeyManager.instance.isMigrated()) return;
+
+    final dbFile = File(dbPath);
+    if (!await dbFile.exists()) {
+      // تثبيت جديد: ستُنشأ القاعدة مشفّرة مباشرة.
+      await DbKeyManager.instance.markMigrated();
+      return;
+    }
+
+    // هل الملف مشفّر بالفعل؟ نختبر فتحه بالمفتاح.
+    if (await _opensWithKey(dbPath, key)) {
+      await DbKeyManager.instance.markMigrated();
+      return;
+    }
+
+    // الملف نصّي قديم — نحوّله.
+    final encPath = '$dbPath.enc';
+    final encFile = File(encPath);
+    if (await encFile.exists()) await encFile.delete();
+
+    Database? plain;
+    try {
+      plain = await openDatabase(dbPath); // بلا مفتاح = فتح نصّي.
+      final ver = Sqflite.firstIntValue(
+              await plain.rawQuery('PRAGMA user_version')) ??
+          0;
+      final srcNotes = Sqflite.firstIntValue(
+              await plain.rawQuery('SELECT COUNT(*) FROM notes')) ??
+          0;
+
+      await plain.rawQuery(
+          "ATTACH DATABASE ? AS enc KEY ?", [encPath, key]);
+      await plain.rawQuery("SELECT sqlcipher_export('enc')");
+      await plain.rawQuery("PRAGMA enc.user_version = $ver");
+      await plain.rawQuery("DETACH DATABASE enc");
+      await plain.close();
+      plain = null;
+
+      // تحقّق: افتح المشفّرة وقارن عدد الملاحظات.
+      final enc = await openDatabase(encPath, password: key);
+      final dstNotes = Sqflite.firstIntValue(
+              await enc.rawQuery('SELECT COUNT(*) FROM notes')) ??
+          -1;
+      await enc.close();
+
+      if (dstNotes != srcNotes) {
+        // فشل التحقق — أبقِ الأصل ولا تبدّل شيئًا.
+        if (await encFile.exists()) await encFile.delete();
+        return;
+      }
+
+      // نجح: احتفظ بنسخة أمان مؤقتة ثم ضع المشفّرة مكان الأصل.
+      final bak = File('$dbPath.plain.bak');
+      if (await bak.exists()) await bak.delete();
+      await dbFile.rename(bak.path);
+      await encFile.rename(dbPath);
+      await DbKeyManager.instance.markMigrated();
+      // حذف نسخة الأمان النصّية (لتحقيق التشفير فعليًا).
+      if (await bak.exists()) await bak.delete();
+    } catch (_) {
+      // أي خطأ: لا نلمس الأصل؛ ننظّف المؤقت ونؤجّل (سيعمل التطبيق نصّيًا
+      // في المحاولة القادمة بعد الإصلاح، دون فقدان بيانات).
+      try {
+        await plain?.close();
+      } catch (_) {}
+      if (await encFile.exists()) await encFile.delete();
+      rethrow;
+    }
+  }
+
+  /// يحاول فتح القاعدة بالمفتاح؛ يعيد true إن نجح (أي أنها مشفّرة بالفعل).
+  Future<bool> _opensWithKey(String dbPath, String key) async {
+    try {
+      final db = await openDatabase(dbPath, password: key, readOnly: true);
+      await db.rawQuery('SELECT count(*) FROM sqlite_master');
+      await db.close();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// إعادة فتح قاعدة البيانات (بعد استعادة نسخة احتياطية).
   Future<void> reopen() async {
     await _db?.close();
     _db = null;
     _db = await _open();
   }
+
 
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''

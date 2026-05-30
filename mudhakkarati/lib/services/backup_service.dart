@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -10,6 +11,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
+import '../data/database/db_key.dart';
 import 'encryption_service.dart';
 import 'file_service.dart';
 
@@ -63,6 +65,12 @@ class BackupService {
         final bytes = await dbFile.readAsBytes();
         archive.addFile(ArchiveFile('database.db', bytes.length, bytes));
       }
+
+      // 1ب) مفتاح تشفير القاعدة (محميّ أصلًا بكلمة مرور النسخة) — ليعمل
+      // فكّ التشفير عند الاستعادة على أي جهاز.
+      final key = await DbKeyManager.instance.getOrCreateKey();
+      final keyBytes = utf8.encode(key);
+      archive.addFile(ArchiveFile('dbkey.txt', keyBytes.length, keyBytes));
 
       // 2) كل المرفقات.
       final attDir = await FileService.instance.attachmentsDir();
@@ -142,6 +150,9 @@ class BackupService {
       final bytes = await dbFile.readAsBytes();
       archive.addFile(ArchiveFile('database.db', bytes.length, bytes));
     }
+    final key = await DbKeyManager.instance.getOrCreateKey();
+    final keyBytes = utf8.encode(key);
+    archive.addFile(ArchiveFile('dbkey.txt', keyBytes.length, keyBytes));
     final attDir = await FileService.instance.attachmentsDir();
     if (await attDir.exists()) {
       for (final entity in attDir.listSync()) {
@@ -196,15 +207,28 @@ class BackupService {
         }
       }
 
+      String? restoredKey;
       for (final file in archive) {
         if (!file.isFile) continue;
         final data = file.content as List<int>;
         if (file.name == 'database.db') {
           await File(dbPath).writeAsBytes(data, flush: true);
+        } else if (file.name == 'dbkey.txt') {
+          restoredKey = utf8.decode(data);
         } else if (file.name.startsWith('attachments/')) {
           final dest = p.join(attDir.path, p.basename(file.name));
           await File(dest).writeAsBytes(data, flush: true);
         }
+      }
+
+      // ضبط مفتاح التشفير ليطابق القاعدة المستعادة.
+      if (restoredKey != null && restoredKey.isNotEmpty) {
+        // نسخة مشفّرة: استخدم مفتاحها وتجاوز الترحيل.
+        await DbKeyManager.instance.setKey(restoredKey);
+        await DbKeyManager.instance.markMigrated();
+      } else {
+        // نسخة قديمة (غير مشفّرة): أعد الترحيل لتشفيرها بمفتاح هذا الجهاز.
+        await DbKeyManager.instance.clearMigrated();
       }
 
       // إعادة فتح قاعدة البيانات بالبيانات المستعادة.
