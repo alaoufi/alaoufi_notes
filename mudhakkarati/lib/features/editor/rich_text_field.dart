@@ -60,6 +60,7 @@ class RichTextEditorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hide = context.watch<SettingsProvider>().hideSelectionMenu;
     return Container(
       constraints: const BoxConstraints(minHeight: 240),
       child: QuillEditor.basic(
@@ -70,11 +71,11 @@ class RichTextEditorBody extends StatelessWidget {
           expands: false,
           padding: const EdgeInsets.symmetric(vertical: 8),
           placeholder: 'اكتب ملاحظتك هنا...',
-          // قائمة (قص/نسخ/لصق) مثبّتة أعلى الشاشة حتى لا تغطّي شريط التنسيق
-          // في الأسفل عند «تحديد الكل». ويمكن إخفاؤها كليًّا من الإعدادات.
+          // عند تفعيل الإخفاء: نوقف شريط (نسخ/لصق/تحديد) كليًّا فلا يغطّي
+          // أدوات الخط والحجم. لا يزال بإمكانك تحديد النص وتنسيقه.
+          enableSelectionToolbar: !hide,
+          // عند الإظهار: نثبّت القائمة أعلى الشاشة كي لا تغطّي شريط التنسيق.
           contextMenuBuilder: (context, state) {
-            final hide = context.read<SettingsProvider>().hideSelectionMenu;
-            if (hide) return const SizedBox.shrink();
             final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
             final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
             return TextFieldTapRegion(
@@ -97,6 +98,8 @@ class RichTextToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
+    final hide = settings.hideSelectionMenu;
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
@@ -104,11 +107,21 @@ class RichTextToolbar extends StatelessWidget {
         top: false,
         child: QuillSimpleToolbar(
           controller: controller.quill,
-          config: const QuillSimpleToolbarConfig(
+          config: QuillSimpleToolbarConfig(
             multiRowsDisplay: false,
             showFontFamily: true,
             showFontSize: true,
-            buttonOptions: QuillSimpleToolbarButtonOptions(
+            // زر سريع لإخفاء/إظهار قائمة (نسخ/لصق) أثناء التحرير.
+            customButtons: [
+              QuillToolbarCustomButtonOptions(
+                icon: Icon(hide
+                    ? Icons.content_paste_off_outlined
+                    : Icons.content_paste_outlined),
+                tooltip: hide ? 'إظهار قائمة النسخ/اللصق' : 'إخفاء قائمة النسخ/اللصق',
+                onPressed: () => settings.setHideSelectionMenu(!hide),
+              ),
+            ],
+            buttonOptions: const QuillSimpleToolbarButtonOptions(
               fontFamily: QuillToolbarFontFamilyButtonOptions(
                 items: {
                   'Cairo': 'Cairo',
