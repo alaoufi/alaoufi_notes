@@ -81,9 +81,15 @@ class NoteRepository {
     return _attachTags(db, rows);
   }
 
-  /// الملاحظات السرية المقفلة (للقسم المحمي).
-  Future<List<Note>> getLocked() async {
+  /// كل الملاحظات (لأغراض الاستيراد/منع التكرار).
+  Future<List<Note>> getEverything() async {
     final db = await _db;
+    final rows = await db.query('notes');
+    return _attachTags(db, rows);
+  }
+
+  /// الملاحظات السرية المقفلة (للقسم المحمي).
+  Future<List<Note>> getLocked() async {    final db = await _db;
     final rows = await db.query(
       'notes',
       where: 'is_locked = 1 AND is_deleted = 0 AND is_archived = 0',

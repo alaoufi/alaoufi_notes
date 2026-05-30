@@ -14,6 +14,7 @@ import 'file_service.dart';
 class EasyNotesImportResult {
   final bool success;
   final int imported;
+  final int updated;
   final int skipped;
   final int newCategories;
   final String message;
@@ -21,16 +22,15 @@ class EasyNotesImportResult {
   EasyNotesImportResult({
     required this.success,
     this.imported = 0,
+    this.updated = 0,
     this.skipped = 0,
     this.newCategories = 0,
     required this.message,
   });
 }
 
-/// يستورد ملاحظات تطبيق Easy Notes من ملف نسخته الاحتياطية (.backup).
-///
-/// صيغة الملف: أرشيف ZIP يحوي أرشيف ZIP لكل ملاحظة، بداخله note.json
-/// (العنوان، النص، التصنيف، الوسوم، المفضلة، التثبيت، التواريخ...) ومرفقاتها.
+/// يستورد ملاحظات Easy Notes من ملف نسخته الاحتياطية (.backup) مع الحفاظ على
+/// التنسيق (عريض/لون/تظليل/حجم/تسطير/شطب) ولون الخلفية والتصنيفات والوسوم.
 class EasyNotesImporter {
   EasyNotesImporter(this.noteRepo, this.categoryRepo);
 
@@ -42,6 +42,15 @@ class EasyNotesImporter {
     0xFFFFA726, 0xFF66BB6A, 0xFFEC407A, 0xFF8D6E63,
   ];
 
+  // تقريب أنماط grid_* إلى ألوان صلبة قريبة.
+  static const _gridColors = {
+    'grid_color_bg10': 0xFFF8BBD0,
+    'grid_bg11': 0xFFC8E6C9,
+    'grid_bg18': 0xFFBBDEFB,
+    'grid_bg7': 0xFFFFF9C4,
+    'grid_bg3': 0xFFFFE0B2,
+  };
+
   Future<EasyNotesImportResult> importBackup(
     Uint8List bytes, {
     bool includeTrashed = false,
@@ -49,15 +58,23 @@ class EasyNotesImporter {
     Archive outer;
     try {
       outer = ZipDecoder().decodeBytes(bytes);
-    } catch (e) {
+    } catch (_) {
       return EasyNotesImportResult(
-          success: false, message: 'تعذّر قراءة الملف — تأكّد أنه نسخة Easy Notes.');
+          success: false,
+          message: 'تعذّر قراءة الملف — تأكّد أنه نسخة Easy Notes.');
     }
 
-    final existing = await categoryRepo.getAll();
-    final catByName = <String, int>{for (final c in existing) c.name: c.id!};
-    var colorIdx = existing.length;
-    var imported = 0, skipped = 0, newCats = 0;
+    final existingCats = await categoryRepo.getAll();
+    final catByName = <String, int>{for (final c in existingCats) c.name: c.id!};
+    var colorIdx = existingCats.length;
+    var imported = 0, updated = 0, skipped = 0, newCats = 0;
+
+    // مفتاح منع التكرار: تاريخ الإنشاء + العنوان → معرّف الملاحظة.
+    final existingNotes = await noteRepo.getEverything();
+    final byKey = <String, int>{
+      for (final n in existingNotes)
+        '${n.createdAt.millisecondsSinceEpoch}|${n.title}': n.id!
+    };
 
     Future<int?> ensureCategory(String? name) async {
       final n = name?.trim() ?? '';
@@ -90,8 +107,8 @@ class EasyNotesImporter {
         }
 
         final title = (d['title'] as String?)?.trim() ?? '';
-        final content = (d['content'] as String?) ?? '';
-        if (title.isEmpty && content.trim().isEmpty) {
+        final plain = (d['content'] as String?) ?? '';
+        if (title.isEmpty && plain.trim().isEmpty) {
           skipped++;
           continue;
         }
@@ -110,11 +127,21 @@ class EasyNotesImporter {
 
         final imagePath = await _extractFirstImage(inner, d['attachmentsList']);
 
+        // النص: صورة → نص عادي، وإلا نص غني (Delta) مع التنسيق.
+        final spans = <String>[
+          ...((d['address'] as String?) ?? '').split(','),
+          ...((d['richText'] as String?) ?? '').split(','),
+        ];
+        final content = imagePath != null
+            ? plain
+            : _toDelta(plain, spans);
+
         final created = _ms(d['creation']) ?? DateTime.now();
-        final note = Note(
+        final base = Note(
           title: title,
           content: content,
           type: imagePath != null ? NoteType.image : NoteType.text,
+          color: _bgColor(d['stickyColor'] as String?),
           isFavorite: _truthy(d['favorite']),
           isPinned: _truthy(d['isPined']),
           isArchived: d['archived'] == true,
@@ -126,25 +153,157 @@ class EasyNotesImporter {
           updatedAt: _ms(d['lastModification']) ?? created,
           tags: tags,
         );
-        await noteRepo.insertNote(note);
-        imported++;
+
+        final key = '${created.millisecondsSinceEpoch}|$title';
+        final existingId = byKey[key];
+        if (existingId != null) {
+          await noteRepo.updateNote(base.copyWith(id: existingId));
+          updated++;
+        } else {
+          final id = await noteRepo.insertNote(base);
+          byKey[key] = id;
+          imported++;
+        }
       } catch (_) {
         skipped++;
       }
     }
 
+    final total = imported + updated;
     return EasyNotesImportResult(
-      success: imported > 0,
+      success: total > 0,
       imported: imported,
+      updated: updated,
       skipped: skipped,
       newCategories: newCats,
-      message: imported > 0
-          ? 'تم استيراد $imported ملاحظة و$newCats تصنيف.'
+      message: total > 0
+          ? 'تم: $imported جديدة، $updated محدّثة، $newCats تصنيف.'
           : 'لم يتم استيراد أي ملاحظة.',
     );
   }
 
-  Future<String?> _extractFirstImage(Archive inner, dynamic attachmentsList) async {
+  /// تحويل نص Easy Notes + مقاطع التنسيق إلى Delta JSON الخاص بـ flutter_quill.
+  String _toDelta(String content, List<String> spans) {
+    if (content.isEmpty) {
+      return jsonEncode([
+        {'insert': '\n'}
+      ]);
+    }
+    final len = content.length;
+    final bold = List<bool>.filled(len, false);
+    final underline = List<bool>.filled(len, false);
+    final strike = List<bool>.filled(len, false);
+    final color = List<String?>.filled(len, null);
+    final bg = List<String?>.filled(len, null);
+    final size = List<String?>.filled(len, null);
+
+    final re = RegExp(r'^([a-zA-Z]+)(\d+)/(\d+)/(-?\d+)$');
+    for (final raw in spans) {
+      final m = re.firstMatch(raw.trim());
+      if (m == null) continue;
+      final t = m.group(1)!;
+      var s = int.parse(m.group(2)!);
+      var e = int.parse(m.group(3)!);
+      final v = int.parse(m.group(4)!);
+      if (s < 0) s = 0;
+      if (e > len) e = len;
+      if (e <= s) continue;
+      for (var i = s; i < e; i++) {
+        switch (t) {
+          case 's':
+            bold[i] = true;
+            break;
+          case 'u':
+            underline[i] = true;
+            break;
+          case 'd':
+            strike[i] = true;
+            break;
+          case 'c':
+            color[i] = _hex(v);
+            break;
+          case 'h':
+            if (v != 0) bg[i] = _hex(v);
+            break;
+          case 'f':
+            if (v >= 8 && v <= 96) size[i] = v.toString();
+            break;
+        }
+      }
+    }
+
+    final ops = <Map<String, dynamic>>[];
+    final buf = StringBuffer();
+    Map<String, dynamic> cur = {};
+
+    void flush() {
+      if (buf.isEmpty) return;
+      final op = <String, dynamic>{'insert': buf.toString()};
+      if (cur.isNotEmpty) op['attributes'] = Map<String, dynamic>.of(cur);
+      ops.add(op);
+      buf.clear();
+    }
+
+    for (var i = 0; i < len; i++) {
+      final ch = content[i];
+      if (ch == '\n') {
+        // الأسطر الجديدة بلا تنسيق سطري (Quill يضع تنسيق الفقرة عليها).
+        flush();
+        ops.add({'insert': '\n'});
+        cur = {};
+        continue;
+      }
+      final a = <String, dynamic>{};
+      if (bold[i]) a['bold'] = true;
+      if (underline[i]) a['underline'] = true;
+      if (strike[i]) a['strike'] = true;
+      if (color[i] != null) a['color'] = color[i];
+      if (bg[i] != null) a['background'] = bg[i];
+      if (size[i] != null) a['size'] = size[i];
+      if (!_sameMap(a, cur)) {
+        flush();
+        cur = a;
+      }
+      buf.write(ch);
+    }
+    flush();
+    // يجب أن تنتهي وثيقة Quill بسطر جديد.
+    if (ops.isEmpty || !(ops.last['insert'] as String).endsWith('\n')) {
+      ops.add({'insert': '\n'});
+    }
+    return jsonEncode(ops);
+  }
+
+  bool _sameMap(Map<String, dynamic> a, Map<String, dynamic> b) {
+    if (a.length != b.length) return false;
+    for (final k in a.keys) {
+      if (b[k] != a[k]) return false;
+    }
+    return true;
+  }
+
+  String _hex(int signed) {
+    final rgb = (signed & 0xFFFFFF);
+    return '#${rgb.toRadixString(16).padLeft(6, '0')}';
+  }
+
+  int? _bgColor(String? sticky) {
+    final s = sticky?.trim() ?? '';
+    if (s.isEmpty) return null;
+    if (s.startsWith('#')) {
+      final hex = s.substring(1);
+      if (hex.length == 6) {
+        return int.tryParse('FF$hex', radix: 16);
+      } else if (hex.length == 8) {
+        // #AARRGGBB في Easy Notes → نفرض ألفا كاملة لوضوح البطاقة.
+        return int.tryParse('FF${hex.substring(2)}', radix: 16);
+      }
+    }
+    return _gridColors[s];
+  }
+
+  Future<String?> _extractFirstImage(
+      Archive inner, dynamic attachmentsList) async {
     if (attachmentsList is! List) return null;
     for (final a in attachmentsList) {
       if (a is! Map) continue;
@@ -158,7 +317,8 @@ class EasyNotesImporter {
           .firstWhere((_) => true, orElse: () => null);
       if (img != null) {
         try {
-          final path = await FileService.instance.newAttachmentPath(_ext(img.name));
+          final path =
+              await FileService.instance.newAttachmentPath(_ext(img.name));
           await File(path).writeAsBytes(img.content as List<int>);
           return path;
         } catch (_) {
