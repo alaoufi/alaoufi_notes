@@ -246,88 +246,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _notesBody(
-    BuildContext context,
-    SettingsProvider settings,
-    NotesProvider provider,
-  ) {
-    final s = S.of(context);
-    final pinned = provider.pinned;
-    final others = provider.unpinned;
+  Widget _card(BuildContext context, Note note) {
+    final provider = context.read<NotesProvider>();
+    return NoteCard(
+      note: note,
+      category: provider.categoryById(note.categoryId),
+      onTap: () => _openNote(note),
+      onLongPress: () => showNoteActions(context, note),
+    );
+  }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _overflowMenu(BuildContext context, S s, NotesProvider provider) {
+    return PopupMenuButton<String>(
+      icon: const Icon(Icons.more_vert),
+      tooltip: 'المزيد',
+      onSelected: (v) {
+        if (v.startsWith('type_')) {
+          _addTypedNote(NoteType.values.byName(v.substring(5)));
+        } else if (v.startsWith('sort_')) {
+          provider.setSort(NoteSort.values.byName(v.substring(5)));
+        }
+      },
+      itemBuilder: (context) => [
+        const PopupMenuItem(enabled: false, child: Text('إضافة ملاحظة من نوع')),
+        PopupMenuItem(
+            value: 'type_checklist',
+            child: _menuRow(Icons.checklist, s.t('note_checklist'))),
+        PopupMenuItem(
+            value: 'type_image',
+            child: _menuRow(Icons.image, s.t('note_image'))),
+        PopupMenuItem(
+            value: 'type_audio', child: _menuRow(Icons.mic, s.t('note_audio'))),
+        PopupMenuItem(
+            value: 'type_pdf',
+            child: _menuRow(Icons.picture_as_pdf, s.t('note_pdf'))),
+        PopupMenuItem(
+            value: 'type_drawing',
+            child: _menuRow(Icons.brush, s.t('note_drawing'))),
+        PopupMenuItem(
+            value: 'type_password',
+            child: _menuRow(Icons.vpn_key, s.t('note_password'))),
+        const PopupMenuDivider(),
+        const PopupMenuItem(enabled: false, child: Text('فرز حسب')),
+        _sortItem('sort_updatedDesc', 'الأحدث تعديلًا', provider),
+        _sortItem('sort_createdDesc', 'الأحدث إنشاءً', provider),
+        _sortItem('sort_createdAsc', 'الأقدم إنشاءً', provider),
+        _sortItem('sort_titleAsc', 'العنوان (أ-ي)', provider),
+      ],
+    );
+  }
+
+  Widget _menuRow(IconData icon, String label) => Row(
         children: [
-          if (pinned.isNotEmpty) ...[
-            _sectionLabel(context, s.t('pinned')),
-            _grid(context, settings, provider, pinned),
-            if (others.isNotEmpty) _sectionLabel(context, s.t('others')),
-          ],
-          _grid(context, settings, provider, others),
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      );
+
+  PopupMenuItem<String> _sortItem(
+      String value, String label, NotesProvider provider) {
+    final selected = 'sort_${provider.sort.name}' == value;
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              size: 18),
+          const SizedBox(width: 12),
+          Text(label),
         ],
       ),
-    );
-  }
-
-  Widget _sectionLabel(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
-      child: Text(text,
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(color: Theme.of(context).hintColor)),
-    );
-  }
-
-  Widget _grid(
-    BuildContext context,
-    SettingsProvider settings,
-    NotesProvider provider,
-    List<Note> notes,
-  ) {
-    if (notes.isEmpty) return const SizedBox.shrink();
-
-    Widget cardFor(Note n) => NoteCard(
-          note: n,
-          category: provider.categoryById(n.categoryId),
-          onTap: () => _openNote(n),
-          onLongPress: () => showNoteActions(context, n),
-        );
-
-    if (settings.layout == NoteLayout.list) {
-      return Column(
-        children: notes
-            .map((n) => Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: cardFor(n),
-                ))
-            .toList(),
-      );
-    }
-
-    // عرض شبكي بعمودين (Masonry بسيط).
-    final left = <Note>[];
-    final right = <Note>[];
-    for (var i = 0; i < notes.length; i++) {
-      (i.isEven ? left : right).add(notes[i]);
-    }
-    Widget column(List<Note> col) => Expanded(
-          child: Column(
-            children: col
-                .map((n) => Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: cardFor(n),
-                    ))
-                .toList(),
-          ),
-        );
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [column(left), column(right)],
     );
   }
 }

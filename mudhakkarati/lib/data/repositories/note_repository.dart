@@ -2,6 +2,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../database/app_database.dart';
 import '../models/checklist_item.dart';
+import '../models/enums.dart';
 import '../models/note.dart';
 
 /// كل عمليات قراءة/كتابة الملاحظات وقوائم المهام والوسوم.

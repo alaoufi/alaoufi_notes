@@ -9,55 +9,7 @@ import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../data/models/password_entry.dart';
 import '../features/editor/rich_text_field.dart';
-import '../features/editor/rich_text_field.dart';
 
-/// بطاقة عرض ملاحظة في الصفحة الرئيسية.
-class NoteCard extends StatelessWidget {
-  final Note note;
-  final Category? category;
-  final VoidCallback onTap;
-  final VoidCallback onLongPress;
-
-  /// عند true تُعرض محتويات الملاحظة المقفلة (داخل القسم السري بعد فتح القفل).
-  final bool revealLocked;
-
-  const NoteCard({
-    super.key,
-    required this.note,
-    required this.category,
-    required this.onTap,
-    required this.onLongPress,
-    this.revealLocked = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = AppColors.resolveNoteColor(note.color, isDark);
-    final onBg = ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
-
-    return Card(
-      color: bg,
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Icon(_typeIcon, size: 18, color: onBg.withOpacity(0.6)),
-                  const Spacer(),
-                  if (note.isFavorite)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 4),
-                      child: Icon(Icons.star,
-                          size: 16, color: Colors.amber.shade700),
                     ),
                   if (note.isLocked)
                     Icon(Icons.lock, size: 16, color: onBg.withOpacity(0.6)),
