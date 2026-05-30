@@ -42,6 +42,3 @@ extension ReminderRepeatX on ReminderRepeat {
 
 /// طريقة عرض الملاحظات في الصفحة الرئيسية.
 enum NoteLayout { grid, list }
-
-/// طرق فرز الملاحظات في القائمة.
-enum NoteSort { updatedDesc, createdDesc, createdAsc, titleAsc }

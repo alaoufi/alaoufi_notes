@@ -2,7 +2,6 @@ import 'package:sqflite/sqflite.dart';
 
 import '../database/app_database.dart';
 import '../models/checklist_item.dart';
-import '../models/enums.dart';
 import '../models/note.dart';
 
 /// كل عمليات قراءة/كتابة الملاحظات وقوائم المهام والوسوم.
@@ -25,7 +24,6 @@ class NoteRepository {
     String? tag,
     String? search,
     bool onlyFavorites = false,
-    NoteSort sort = NoteSort.updatedDesc,
   }) async {
     final db = await _db;
 
@@ -57,13 +55,7 @@ class NoteRepository {
       args.insert(0, tag);
     }
     sql += ' WHERE ${where.join(' AND ')}';
-    final order = switch (sort) {
-      NoteSort.updatedDesc => 'n.updated_at DESC',
-      NoteSort.createdDesc => 'n.created_at DESC',
-      NoteSort.createdAsc => 'n.created_at ASC',
-      NoteSort.titleAsc => 'n.title COLLATE NOCASE ASC',
-    };
-    sql += ' ORDER BY n.is_pinned DESC, $order';
+    sql += ' ORDER BY n.is_pinned DESC, n.updated_at DESC';
 
     final rows = await db.rawQuery(sql, args);
     return _attachTags(db, rows);
@@ -115,23 +107,17 @@ class NoteRepository {
   }
 
   Future<List<Note>> _attachTags(Database db, List<Map<String, Object?>> rows) async {
-    if (rows.isEmpty) return [];
-    // استعلام واحد لكل الوسوم (بدل استعلام لكل ملاحظة) — أسرع بكثير.
-    final ids = rows.map((r) => r['id'] as int).toList();
-    final placeholders = List.filled(ids.length, '?').join(',');
-    final tagRows = await db.rawQuery(
-      'SELECT nt.note_id AS nid, t.name AS name FROM note_tags nt '
-      'JOIN tags t ON t.id = nt.tag_id WHERE nt.note_id IN ($placeholders) '
-      'ORDER BY t.name',
-      ids,
-    );
-    final byNote = <int, List<String>>{};
-    for (final tr in tagRows) {
-      (byNote[tr['nid'] as int] ??= []).add(tr['name'] as String);
+    final result = <Note>[];
+    for (final row in rows) {
+      final id = row['id'] as int;
+      final tagRows = await db.rawQuery(
+        'SELECT t.name FROM tags t JOIN note_tags nt ON nt.tag_id = t.id WHERE nt.note_id = ? ORDER BY t.name',
+        [id],
+      );
+      final tags = tagRows.map((e) => e['name'] as String).toList();
+      result.add(Note.fromMap(row, tags: tags));
     }
-    return rows
-        .map((row) => Note.fromMap(row, tags: byNote[row['id'] as int] ?? const []))
-        .toList();
+    return result;
   }
 
   // ---------------------------------------------------------------------------
