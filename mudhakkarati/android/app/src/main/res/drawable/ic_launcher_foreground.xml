@@ -1,20 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Simple notebook glyph drawn as a vector so no binary PNG is required. -->
+<!-- أيقونة دفتر ملاحظات معبّرة: غلاف + تجليد حلزوني + أسطر + علامة مرجعية + قلم. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Notebook body -->
+
+    <!-- ظل خفيف خلف الدفتر -->
+    <path
+        android:fillColor="#1A000000"
+        android:pathData="M37,33 L78,33 A5,5 0 0 1 83,38 L83,80 A5,5 0 0 1 78,85 L37,85 Z"/>
+
+    <!-- جسم الصفحة (أبيض) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M38,30 L74,30 A4,4 0 0 1 78,34 L78,76 A4,4 0 0 1 74,80 L38,80 A4,4 0 0 1 34,76 L34,34 A4,4 0 0 1 38,30 Z"/>
-    <!-- Spiral binding -->
+        android:pathData="M36,28 L76,28 A5,5 0 0 1 81,33 L81,79 A5,5 0 0 1 76,84 L36,84 Z"/>
+
+    <!-- شريط جانبي ملوّن (الغلاف) -->
     <path
-        android:fillColor="#FFCC80"
-        android:pathData="M32,30 L32,80 A4,4 0 0 1 28,80 L28,30 A4,4 0 0 1 32,30 Z"/>
-    <!-- Lines -->
-    <path android:fillColor="#2E7D6B" android:pathData="M42,44 L70,44 L70,48 L42,48 Z"/>
-    <path android:fillColor="#2E7D6B" android:pathData="M42,54 L70,54 L70,58 L42,58 Z"/>
-    <path android:fillColor="#2E7D6B" android:pathData="M42,64 L60,64 L60,68 L42,68 Z"/>
+        android:fillColor="#2E7D6B"
+        android:pathData="M30,28 L40,28 L40,84 L36,84 A6,6 0 0 1 30,78 L30,34 A6,6 0 0 1 30,28 Z"/>
+
+    <!-- حلقات التجليد الحلزوني -->
+    <path android:fillColor="#FFFFFF" android:pathData="M33,35 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M33,46 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M33,57 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M33,68 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+    <path android:fillColor="#FFFFFF" android:pathData="M33,79 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+
+    <!-- أسطر الكتابة -->
+    <path android:fillColor="#9AB7B0" android:pathData="M46,40 L74,40 L74,43 L46,43 Z"/>
+    <path android:fillColor="#9AB7B0" android:pathData="M46,49 L74,49 L74,52 L46,52 Z"/>
+    <path android:fillColor="#9AB7B0" android:pathData="M46,58 L66,58 L66,61 L46,61 Z"/>
+    <path android:fillColor="#9AB7B0" android:pathData="M46,67 L70,67 L70,70 L46,70 Z"/>
+
+    <!-- علامة مرجعية (Bookmark) -->
+    <path
+        android:fillColor="#E8772E"
+        android:pathData="M64,28 L72,28 L72,46 L68,41 L64,46 Z"/>
+
+    <!-- قلم مائل -->
+    <path
+        android:fillColor="#F4B400"
+        android:pathData="M70,74 L80,64 L84,68 L74,78 Z"/>
+    <path
+        android:fillColor="#5B3A29"
+        android:pathData="M68,76 L70,74 L74,78 L72,80 Z"/>
+    <path
+        android:fillColor="#2E7D6B"
+        android:pathData="M80,64 L82,62 A2,2 0 0 1 86,66 L84,68 Z"/>
 </vector>
