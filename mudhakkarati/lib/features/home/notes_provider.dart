@@ -1,5 +1,9 @@
 // نخفي Category الخاصة بـ Flutter (تعليق توضيحي) لتفادي التعارض مع نموذجنا.
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' hide Category;
+
+import '../../data/models/enums.dart';
 
 import '../../data/models/category.dart';
 import '../../data/models/checklist_item.dart';
@@ -23,6 +27,7 @@ class NotesProvider extends ChangeNotifier {
   int? _filterCategoryId; // null = الكل
   String? _filterTag;
   String _search = '';
+  NoteSort _sort = NoteSort.updatedDesc;
 
   List<Note> get items => _items;
   List<Category> get categories => _categories;
@@ -30,6 +35,7 @@ class NotesProvider extends ChangeNotifier {
   int? get filterCategoryId => _filterCategoryId;
   String? get filterTag => _filterTag;
   String get search => _search;
+  NoteSort get sort => _sort;
 
   List<Note> get pinned => _items.where((n) => n.isPinned).toList();
   List<Note> get unpinned => _items.where((n) => !n.isPinned).toList();
@@ -51,6 +57,7 @@ class NotesProvider extends ChangeNotifier {
       categoryId: _filterCategoryId,
       tag: _filterTag,
       search: _search,
+      sort: _sort,
     );
     _loading = false;
     notifyListeners();
@@ -70,8 +77,23 @@ class NotesProvider extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> setSearch(String query) async {
+  Timer? _searchDebounce;
+
+  /// بحث مؤجَّل (debounce) لتفادي إعادة الاستعلام مع كل حرف — أسرع وأسلس.
+  void setSearch(String query) {
     _search = query;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 250), refresh);
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    super.dispose();
+  }
+
+  Future<void> setSort(NoteSort sort) async {
+    _sort = sort;
     await refresh();
   }
 
