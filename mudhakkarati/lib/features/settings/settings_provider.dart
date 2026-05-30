@@ -10,6 +10,7 @@ class SettingsProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   Color _seedColor = AppColors.defaultSeed;
   double _fontScale = 1.0;
+  String _fontFamily = 'Cairo';
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
@@ -17,13 +18,27 @@ class SettingsProvider extends ChangeNotifier {
   ThemeMode get themeMode => _themeMode;
   Color get seedColor => _seedColor;
   double get fontScale => _fontScale;
+  String get fontFamily => _fontFamily;
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
 
+  /// الخطوط العربية المتاحة لاختيار الخط الافتراضي للتطبيق.
+  static const fontFamilies = <String>[
+    'Cairo',
+    'Tajawal',
+    'Amiri',
+    'Noto Naskh Arabic',
+    'Reem Kufi',
+    'Scheherazade New',
+    'Markazi Text',
+    'El Messiri',
+  ];
+
   static const _kMode = 'theme_mode';
   static const _kSeed = 'seed_color';
   static const _kFont = 'font_scale';
+  static const _kFontFamily = 'font_family';
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
   static const _kTone = 'alarm_tone';
@@ -39,6 +54,8 @@ class SettingsProvider extends ChangeNotifier {
     final seed = prefs.getInt(_kSeed);
     if (seed != null) _seedColor = Color(seed);
     _fontScale = prefs.getDouble(_kFont) ?? 1.0;
+    final fam = prefs.getString(_kFontFamily);
+    if (fam != null && fontFamilies.contains(fam)) _fontFamily = fam;
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
@@ -73,6 +90,13 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_kFont, scale);
+  }
+
+  Future<void> setFontFamily(String family) async {
+    _fontFamily = family;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kFontFamily, family);
   }
 
   Future<void> setLayout(NoteLayout layout) async {

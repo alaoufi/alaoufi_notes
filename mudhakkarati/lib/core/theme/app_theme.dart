@@ -4,20 +4,23 @@ import 'package:flutter/material.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData light(Color seed, double fontScale) =>
-      _build(seed, Brightness.light, fontScale);
+  static ThemeData light(Color seed, double fontScale,
+          [String fontFamily = 'Cairo']) =>
+      _build(seed, Brightness.light, fontScale, fontFamily);
 
-  static ThemeData dark(Color seed, double fontScale) =>
-      _build(seed, Brightness.dark, fontScale);
+  static ThemeData dark(Color seed, double fontScale,
+          [String fontFamily = 'Cairo']) =>
+      _build(seed, Brightness.dark, fontScale, fontFamily);
 
-  static ThemeData _build(Color seed, Brightness brightness, double fontScale) {
+  static ThemeData _build(Color seed, Brightness brightness, double fontScale,
+      String fontFamily) {
     final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
     final isDark = brightness == Brightness.dark;
 
     final base = ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      fontFamily: 'Cairo',
+      fontFamily: fontFamily,
       scaffoldBackgroundColor:
           isDark ? const Color(0xFF121214) : const Color(0xFFF6F7F9),
       brightness: brightness,
@@ -30,7 +33,7 @@ class AppTheme {
         elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: 'Cairo',
+          fontFamily: fontFamily,
           fontWeight: FontWeight.bold,
           fontSize: 22 * fontScale,
           color: scheme.onSurface,

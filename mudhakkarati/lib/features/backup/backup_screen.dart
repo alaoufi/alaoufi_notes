@@ -169,6 +169,34 @@ class _BackupScreenState extends State<BackupScreen> {
   Future<void> _importEasyNotes() async {
     final provider = context.read<NotesProvider>();
 
+    // اختيار وضع الاستيراد: حذف الحالي ثم استيراد، أو دمج، أو إلغاء.
+    final mode = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('استيراد من Easy Notes'),
+        content: const Text(
+            'هل تريد حذف كل الملاحظات الحالية ثم الاستيراد من جديد بالتنسيق المحدَّث؟\n\n'
+            '• «حذف ثم استيراد»: يمسح ملاحظاتك الحالية ويستوردها بتنسيق أدقّ (موصى به إن سبق استيرادها بحجم خط كبير).\n'
+            '• «دمج»: يضيف/يحدّث دون حذف.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('إلغاء'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'merge'),
+            child: const Text('دمج'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
+            onPressed: () => Navigator.pop(context, 'replace'),
+            child: const Text('حذف ثم استيراد'),
+          ),
+        ],
+      ),
+    );
+    if (mode == null) return;
+
     final picked = await FilePicker.platform.pickFiles(
       type: FileType.any,
       withData: true,
@@ -186,6 +214,9 @@ class _BackupScreenState extends State<BackupScreen> {
     }
 
     setState(() => _busy = true);
+    if (mode == 'replace') {
+      await provider.notes.deleteAllNotes();
+    }
     final result =
         await EasyNotesImporter(provider.notes, provider.categoriesRepo)
             .importBackup(bytes);

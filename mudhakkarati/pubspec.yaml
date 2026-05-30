@@ -72,13 +72,35 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # خط عربي اختياري: ضع ملفات Cairo في assets/fonts/ ثم ألغِ التعليق أدناه
-  # لتفعيل خط عربي أجمل. التطبيق يعمل بدونها باستخدام خط النظام.
-  # fonts:
-  #   - family: Cairo
-  #     fonts:
-  #       - asset: assets/fonts/Cairo-Regular.ttf
-  #       - asset: assets/fonts/Cairo-Bold.ttf
-  #         weight: 700
-  #       - asset: assets/fonts/Cairo-SemiBold.ttf
-  #         weight: 600
+  # خطوط عربية مضمّنة في التطبيق (تعمل دون اتصال).
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/Cairo.ttf
+    - family: Tajawal
+      fonts:
+        - asset: assets/fonts/Tajawal-Regular.ttf
+        - asset: assets/fonts/Tajawal-Bold.ttf
+          weight: 700
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic.ttf
+    - family: Reem Kufi
+      fonts:
+        - asset: assets/fonts/ReemKufi.ttf
+    - family: Scheherazade New
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+        - asset: assets/fonts/ScheherazadeNew-Bold.ttf
+          weight: 700
+    - family: Markazi Text
+      fonts:
+        - asset: assets/fonts/MarkaziText.ttf
+    - family: El Messiri
+      fonts:
+        - asset: assets/fonts/ElMessiri.ttf

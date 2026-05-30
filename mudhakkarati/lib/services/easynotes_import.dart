@@ -128,9 +128,10 @@ class EasyNotesImporter {
         final imagePath = await _extractFirstImage(inner, d['attachmentsList']);
 
         // النص: صورة → نص عادي، وإلا نص غني (Delta) مع التنسيق.
+        // المقاطع مفصولة بفاصلة أو علامة + (نتعامل مع كليهما).
         final spans = <String>[
-          ...((d['address'] as String?) ?? '').split(','),
-          ...((d['richText'] as String?) ?? '').split(','),
+          ...((d['address'] as String?) ?? '').split(RegExp(r'[,+]')),
+          ...((d['richText'] as String?) ?? '').split(RegExp(r'[,+]')),
         ];
         final content = imagePath != null
             ? plain
@@ -197,36 +198,57 @@ class EasyNotesImporter {
     final bg = List<String?>.filled(len, null);
     final size = List<String?>.filled(len, null);
 
-    final re = RegExp(r'^([a-zA-Z]+)(\d+)/(\d+)/(-?\d+)$');
-    for (final raw in spans) {
-      final m = re.firstMatch(raw.trim());
-      if (m == null) continue;
-      final t = m.group(1)!;
-      var s = int.parse(m.group(2)!);
-      var e = int.parse(m.group(3)!);
-      final v = int.parse(m.group(4)!);
+    // مقاطع بثلاث قيم: s=عريض، f=حجم، c=لون الخط، h=تظليل (start/end/value).
+    final re3 = RegExp(r'^([a-zA-Z]+)(\d+)/(\d+)/(-?\d+(?:\.\d+)?)$');
+    // مقاطع بقيمتين: u=تسطير، r=شطب (start/end فقط).
+    final re2 = RegExp(r'^([a-zA-Z]+)(\d+)/(\d+)$');
+
+    void clampApply(int s, int e, void Function(int) f) {
       if (s < 0) s = 0;
       if (e > len) e = len;
-      if (e <= s) continue;
       for (var i = s; i < e; i++) {
+        f(i);
+      }
+    }
+
+    for (final raw in spans) {
+      final tok = raw.trim();
+      if (tok.isEmpty) continue;
+      final m = re3.firstMatch(tok);
+      if (m != null) {
+        final t = m.group(1)!;
+        final s = int.parse(m.group(2)!);
+        final e = int.parse(m.group(3)!);
+        final v = double.parse(m.group(4)!).round();
         switch (t) {
-          case 's':
-            bold[i] = true;
+          case 's': // عريض (القيمة وزن الخط؛ أي قيمة موجبة = عريض).
+            if (v > 0) clampApply(s, e, (i) => bold[i] = true);
             break;
-          case 'u':
-            underline[i] = true;
+          case 'c': // لون الخط.
+            clampApply(s, e, (i) => color[i] = _hex(v));
             break;
-          case 'd':
-            strike[i] = true;
+          case 'h': // خلفية الخط (تظليل).
+            if (v != 0) clampApply(s, e, (i) => bg[i] = _hex(v));
             break;
-          case 'c':
-            color[i] = _hex(v);
+          case 'f': // حجم الخط — مقياس Easy Notes كبير (≈49–56 للنص العادي)،
+            // نحوّله إلى حجم مريح للمحرّر (≈16 للنص العادي).
+            final px = _scaleFont(v);
+            if (px != null) clampApply(s, e, (i) => size[i] = px);
             break;
-          case 'h':
-            if (v != 0) bg[i] = _hex(v);
+        }
+        continue;
+      }
+      final m2 = re2.firstMatch(tok);
+      if (m2 != null) {
+        final t = m2.group(1)!;
+        final s = int.parse(m2.group(2)!);
+        final e = int.parse(m2.group(3)!);
+        switch (t) {
+          case 'u': // تسطير.
+            clampApply(s, e, (i) => underline[i] = true);
             break;
-          case 'f':
-            if (v >= 8 && v <= 96) size[i] = v.toString();
+          case 'r': // شطب.
+            clampApply(s, e, (i) => strike[i] = true);
             break;
         }
       }
@@ -280,6 +302,16 @@ class EasyNotesImporter {
       if (b[k] != a[k]) return false;
     }
     return true;
+  }
+
+  /// يحوّل حجم خط Easy Notes (مقياس داخلي كبير) إلى حجم بكسل مريح للمحرّر.
+  ///
+  /// في بيانات Easy Notes النص العادي ≈ 49–56 والعناوين ≈ 63–105؛ نضرب في
+  /// معامل بحيث يصبح النص العادي ≈ 16 والعناوين متناسبة معه.
+  String? _scaleFont(int v) {
+    if (v <= 0) return null;
+    final px = (v * 0.30).round().clamp(9, 64);
+    return px.toString();
   }
 
   String _hex(int signed) {

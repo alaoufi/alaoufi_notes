@@ -89,6 +89,26 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
+          // نوع الخط (الخط الافتراضي للتطبيق والملاحظات)
+          ListTile(
+            leading: const Icon(Icons.font_download_outlined),
+            title: const Text('نوع الخط'),
+            trailing: DropdownButton<String>(
+              value: settings.fontFamily,
+              underline: const SizedBox.shrink(),
+              onChanged: (v) {
+                if (v != null) settings.setFontFamily(v);
+              },
+              items: [
+                for (final f in SettingsProvider.fontFamilies)
+                  DropdownMenuItem(
+                    value: f,
+                    child: Text(f, style: TextStyle(fontFamily: f)),
+                  ),
+              ],
+            ),
+          ),
+
           // طريقة العرض
           ListTile(
             leading: const Icon(Icons.dashboard_outlined),

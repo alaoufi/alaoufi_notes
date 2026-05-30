@@ -101,9 +101,22 @@ class RichTextToolbar extends StatelessWidget {
           controller: controller.quill,
           config: const QuillSimpleToolbarConfig(
             multiRowsDisplay: false,
-            showFontFamily: false,
+            showFontFamily: true,
             showFontSize: true,
             buttonOptions: QuillSimpleToolbarButtonOptions(
+              fontFamily: QuillToolbarFontFamilyButtonOptions(
+                items: {
+                  'Cairo': 'Cairo',
+                  'Tajawal': 'Tajawal',
+                  'Amiri': 'Amiri',
+                  'نسخ': 'Noto Naskh Arabic',
+                  'كوفي': 'Reem Kufi',
+                  'شهرزاد': 'Scheherazade New',
+                  'مرکزی': 'Markazi Text',
+                  'المصري': 'El Messiri',
+                  'مسح': 'Clear',
+                },
+              ),
               fontSize: QuillToolbarFontSizeButtonOptions(
                 items: {
                   '10': '10',

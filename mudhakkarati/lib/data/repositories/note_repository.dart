@@ -236,6 +236,13 @@ class NoteRepository {
     await db.delete('notes', where: 'is_deleted = 1');
   }
 
+  /// حذف كل الملاحظات نهائيًا (يُستخدم في «حذف الحالي وإعادة الاستيراد»).
+  /// الوسوم وعناصر القوائم والتذكيرات تُحذف تلقائيًا (ON DELETE CASCADE).
+  Future<int> deleteAllNotes() async {
+    final db = await _db;
+    return db.delete('notes');
+  }
+
   /// حذف عناصر السلة الأقدم من [days] يومًا (تنظيف تلقائي).
   Future<void> purgeOldTrash({int days = 30}) async {
     final db = await _db;

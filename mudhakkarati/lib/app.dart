@@ -21,8 +21,10 @@ class MudhakkaratiApp extends StatelessWidget {
       navigatorKey: appNavigatorKey,
       debugShowCheckedModeBanner: false,
       themeMode: settings.themeMode,
-      theme: AppTheme.light(settings.seedColor, settings.fontScale),
-      darkTheme: AppTheme.dark(settings.seedColor, settings.fontScale),
+      theme: AppTheme.light(
+          settings.seedColor, settings.fontScale, settings.fontFamily),
+      darkTheme: AppTheme.dark(
+          settings.seedColor, settings.fontScale, settings.fontFamily),
       locale: settings.locale,
       supportedLocales: S.supportedLocales,
       localizationsDelegates: const [
