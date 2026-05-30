@@ -142,6 +142,11 @@ class SettingsScreen extends StatelessWidget {
               const SecuritySettingsScreen()),
 
           const Divider(),
+          _section(context, 'النسخ الاحتياطي والمزامنة'),
+          _nav(context, Icons.cloud_sync, 'النسخ والمزامنة السحابية',
+              const BackupScreen()),
+
+          const Divider(),
           _section(context, s.t('settings')),
           _nav(context, Icons.category_outlined, s.t('manage_categories'),
               const ManageCategoriesScreen()),
@@ -149,8 +154,6 @@ class SettingsScreen extends StatelessWidget {
               const ArchiveScreen()),
           _nav(context, Icons.delete_outline, s.t('trash'),
               const TrashScreen()),
-          _nav(context, Icons.backup_outlined, s.t('backup'),
-              const BackupScreen()),
 
           const Divider(),
           _section(context, s.t('about')),

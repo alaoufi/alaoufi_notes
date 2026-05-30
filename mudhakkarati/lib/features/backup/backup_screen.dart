@@ -316,32 +316,48 @@ class _BackupScreenState extends State<BackupScreen> {
             children: [
               _statusCard(context),
               const SizedBox(height: 8),
-              // ===== Google Drive =====
+              // ===== Google Drive — المزامنة =====
               Card(
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.add_to_drive, color: Color(0xFF1A73E8)),
-                      title: const Text('Google Drive'),
+                      leading: const Icon(Icons.cloud_sync,
+                          color: Color(0xFF1A73E8), size: 32),
+                      title: const Text('المزامنة مع Google Drive',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                       subtitle: Text(_driveEmail == null
-                          ? 'غير مسجّل — اضغط للدخول'
-                          : 'مسجّل: $_driveEmail'),
-                      trailing: _driveEmail == null
-                          ? TextButton(
-                              onPressed: _busy ? null : _driveSignIn,
-                              child: const Text('دخول'))
-                          : TextButton(
-                              onPressed: _busy ? null : _driveSignOut,
-                              child: const Text('خروج')),
+                          ? 'سجّل دخولك مرة واحدة لتُحفظ ملاحظاتك في حسابك تلقائيًا'
+                          : '✓ مفعّل لحساب: $_driveEmail'),
                     ),
-                    if (_driveEmail != null) ...[
+                    if (_driveEmail == null)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: FilledButton.icon(
+                            onPressed: _busy ? null : _driveSignIn,
+                            icon: const Icon(Icons.login),
+                            label: const Text('تسجيل الدخول بحساب Google'),
+                          ),
+                        ),
+                      )
+                    else ...[
+                      SwitchListTile(
+                        secondary: const Icon(Icons.sync),
+                        title: const Text('مزامنة تلقائية'),
+                        subtitle: const Text(
+                            'تُرفع نسخة محمية تلقائيًا عند فتح التطبيق وإغلاقه'),
+                        value: _autoSync,
+                        onChanged: _busy ? null : _toggleAutoSync,
+                      ),
+                      const Divider(height: 1),
                       Row(
                         children: [
                           Expanded(
                             child: TextButton.icon(
                               onPressed: _busy ? null : _driveUpload,
                               icon: const Icon(Icons.cloud_upload_outlined),
-                              label: const Text('رفع'),
+                              label: const Text('رفع الآن'),
                             ),
                           ),
                           Expanded(
@@ -351,14 +367,11 @@ class _BackupScreenState extends State<BackupScreen> {
                               label: const Text('استعادة'),
                             ),
                           ),
+                          TextButton(
+                            onPressed: _busy ? null : _driveSignOut,
+                            child: const Text('خروج'),
+                          ),
                         ],
-                      ),
-                      SwitchListTile(
-                        secondary: const Icon(Icons.sync),
-                        title: const Text('مزامنة تلقائية'),
-                        subtitle: const Text('رفع نسخة تلقائيًا عند الدخول والخروج'),
-                        value: _autoSync,
-                        onChanged: _busy ? null : _toggleAutoSync,
                       ),
                     ],
                   ],
