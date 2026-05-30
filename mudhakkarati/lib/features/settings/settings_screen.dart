@@ -142,8 +142,8 @@ class SettingsScreen extends StatelessWidget {
               const SecuritySettingsScreen()),
 
           const Divider(),
-          _section(context, 'النسخ الاحتياطي والمزامنة'),
-          _nav(context, Icons.cloud_sync, 'النسخ والمزامنة السحابية',
+          _section(context, 'النسخ الاحتياطي'),
+          _nav(context, Icons.backup_outlined, 'النسخ الاحتياطي والمشاركة السحابية',
               const BackupScreen()),
 
           const Divider(),

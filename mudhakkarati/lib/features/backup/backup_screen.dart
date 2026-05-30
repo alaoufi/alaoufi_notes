@@ -7,9 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_strings.dart';
-import '../../services/auto_sync_service.dart';
 import '../../services/backup_service.dart';
-import '../../services/drive_sync_service.dart';
 import '../../services/easynotes_import.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
@@ -23,109 +21,6 @@ class BackupScreen extends StatefulWidget {
 
 class _BackupScreenState extends State<BackupScreen> {
   bool _busy = false;
-  String? _driveEmail;
-  bool _autoSync = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _refreshDrive();
-  }
-
-  Future<void> _refreshDrive() async {
-    final email = await DriveSyncService.instance.currentEmail();
-    final auto = await AutoSyncService.instance.isEnabled();
-    if (mounted) {
-      setState(() {
-        _driveEmail = email;
-        _autoSync = auto;
-      });
-    }
-  }
-
-  Future<void> _toggleAutoSync(bool v) async {
-    if (v) {
-      final pwd = await _askPassword('كلمة مرور المزامنة التلقائية');
-      if (pwd == null || pwd.isEmpty) return;
-      await AutoSyncService.instance.setEnabled(true, password: pwd);
-    } else {
-      await AutoSyncService.instance.setEnabled(false);
-    }
-    if (mounted) setState(() => _autoSync = v);
-  }
-
-  Future<void> _driveSignIn() async {
-    setState(() => _busy = true);
-    final ok = await DriveSyncService.instance.signIn();
-    setState(() => _busy = false);
-    if (ok) {
-      await _refreshDrive();
-      _toast('تم تسجيل الدخول إلى Google Drive');
-    } else {
-      _toast('تعذّر تسجيل الدخول');
-    }
-  }
-
-  Future<void> _driveSignOut() async {
-    await DriveSyncService.instance.signOut();
-    await _refreshDrive();
-    _toast('تم تسجيل الخروج');
-  }
-
-  Future<void> _driveUpload() async {
-    final pwd = await _askPassword('رفع نسخة إلى Drive');
-    if (pwd == null || pwd.isEmpty) return;
-    setState(() => _busy = true);
-    try {
-      final bytes = await BackupService.instance.buildEncryptedBytes(pwd);
-      final ok = await DriveSyncService.instance.upload(bytes);
-      if (ok) await BackupService.instance.markDriveBackup();
-      _toast(ok ? 'تم رفع النسخة إلى Drive' : 'فشل الرفع');
-    } catch (e) {
-      _toast('فشل الرفع: $e');
-    }
-    if (mounted) setState(() => _busy = false);
-  }
-
-  Future<void> _driveRestore() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('استعادة من Drive'),
-        content: const Text(
-            'سيتم استبدال بياناتك الحالية بآخر نسخة على Google Drive. متابعة؟'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('استعادة')),
-        ],
-      ),
-    );
-    if (confirm != true) return;
-    final pwd = await _askPassword('استعادة من Drive');
-    if (pwd == null || pwd.isEmpty) return;
-    setState(() => _busy = true);
-    try {
-      final bytes = await DriveSyncService.instance.download();
-      if (bytes == null) {
-        _toast('لا توجد نسخة على Drive');
-      } else {
-        final res =
-            await BackupService.instance.restoreFromBytes(bytes, pwd);
-        _toast(res.message);
-        if (res.success && mounted) {
-          await context.read<NotesProvider>().init();
-          await context.read<RemindersProvider>().refresh();
-        }
-      }
-    } catch (e) {
-      _toast('فشل الاستعادة: $e');
-    }
-    if (mounted) setState(() => _busy = false);
-  }
 
   Future<String?> _askPassword(String title) async {
     final ctrl = TextEditingController();
@@ -187,11 +82,10 @@ class _BackupScreenState extends State<BackupScreen> {
               future: Future.wait([
                 bs.lastLocalBackup(),
                 bs.lastShareBackup(),
-                bs.lastDriveBackup(),
                 bs.lastRestore(),
               ]),
               builder: (context, snap) {
-                final d = snap.data ?? const [null, null, null, null];
+                final d = snap.data ?? const [null, null, null];
                 Widget row(IconData i, String label, DateTime? t) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3),
                       child: Row(
@@ -208,8 +102,7 @@ class _BackupScreenState extends State<BackupScreen> {
                   children: [
                     row(Icons.save_alt, 'حفظ محلي', d[0]),
                     row(Icons.ios_share, 'مشاركة سحابية', d[1]),
-                    row(Icons.add_to_drive, 'رفع إلى Drive', d[2]),
-                    row(Icons.restore, 'آخر استعادة', d[3]),
+                    row(Icons.restore, 'آخر استعادة', d[2]),
                   ],
                 );
               },
@@ -315,68 +208,6 @@ class _BackupScreenState extends State<BackupScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _statusCard(context),
-              const SizedBox(height: 8),
-              // ===== Google Drive — المزامنة =====
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.cloud_sync,
-                          color: Color(0xFF1A73E8), size: 32),
-                      title: const Text('المزامنة مع Google Drive',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(_driveEmail == null
-                          ? 'سجّل دخولك مرة واحدة لتُحفظ ملاحظاتك في حسابك تلقائيًا'
-                          : '✓ مفعّل لحساب: $_driveEmail'),
-                    ),
-                    if (_driveEmail == null)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: FilledButton.icon(
-                            onPressed: _busy ? null : _driveSignIn,
-                            icon: const Icon(Icons.login),
-                            label: const Text('تسجيل الدخول بحساب Google'),
-                          ),
-                        ),
-                      )
-                    else ...[
-                      SwitchListTile(
-                        secondary: const Icon(Icons.sync),
-                        title: const Text('مزامنة تلقائية'),
-                        subtitle: const Text(
-                            'تُرفع نسخة محمية تلقائيًا عند فتح التطبيق وإغلاقه'),
-                        value: _autoSync,
-                        onChanged: _busy ? null : _toggleAutoSync,
-                      ),
-                      const Divider(height: 1),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextButton.icon(
-                              onPressed: _busy ? null : _driveUpload,
-                              icon: const Icon(Icons.cloud_upload_outlined),
-                              label: const Text('رفع الآن'),
-                            ),
-                          ),
-                          Expanded(
-                            child: TextButton.icon(
-                              onPressed: _busy ? null : _driveRestore,
-                              icon: const Icon(Icons.cloud_download_outlined),
-                              label: const Text('استعادة'),
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: _busy ? null : _driveSignOut,
-                            child: const Text('خروج'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ],
-                ),
-              ),
               const SizedBox(height: 8),
               Card(
                 child: ListTile(

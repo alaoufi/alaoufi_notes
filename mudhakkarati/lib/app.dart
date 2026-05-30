@@ -7,39 +7,10 @@ import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'features/security/app_lock_gate.dart';
 import 'features/settings/settings_provider.dart';
-import 'services/auto_sync_service.dart';
 import 'services/notification_service.dart';
 
-class MudhakkaratiApp extends StatefulWidget {
+class MudhakkaratiApp extends StatelessWidget {
   const MudhakkaratiApp({super.key});
-
-  @override
-  State<MudhakkaratiApp> createState() => _MudhakkaratiAppState();
-}
-
-class _MudhakkaratiAppState extends State<MudhakkaratiApp>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // مزامنة عند الإقلاع (إن كانت مفعّلة ومرّت المدة).
-    AutoSyncService.instance.maybeSync();
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // مزامنة عند تصغير/إغلاق التطبيق.
-    if (state == AppLifecycleState.paused) {
-      AutoSyncService.instance.maybeSync();
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

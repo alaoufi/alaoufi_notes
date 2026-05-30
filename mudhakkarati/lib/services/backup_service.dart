@@ -34,7 +34,6 @@ class BackupService {
   // مفاتيح حفظ وقت آخر عملية لكل وجهة.
   static const _kLastLocal = 'last_backup_local';
   static const _kLastShare = 'last_backup_share';
-  static const _kLastDrive = 'last_backup_drive';
   static const _kLastRestore = 'last_restore';
 
   Future<void> _stamp(String key) async {
@@ -50,11 +49,7 @@ class BackupService {
 
   Future<DateTime?> lastLocalBackup() => _readStamp(_kLastLocal);
   Future<DateTime?> lastShareBackup() => _readStamp(_kLastShare);
-  Future<DateTime?> lastDriveBackup() => _readStamp(_kLastDrive);
   Future<DateTime?> lastRestore() => _readStamp(_kLastRestore);
-
-  /// يُستدعى بعد رفع ناجح إلى Drive لتسجيل الوقت.
-  Future<void> markDriveBackup() => _stamp(_kLastDrive);
 
   /// إنشاء نسخة احتياطية مشفّرة وحفظها عبر منتقي الملفات.
   Future<BackupResult> exportBackup(String password) async {
@@ -222,43 +217,4 @@ class BackupService {
     }
   }
 
-  /// بناء نسخة مشفّرة كبايتات (تُستخدم لمزامنة السحابة).
-  Future<Uint8List> buildEncryptedBytes(String password) =>
-      _buildEncrypted(password);
-
-  /// استعادة نسخة احتياطية من بايتات مشفّرة (من السحابة).
-  Future<BackupResult> restoreFromBytes(
-      Uint8List encrypted, String password) async {
-    try {
-      late Uint8List zipped;
-      try {
-        zipped = EncryptionService.instance.decryptBytes(encrypted, password);
-      } catch (_) {
-        return const BackupResult(false, 'كلمة المرور خاطئة أو الملف تالف');
-      }
-      final archive = ZipDecoder().decodeBytes(zipped);
-      final dbPath = await AppDatabase.instance.path;
-      final attDir = await FileService.instance.attachmentsDir();
-      if (await attDir.exists()) {
-        for (final e in attDir.listSync()) {
-          if (e is File) await e.delete();
-        }
-      }
-      for (final file in archive) {
-        if (!file.isFile) continue;
-        final data = file.content as List<int>;
-        if (file.name == 'database.db') {
-          await File(dbPath).writeAsBytes(data, flush: true);
-        } else if (file.name.startsWith('attachments/')) {
-          final dest = p.join(attDir.path, p.basename(file.name));
-          await File(dest).writeAsBytes(data, flush: true);
-        }
-      }
-      await AppDatabase.instance.reopen();
-      await _stamp(_kLastRestore);
-      return const BackupResult(true, 'تمت الاستعادة من السحابة');
-    } catch (e) {
-      return BackupResult(false, 'فشل الاستعادة: $e');
-    }
-  }
 }
