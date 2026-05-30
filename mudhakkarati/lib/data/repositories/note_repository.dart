@@ -141,7 +141,10 @@ class NoteRepository {
 
   Future<int> insertNote(Note note) async {
     final db = await _db;
-    final id = await db.insert('notes', note.toMap());
+    // الإدراج ينشئ صفًّا جديدًا دائمًا؛ نُسقِط المعرّف لتفادي تعارض
+    // UNIQUE عند تكرار/استيراد ملاحظة تحمل معرّفًا موجودًا.
+    final map = note.toMap()..remove('id');
+    final id = await db.insert('notes', map);
     await _saveTags(db, id, note.tags);
     return id;
   }

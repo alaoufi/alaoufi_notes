@@ -11,6 +11,7 @@ class SettingsProvider extends ChangeNotifier {
   Color _seedColor = AppColors.defaultSeed;
   double _fontScale = 1.0;
   String _fontFamily = 'Cairo';
+  bool _hideSelectionMenu = false;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
@@ -19,6 +20,7 @@ class SettingsProvider extends ChangeNotifier {
   Color get seedColor => _seedColor;
   double get fontScale => _fontScale;
   String get fontFamily => _fontFamily;
+  bool get hideSelectionMenu => _hideSelectionMenu;
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
@@ -27,18 +29,26 @@ class SettingsProvider extends ChangeNotifier {
   static const fontFamilies = <String>[
     'Cairo',
     'Tajawal',
+    'Almarai',
+    'IBM Plex Sans Arabic',
+    'Readex Pro',
+    'Changa',
+    'Vazirmatn',
+    'El Messiri',
+    'Markazi Text',
+    'Reem Kufi',
     'Amiri',
     'Noto Naskh Arabic',
-    'Reem Kufi',
     'Scheherazade New',
-    'Markazi Text',
-    'El Messiri',
+    'Aref Ruqaa',
+    'Lalezar',
   ];
 
   static const _kMode = 'theme_mode';
   static const _kSeed = 'seed_color';
   static const _kFont = 'font_scale';
   static const _kFontFamily = 'font_family';
+  static const _kHideSelMenu = 'hide_selection_menu';
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
   static const _kTone = 'alarm_tone';
@@ -56,6 +66,7 @@ class SettingsProvider extends ChangeNotifier {
     _fontScale = prefs.getDouble(_kFont) ?? 1.0;
     final fam = prefs.getString(_kFontFamily);
     if (fam != null && fontFamilies.contains(fam)) _fontFamily = fam;
+    _hideSelectionMenu = prefs.getBool(_kHideSelMenu) ?? false;
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
@@ -97,6 +108,13 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kFontFamily, family);
+  }
+
+  Future<void> setHideSelectionMenu(bool hide) async {
+    _hideSelectionMenu = hide;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kHideSelMenu, hide);
   }
 
   Future<void> setLayout(NoteLayout layout) async {

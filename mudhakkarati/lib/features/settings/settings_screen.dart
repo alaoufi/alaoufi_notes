@@ -109,6 +109,16 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
 
+          // إخفاء قائمة (نسخ/لصق/تحديد الكل) أثناء الكتابة
+          SwitchListTile(
+            secondary: const Icon(Icons.content_paste_off_outlined),
+            title: const Text('إخفاء قائمة النسخ/اللصق'),
+            subtitle: const Text(
+                'تمنع ظهور شريط (نسخ/لصق/تحديد الكل) الذي قد يغطّي اختيار الخط والحجم أثناء التحرير.'),
+            value: settings.hideSelectionMenu,
+            onChanged: settings.setHideSelectionMenu,
+          ),
+
           // طريقة العرض
           ListTile(
             leading: const Icon(Icons.dashboard_outlined),

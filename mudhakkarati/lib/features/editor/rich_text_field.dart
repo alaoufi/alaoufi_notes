@@ -3,6 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:provider/provider.dart';
+
+import '../settings/settings_provider.dart';
 
 /// وحدة تحكّم نص غني مع تتبّع التغييرات (Delta JSON) وتأجيل الحفظ.
 ///
@@ -68,8 +71,10 @@ class RichTextEditorBody extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           placeholder: 'اكتب ملاحظتك هنا...',
           // قائمة (قص/نسخ/لصق) مثبّتة أعلى الشاشة حتى لا تغطّي شريط التنسيق
-          // في الأسفل عند «تحديد الكل».
+          // في الأسفل عند «تحديد الكل». ويمكن إخفاؤها كليًّا من الإعدادات.
           contextMenuBuilder: (context, state) {
+            final hide = context.read<SettingsProvider>().hideSelectionMenu;
+            if (hide) return const SizedBox.shrink();
             final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
             final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
             return TextFieldTapRegion(
@@ -108,12 +113,19 @@ class RichTextToolbar extends StatelessWidget {
                 items: {
                   'Cairo': 'Cairo',
                   'Tajawal': 'Tajawal',
-                  'Amiri': 'Amiri',
-                  'نسخ': 'Noto Naskh Arabic',
-                  'كوفي': 'Reem Kufi',
-                  'شهرزاد': 'Scheherazade New',
-                  'مرکزی': 'Markazi Text',
+                  'Almarai': 'Almarai',
+                  'IBM Plex': 'IBM Plex Sans Arabic',
+                  'Readex': 'Readex Pro',
+                  'Changa': 'Changa',
+                  'Vazirmatn': 'Vazirmatn',
                   'المصري': 'El Messiri',
+                  'مرکزی': 'Markazi Text',
+                  'كوفي': 'Reem Kufi',
+                  'أميري': 'Amiri',
+                  'نسخ': 'Noto Naskh Arabic',
+                  'شهرزاد': 'Scheherazade New',
+                  'رقعة': 'Aref Ruqaa',
+                  'لاله‌زار': 'Lalezar',
                   'مسح': 'Clear',
                 },
               ),
