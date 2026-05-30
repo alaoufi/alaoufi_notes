@@ -192,4 +192,43 @@ class BackupService {
       return BackupResult(false, 'فشل الاستيراد: $e');
     }
   }
+
+  /// بناء نسخة مشفّرة كبايتات (تُستخدم لمزامنة السحابة).
+  Future<Uint8List> buildEncryptedBytes(String password) =>
+      _buildEncrypted(password);
+
+  /// استعادة نسخة احتياطية من بايتات مشفّرة (من السحابة).
+  Future<BackupResult> restoreFromBytes(
+      Uint8List encrypted, String password) async {
+    try {
+      late Uint8List zipped;
+      try {
+        zipped = EncryptionService.instance.decryptBytes(encrypted, password);
+      } catch (_) {
+        return const BackupResult(false, 'كلمة المرور خاطئة أو الملف تالف');
+      }
+      final archive = ZipDecoder().decodeBytes(zipped);
+      final dbPath = await AppDatabase.instance.path;
+      final attDir = await FileService.instance.attachmentsDir();
+      if (await attDir.exists()) {
+        for (final e in attDir.listSync()) {
+          if (e is File) await e.delete();
+        }
+      }
+      for (final file in archive) {
+        if (!file.isFile) continue;
+        final data = file.content as List<int>;
+        if (file.name == 'database.db') {
+          await File(dbPath).writeAsBytes(data, flush: true);
+        } else if (file.name.startsWith('attachments/')) {
+          final dest = p.join(attDir.path, p.basename(file.name));
+          await File(dest).writeAsBytes(data, flush: true);
+        }
+      }
+      await AppDatabase.instance.reopen();
+      return const BackupResult(true, 'تمت الاستعادة من السحابة');
+    } catch (e) {
+      return BackupResult(false, 'فشل الاستعادة: $e');
+    }
+  }
 }

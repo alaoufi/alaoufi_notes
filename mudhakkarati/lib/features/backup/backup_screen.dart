@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../services/backup_service.dart';
+import '../../services/drive_sync_service.dart';
 import '../../services/easynotes_import.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
@@ -20,6 +21,90 @@ class BackupScreen extends StatefulWidget {
 
 class _BackupScreenState extends State<BackupScreen> {
   bool _busy = false;
+  String? _driveEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshDrive();
+  }
+
+  Future<void> _refreshDrive() async {
+    final email = await DriveSyncService.instance.currentEmail();
+    if (mounted) setState(() => _driveEmail = email);
+  }
+
+  Future<void> _driveSignIn() async {
+    setState(() => _busy = true);
+    final ok = await DriveSyncService.instance.signIn();
+    setState(() => _busy = false);
+    if (ok) {
+      await _refreshDrive();
+      _toast('تم تسجيل الدخول إلى Google Drive');
+    } else {
+      _toast('تعذّر تسجيل الدخول');
+    }
+  }
+
+  Future<void> _driveSignOut() async {
+    await DriveSyncService.instance.signOut();
+    await _refreshDrive();
+    _toast('تم تسجيل الخروج');
+  }
+
+  Future<void> _driveUpload() async {
+    final pwd = await _askPassword('رفع نسخة إلى Drive');
+    if (pwd == null || pwd.isEmpty) return;
+    setState(() => _busy = true);
+    try {
+      final bytes = await BackupService.instance.buildEncryptedBytes(pwd);
+      final ok = await DriveSyncService.instance.upload(bytes);
+      _toast(ok ? 'تم رفع النسخة إلى Drive' : 'فشل الرفع');
+    } catch (e) {
+      _toast('فشل الرفع: $e');
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _driveRestore() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('استعادة من Drive'),
+        content: const Text(
+            'سيتم استبدال بياناتك الحالية بآخر نسخة على Google Drive. متابعة؟'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('إلغاء')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('استعادة')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+    final pwd = await _askPassword('استعادة من Drive');
+    if (pwd == null || pwd.isEmpty) return;
+    setState(() => _busy = true);
+    try {
+      final bytes = await DriveSyncService.instance.download();
+      if (bytes == null) {
+        _toast('لا توجد نسخة على Drive');
+      } else {
+        final res =
+            await BackupService.instance.restoreFromBytes(bytes, pwd);
+        _toast(res.message);
+        if (res.success && mounted) {
+          await context.read<NotesProvider>().init();
+          await context.read<RemindersProvider>().refresh();
+        }
+      }
+    } catch (e) {
+      _toast('فشل الاستعادة: $e');
+    }
+    if (mounted) setState(() => _busy = false);
+  }
 
   Future<String?> _askPassword(String title) async {
     final ctrl = TextEditingController();
@@ -150,6 +235,47 @@ class _BackupScreenState extends State<BackupScreen> {
           ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // ===== Google Drive =====
+              Card(
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.add_to_drive, color: Color(0xFF1A73E8)),
+                      title: const Text('Google Drive'),
+                      subtitle: Text(_driveEmail == null
+                          ? 'غير مسجّل — اضغط للدخول'
+                          : 'مسجّل: $_driveEmail'),
+                      trailing: _driveEmail == null
+                          ? TextButton(
+                              onPressed: _busy ? null : _driveSignIn,
+                              child: const Text('دخول'))
+                          : TextButton(
+                              onPressed: _busy ? null : _driveSignOut,
+                              child: const Text('خروج')),
+                    ),
+                    if (_driveEmail != null)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton.icon(
+                              onPressed: _busy ? null : _driveUpload,
+                              icon: const Icon(Icons.cloud_upload_outlined),
+                              label: const Text('رفع'),
+                            ),
+                          ),
+                          Expanded(
+                            child: TextButton.icon(
+                              onPressed: _busy ? null : _driveRestore,
+                              icon: const Icon(Icons.cloud_download_outlined),
+                              label: const Text('استعادة'),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.upload_file),
