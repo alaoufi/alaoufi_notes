@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../core/theme/app_colors.dart';
 import '../data/models/category.dart';
@@ -85,8 +84,6 @@ class NoteCard extends StatelessWidget {
                 _lockedBody(context, onBg)
               else
                 _body(context, onBg),
-              const SizedBox(height: 10),
-              _footer(context, onBg),
             ],
           ),
         ),
@@ -234,56 +231,6 @@ class NoteCard extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
             color: onBg.withOpacity(0.8), height: 1.3, fontSize: 13),
-      ),
-    );
-  }
-
-  Widget _footer(BuildContext context, Color onBg) {
-    final hasChips = category != null || note.tags.isNotEmpty;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (hasChips)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                if (category != null)
-                  _chip(category!.name, Color(category!.color), onBg),
-                ...note.tags.take(3).map((t) => _chip('#$t', null, onBg)),
-              ],
-            ),
-          ),
-        Text(
-          DateFormat('yyyy/MM/dd').format(note.updatedAt),
-          style: TextStyle(fontSize: 11, color: onBg.withOpacity(0.55)),
-        ),
-      ],
-    );
-  }
-
-  Widget _chip(String label, Color? dot, Color onBg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: onBg.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (dot != null) ...[
-            Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(color: dot, shape: BoxShape.circle)),
-            const SizedBox(width: 4),
-          ],
-          Text(label,
-              style: TextStyle(fontSize: 11, color: onBg.withOpacity(0.8))),
-        ],
       ),
     );
   }
