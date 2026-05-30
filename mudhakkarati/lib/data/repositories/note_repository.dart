@@ -63,7 +63,7 @@ class NoteRepository {
       NoteSort.createdAsc => 'n.created_at ASC',
       NoteSort.titleAsc => 'n.title COLLATE NOCASE ASC',
     };
-    sql += ' ORDER BY n.is_pinned DESC, \$order';
+    sql += ' ORDER BY n.is_pinned DESC, $order';
 
     final rows = await db.rawQuery(sql, args);
     return _attachTags(db, rows);
