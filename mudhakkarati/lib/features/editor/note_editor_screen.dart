@@ -47,6 +47,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   final List<TextEditingController> _itemCtrls = [];
   PasswordEntry _passwordEntry = const PasswordEntry();
   String _richContent = ''; // محتوى النص الغني (Delta JSON) لنوع النص
+  RichTextController? _richCtrl; // وحدة تحكّم النص الغني (لنوع النص فقط)
 
   Timer? _debounce;
   bool _loaded = false;
@@ -92,6 +93,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         _note = _note.copyWith(isLocked: true);
       }
     }
+    // وحدة تحكّم النص الغني (لنوع النص) — تُهيّأ بعد معرفة المحتوى.
+    if (_note.type == NoteType.text) {
+      _richCtrl = RichTextController(_richContent, (json) {
+        _richContent = json;
+        _onChanged();
+      });
+    }
+
     setState(() => _loaded = true);
 
     _titleCtrl.addListener(_onChanged);
@@ -191,6 +200,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   void dispose() {
     if (_secured) SecureScreen.disable();
     _debounce?.cancel();
+    _richCtrl?.dispose();
     _titleCtrl.dispose();
     _contentCtrl.dispose();
     for (final c in _itemCtrls) {
@@ -352,6 +362,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ],
           ),
         ),
+        // شريط أدوات التنسيق مثبّت أسفل الشاشة (لنوع النص) — يبقى ظاهرًا فوق
+        // لوحة المفاتيح ولا يختفي عند تحديد النص.
+        bottomNavigationBar: (_note.type == NoteType.text && _richCtrl != null)
+            ? RichTextToolbar(controller: _richCtrl!)
+            : null,
       ),
     );
   }
@@ -413,13 +428,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ];
       case NoteType.text:
         return [
-          RichTextField(
-            initialContent: _richContent,
-            onChanged: (json) {
-              _richContent = json;
-              _onChanged();
-            },
-          ),
+          if (_richCtrl != null) RichTextEditorBody(controller: _richCtrl!),
         ];
     }
   }
