@@ -280,6 +280,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       },
       child: Scaffold(
         backgroundColor: bg,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           backgroundColor: bg,
           actions: [
@@ -342,45 +343,59 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ),
           ],
         ),
-        body: PaperBackground(
-          style: _note.bgStyle,
-          lineColor: onBg.withValues(alpha: 0.12),
-          child: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+        body: SafeArea(
+          child: Column(
             children: [
-              TextField(
-                controller: _titleCtrl,
-                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                decoration: InputDecoration(
-                  hintText: s.t('title_hint'),
-                  border: InputBorder.none,
-                  filled: false,
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  children: [
+                    TextField(
+                      controller: _titleCtrl,
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        hintText: s.t('title_hint'),
+                        border: InputBorder.none,
+                        filled: false,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Flexible(child: _categorySelector(s)),
+                        const SizedBox(width: 8),
+                        Text(
+                          _formatDate(_note.updatedAt),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).hintColor),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    // الأسطر/الخلفية جزء من المحتوى وتتحرك معه عند التمرير.
+                    PaperBackground(
+                      style: _note.bgStyle,
+                      lineColor: onBg.withValues(alpha: 0.12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: _typeBody(s),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _tagsEditor(s),
+                  ],
                 ),
               ),
-              Row(
-                children: [
-                  Expanded(child: _categorySelector(s)),
-                  Text(
-                    _formatDate(_note.updatedAt),
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).hintColor),
-                  ),
-                ],
-              ),
-              const Divider(),
-              ..._typeBody(s),
-              const SizedBox(height: 16),
-              _tagsEditor(s),
+              // شريط أدوات التنسيق فوق لوحة المفاتيح مباشرة (يرتفع معها).
+              if (_note.type == NoteType.text && _richCtrl != null)
+                Padding(
+                  padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom),
+                  child: RichTextToolbar(controller: _richCtrl!),
+                ),
             ],
           ),
         ),
-        ),
-        // شريط أدوات التنسيق مثبّت أسفل الشاشة (لنوع النص) — يبقى ظاهرًا فوق
-        // لوحة المفاتيح ولا يختفي عند تحديد النص.
-        bottomNavigationBar: (_note.type == NoteType.text && _richCtrl != null)
-            ? RichTextToolbar(controller: _richCtrl!)
-            : null,
       ),
     );
   }
@@ -396,6 +411,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       alignment: AlignmentDirectional.centerStart,
       child: DropdownButton<int?>(
         value: _note.categoryId,
+        isExpanded: true,
         hint: Text(s.t('no_category')),
         underline: const SizedBox.shrink(),
         items: [
