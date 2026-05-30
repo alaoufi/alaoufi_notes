@@ -1,52 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- أيقونة دفتر ملاحظات معبّرة: غلاف + تجليد حلزوني + أسطر + علامة مرجعية + قلم. -->
+<!-- دفتر ملاحظات أزرق نظيف: تجليد حلزوني + قلم أبيض + ألسنة تبويب ملوّنة. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- ظل خفيف خلف الدفتر -->
-    <path
-        android:fillColor="#1A000000"
-        android:pathData="M37,33 L78,33 A5,5 0 0 1 83,38 L83,80 A5,5 0 0 1 78,85 L37,85 Z"/>
+    <!-- ألسنة التبويب الملوّنة (خلف الدفتر، على اليمين) -->
+    <path android:fillColor="#FF7BB6F0" android:pathData="M70,40 L80,40 A3,3 0 0 1 83,43 L83,49 A3,3 0 0 1 80,52 L70,52 Z"/>
+    <path android:fillColor="#FFE57FB0" android:pathData="M70,54 L80,54 A3,3 0 0 1 83,57 L83,63 A3,3 0 0 1 80,66 L70,66 Z"/>
+    <path android:fillColor="#FFB07FE5" android:pathData="M70,68 L80,68 A3,3 0 0 1 83,71 L83,77 A3,3 0 0 1 80,80 L70,80 Z"/>
 
-    <!-- جسم الصفحة (أبيض) -->
+    <!-- جسم الدفتر (أزرق) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M36,28 L76,28 A5,5 0 0 1 81,33 L81,79 A5,5 0 0 1 76,84 L36,84 Z"/>
+        android:fillColor="#FF3B96E8"
+        android:pathData="M33,32 L70,32 A4,4 0 0 1 74,36 L74,84 A4,4 0 0 1 70,88 L33,88 A4,4 0 0 1 29,84 L29,36 A4,4 0 0 1 33,32 Z"/>
 
-    <!-- شريط جانبي ملوّن (الغلاف) -->
+    <!-- ظل داخلي خفيف عند التجليد (أزرق أغمق) -->
     <path
-        android:fillColor="#2E7D6B"
-        android:pathData="M30,28 L40,28 L40,84 L36,84 A6,6 0 0 1 30,78 L30,34 A6,6 0 0 1 30,28 Z"/>
+        android:fillColor="#FF2E83D6"
+        android:pathData="M29,36 A4,4 0 0 1 33,32 L40,32 L40,88 L33,88 A4,4 0 0 1 29,84 Z"/>
 
-    <!-- حلقات التجليد الحلزوني -->
-    <path android:fillColor="#FFFFFF" android:pathData="M33,35 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M33,46 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M33,57 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M33,68 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M33,79 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0"/>
+    <!-- حلقات التجليد الحلزوني (بيضاء) -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34.5,40 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34.5,52 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34.5,64 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
+    <path android:fillColor="#FFFFFFFF" android:pathData="M34.5,76 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0"/>
 
-    <!-- أسطر الكتابة -->
-    <path android:fillColor="#9AB7B0" android:pathData="M46,40 L74,40 L74,43 L46,43 Z"/>
-    <path android:fillColor="#9AB7B0" android:pathData="M46,49 L74,49 L74,52 L46,52 Z"/>
-    <path android:fillColor="#9AB7B0" android:pathData="M46,58 L66,58 L66,61 L46,61 Z"/>
-    <path android:fillColor="#9AB7B0" android:pathData="M46,67 L70,67 L70,70 L46,70 Z"/>
-
-    <!-- علامة مرجعية (Bookmark) -->
+    <!-- قلم أبيض مائل في الوسط -->
     <path
-        android:fillColor="#E8772E"
-        android:pathData="M64,28 L72,28 L72,46 L68,41 L64,46 Z"/>
-
-    <!-- قلم مائل -->
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M48,74 L66,46 L72,50 L54,78 L47,79 Z"/>
+    <!-- سنّ القلم -->
     <path
-        android:fillColor="#F4B400"
-        android:pathData="M70,74 L80,64 L84,68 L74,78 Z"/>
+        android:fillColor="#FF3B96E8"
+        android:pathData="M48,74 L54,78 L47,79 Z"/>
+    <!-- رأس القلم (الممحاة) -->
     <path
-        android:fillColor="#5B3A29"
-        android:pathData="M68,76 L70,74 L74,78 L72,80 Z"/>
-    <path
-        android:fillColor="#2E7D6B"
-        android:pathData="M80,64 L82,62 A2,2 0 0 1 86,66 L84,68 Z"/>
+        android:fillColor="#FFCFE6FB"
+        android:pathData="M66,46 L69,41.5 A2,2 0 0 1 74,45 L72,50 Z"/>
 </vector>
