@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../core/l10n/app_strings.dart';
+import '../data/models/enums.dart';
 import '../data/models/note.dart';
+import '../features/editor/rich_text_field.dart';
 import '../features/home/notes_provider.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
@@ -106,9 +108,16 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
   );
 }
 
+/// نص النسخ/المشاركة: العنوان + المحتوى فقط — بدون التاريخ أو التصنيف.
+/// لملاحظات النص الغني نحوّل Delta إلى نص صريح ليُنسخ نظيفًا.
 String _asText(Note note) {
   final buffer = StringBuffer();
   if (note.title.trim().isNotEmpty) buffer.writeln(note.title);
-  if (note.content.trim().isNotEmpty) buffer.writeln(note.content);
+
+  final body = note.type == NoteType.text
+      ? richToPlainText(note.content)
+      : note.content;
+  if (body.trim().isNotEmpty) buffer.writeln(body);
+
   return buffer.toString().trim();
 }

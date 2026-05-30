@@ -335,7 +335,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   filled: false,
                 ),
               ),
-              _categorySelector(s),
+              Row(
+                children: [
+                  Expanded(child: _categorySelector(s)),
+                  Text(
+                    _formatDate(_note.updatedAt),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).hintColor),
+                  ),
+                ],
+              ),
               const Divider(),
               ..._typeBody(s),
               const SizedBox(height: 16),
@@ -345,6 +354,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime d) {
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${d.year}/${two(d.month)}/${two(d.day)}  ${two(d.hour)}:${two(d.minute)}';
   }
 
   Widget _categorySelector(S s) {
