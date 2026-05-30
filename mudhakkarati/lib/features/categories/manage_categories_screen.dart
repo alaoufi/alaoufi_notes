@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/constants/category_icons.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/category.dart';
+import '../../services/security_service.dart';
 import '../home/notes_provider.dart';
+import '../security/pin_setup.dart';
 
 class ManageCategoriesScreen extends StatelessWidget {
   const ManageCategoriesScreen({super.key});
@@ -55,6 +57,7 @@ class ManageCategoriesScreen extends StatelessWidget {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                _LockCategoryButton(categoryId: c.id!),
                 IconButton(
                   icon: const Icon(Icons.edit_outlined),
                   onPressed: () => _edit(context, c),
@@ -158,6 +161,48 @@ class ManageCategoriesScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// زر قفل/فتح تصنيف. التصنيف المقفل تتطلب ملاحظاته رقمًا سريًا لعرضها.
+class _LockCategoryButton extends StatefulWidget {
+  final int categoryId;
+  const _LockCategoryButton({required this.categoryId});
+
+  @override
+  State<_LockCategoryButton> createState() => _LockCategoryButtonState();
+}
+
+class _LockCategoryButtonState extends State<_LockCategoryButton> {
+  bool _locked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SecurityService.instance
+        .isCategoryLocked(widget.categoryId)
+        .then((v) => mounted ? setState(() => _locked = v) : null);
+  }
+
+  Future<void> _toggle() async {
+    if (!_locked) {
+      // قفل التصنيف يتطلب وجود رقم سري للتطبيق.
+      final ok = await ensurePinConfigured(context);
+      if (!ok) return;
+    }
+    await SecurityService.instance
+        .setCategoryLocked(widget.categoryId, !_locked);
+    if (mounted) setState(() => _locked = !_locked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: _locked ? 'إلغاء قفل التصنيف' : 'قفل التصنيف',
+      icon: Icon(_locked ? Icons.lock : Icons.lock_open_outlined,
+          color: _locked ? Theme.of(context).colorScheme.primary : null),
+      onPressed: _toggle,
     );
   }
 }

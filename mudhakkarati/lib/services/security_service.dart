@@ -12,6 +12,7 @@ class SecurityService {
   static const _kPinSalt = 'pin_salt';
   static const _kLockEnabled = 'lock_enabled';
   static const _kBiometric = 'biometric_enabled';
+  static const _kLockedCats = 'locked_categories'; // معرّفات مفصولة بفواصل
 
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -60,6 +61,31 @@ class SecurityService {
     } catch (_) {
       return false;
     }
+  }
+
+  // ---- قفل التصنيفات ----
+
+  /// معرّفات التصنيفات المقفلة.
+  Future<Set<int>> lockedCategories() async {
+    final raw = await _storage.read(key: _kLockedCats) ?? '';
+    return raw
+        .split(',')
+        .where((e) => e.trim().isNotEmpty)
+        .map(int.parse)
+        .toSet();
+  }
+
+  Future<bool> isCategoryLocked(int id) async =>
+      (await lockedCategories()).contains(id);
+
+  Future<void> setCategoryLocked(int id, bool locked) async {
+    final set = await lockedCategories();
+    if (locked) {
+      set.add(id);
+    } else {
+      set.remove(id);
+    }
+    await _storage.write(key: _kLockedCats, value: set.join(','));
   }
 
   Future<bool> authenticateBiometric(String reason) async {

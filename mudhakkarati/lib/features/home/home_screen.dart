@@ -10,6 +10,7 @@ import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
+import '../../services/security_service.dart';
 import '../security/note_unlock.dart';
 import '../security/pin_setup.dart';
 import '../settings/settings_provider.dart';
@@ -32,7 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _openNote(Note note) async {
-    if (note.isLocked) {
+    // قفل الملاحظة نفسها أو قفل تصنيفها يتطلب فتحًا.
+    final catLocked = note.categoryId != null &&
+        await SecurityService.instance.isCategoryLocked(note.categoryId!);
+    if (note.isLocked || catLocked) {
+      if (!mounted) return;
       final ok = await ensureUnlocked(context);
       if (!ok) return;
     }
