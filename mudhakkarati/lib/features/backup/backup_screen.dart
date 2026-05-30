@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
+
 import '../../core/l10n/app_strings.dart';
 import '../../services/backup_service.dart';
+import '../../services/easynotes_import.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
 
@@ -95,6 +100,37 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
+  Future<void> _importEasyNotes() async {
+    final provider = context.read<NotesProvider>();
+
+    final picked = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      withData: true,
+    );
+    if (picked == null || picked.files.isEmpty) return;
+
+    var bytes = picked.files.single.bytes;
+    final path = picked.files.single.path;
+    if (bytes == null && path != null) {
+      bytes = await File(path).readAsBytes();
+    }
+    if (bytes == null) {
+      _toast('تعذّر قراءة الملف.');
+      return;
+    }
+
+    setState(() => _busy = true);
+    final result =
+        await EasyNotesImporter(provider.notes, provider.categoriesRepo)
+            .importBackup(bytes);
+    setState(() => _busy = false);
+    _toast(result.message);
+
+    if (result.success && mounted) {
+      await provider.init();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -122,6 +158,17 @@ class _BackupScreenState extends State<BackupScreen> {
                   subtitle: const Text(
                       'استعادة نسخة احتياطية سابقة. سيتم استبدال البيانات الحالية.'),
                   onTap: _busy ? null : _import,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: ListTile(
+                  leading: const Icon(Icons.move_to_inbox),
+                  title: const Text('استيراد من Easy Notes'),
+                  subtitle: const Text(
+                      'اختر ملف النسخة الاحتياطية (.backup) من تطبيق Easy Notes لنقل ملاحظاتك.'),
+                  onTap: _busy ? null : _importEasyNotes,
                 ),
               ),
               const SizedBox(height: 16),
