@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../services/auto_sync_service.dart';
 import '../../services/backup_service.dart';
 import '../../services/drive_sync_service.dart';
 import '../../services/easynotes_import.dart';
@@ -23,6 +24,7 @@ class BackupScreen extends StatefulWidget {
 class _BackupScreenState extends State<BackupScreen> {
   bool _busy = false;
   String? _driveEmail;
+  bool _autoSync = false;
 
   @override
   void initState() {
@@ -32,7 +34,24 @@ class _BackupScreenState extends State<BackupScreen> {
 
   Future<void> _refreshDrive() async {
     final email = await DriveSyncService.instance.currentEmail();
-    if (mounted) setState(() => _driveEmail = email);
+    final auto = await AutoSyncService.instance.isEnabled();
+    if (mounted) {
+      setState(() {
+        _driveEmail = email;
+        _autoSync = auto;
+      });
+    }
+  }
+
+  Future<void> _toggleAutoSync(bool v) async {
+    if (v) {
+      final pwd = await _askPassword('كلمة مرور المزامنة التلقائية');
+      if (pwd == null || pwd.isEmpty) return;
+      await AutoSyncService.instance.setEnabled(true, password: pwd);
+    } else {
+      await AutoSyncService.instance.setEnabled(false);
+    }
+    if (mounted) setState(() => _autoSync = v);
   }
 
   Future<void> _driveSignIn() async {
@@ -315,7 +334,7 @@ class _BackupScreenState extends State<BackupScreen> {
                               onPressed: _busy ? null : _driveSignOut,
                               child: const Text('خروج')),
                     ),
-                    if (_driveEmail != null)
+                    if (_driveEmail != null) ...[
                       Row(
                         children: [
                           Expanded(
@@ -334,6 +353,14 @@ class _BackupScreenState extends State<BackupScreen> {
                           ),
                         ],
                       ),
+                      SwitchListTile(
+                        secondary: const Icon(Icons.sync),
+                        title: const Text('مزامنة تلقائية'),
+                        subtitle: const Text('رفع نسخة تلقائيًا عند الدخول والخروج'),
+                        value: _autoSync,
+                        onChanged: _busy ? null : _toggleAutoSync,
+                      ),
+                    ],
                   ],
                 ),
               ),
