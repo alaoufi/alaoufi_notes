@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
+import 'features/security/activation_gate.dart';
 import 'features/security/app_lock_gate.dart';
 import 'features/settings/settings_provider.dart';
 import 'services/notification_service.dart';
@@ -43,7 +44,7 @@ class MudhakkaratiApp extends StatelessWidget {
           child: child!,
         );
       },
-      home: const AppLockGate(),
+      home: const ActivationGate(child: AppLockGate()),
     );
   }
 }
