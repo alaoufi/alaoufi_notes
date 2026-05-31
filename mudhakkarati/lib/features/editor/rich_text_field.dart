@@ -175,6 +175,7 @@ class RichTextToolbar extends StatelessWidget {
             showStrikeThrough: true,
             showColorButton: true,
             showBackgroundColorButton: true,
+            showLineHeightButton: true,
             showClearFormat: true,
             showListBullets: true,
             showListNumbers: true,
