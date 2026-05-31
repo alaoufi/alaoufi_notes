@@ -92,12 +92,13 @@ class SecurityService {
   }
 
   // ---- قفل صفحة المعلومات (رمز مستقل خاص بها) ----
-
-  Future<bool> isInfoLocked() async =>
-      (await _storage.read(key: _kInfoLocked)) == 'true';
+  // القفل مُفعّل طالما يوجد رمز مستقل محفوظ (لا نعتمد على علامة منفصلة قد
+  // تبقى «مفعّلة» دون رمز فتُتجاوَز الحماية).
 
   Future<bool> hasInfoPin() async =>
       (await _storage.read(key: _kInfoPinHash)) != null;
+
+  Future<bool> isInfoLocked() async => hasInfoPin();
 
   /// ضبط رمز مستقل لصفحة المعلومات وتفعيل قفلها.
   Future<void> setInfoPin(String pin) async {

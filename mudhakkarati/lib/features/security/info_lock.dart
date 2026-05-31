@@ -38,7 +38,7 @@ Future<String?> setupInfoPin(BuildContext context) async {
 /// يطلب فتح قفل صفحة المعلومات برمزها المستقل. يعيد true عند النجاح.
 Future<bool> ensureInfoUnlocked(BuildContext context) async {
   final sec = SecurityService.instance;
-  if (!await sec.isInfoLocked() || !await sec.hasInfoPin()) return true;
+  if (!await sec.hasInfoPin()) return true; // لا رمز = لا قفل.
   if (!context.mounted) return false;
   final ok = await showModalBottomSheet<bool>(
     context: context,
