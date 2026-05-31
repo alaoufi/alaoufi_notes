@@ -216,3 +216,70 @@ String richToPlainText(String content) {
   }
   return content;
 }
+
+/// عارض نص غني للقراءة فقط (يعرض تنسيق Delta، أو نصًّا عاديًا إن لم يكن Delta).
+class RichTextViewer extends StatefulWidget {
+  final String content;
+  const RichTextViewer({super.key, required this.content});
+
+  @override
+  State<RichTextViewer> createState() => _RichTextViewerState();
+}
+
+class _RichTextViewerState extends State<RichTextViewer> {
+  late QuillController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = _build();
+  }
+
+  @override
+  void didUpdateWidget(covariant RichTextViewer old) {
+    super.didUpdateWidget(old);
+    if (old.content != widget.content) {
+      _controller.dispose();
+      _controller = _build();
+    }
+  }
+
+  QuillController _build() {
+    final trimmed = widget.content.trim();
+    Document doc;
+    if (trimmed.startsWith('[')) {
+      try {
+        doc = Document.fromJson(jsonDecode(trimmed) as List);
+      } catch (_) {
+        doc = Document()..insert(0, widget.content);
+      }
+    } else {
+      doc = Document();
+      if (trimmed.isNotEmpty) doc.insert(0, widget.content);
+    }
+    return QuillController(
+      document: doc,
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return QuillEditor.basic(
+      controller: _controller,
+      config: const QuillEditorConfig(
+        showCursor: false,
+        expands: false,
+        padding: EdgeInsets.zero,
+        autoFocus: false,
+      ),
+    );
+  }
+}

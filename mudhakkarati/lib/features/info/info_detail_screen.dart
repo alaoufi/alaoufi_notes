@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../editor/rich_text_field.dart';
 import 'info_edit_screen.dart';
 import 'info_list_screen.dart';
 
@@ -69,7 +70,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
     add('التخصص الفرعي', _e.subSpecialty);
     add('الموضوع', _e.topic);
     add('المختصر', _e.brief);
-    add('التفصيل', _e.detail);
+    add('التفصيل', richToPlainText(_e.detail));
     add('ملاحظات', _e.notes);
     add('المصدر', _e.source);
     Clipboard.setData(ClipboardData(text: b.toString().trim()));
@@ -178,7 +179,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
                 ],
               ),
             ),
-          _section('التفصيل', Icons.notes, _e.detail, theme),
+          _richSection('التفصيل', Icons.notes, _e.detail, theme),
           _section('ملاحظات', Icons.sticky_note_2_outlined, _e.notes, theme),
           _section('المصدر', Icons.link, _e.source, theme),
         ],
@@ -218,6 +219,29 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
           ),
         ),
       );
+
+  /// قسم «التفصيل» — يعرض النص الغني بتنسيقه.
+  Widget _richSection(
+      String label, IconData icon, String value, ThemeData theme) {
+    if (richToPlainText(value).trim().isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: 18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 18, color: theme.colorScheme.primary),
+            const SizedBox(width: 6),
+            Text(label,
+                style: theme.textTheme.titleSmall
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+          ]),
+          const Divider(height: 14),
+          RichTextViewer(content: value),
+        ],
+      ),
+    );
+  }
 
   Widget _section(String label, IconData icon, String value, ThemeData theme) {
     if (value.trim().isEmpty) return const SizedBox.shrink();

@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../editor/rich_text_field.dart';
 
 /// شاشة إضافة/تعديل عنصر في قاعدة المعلومات العامة.
 class InfoEditScreen extends StatefulWidget {
@@ -21,29 +24,36 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   late final TextEditingController _sub;
   late final TextEditingController _topic;
   late final TextEditingController _brief;
-  late final TextEditingController _detail;
+  late final RichTextController _detail; // محرّر نص غني مع تنسيق
   late final TextEditingController _notes;
   late final TextEditingController _source;
   bool _saving = false;
+  bool _showToolbar = false;
 
   @override
   void initState() {
     super.initState();
     final e = widget.entry;
-    _main = TextEditingController(text: e?.mainSpecialty ?? widget.initialMain ?? '');
-    _sub = TextEditingController(text: e?.subSpecialty ?? widget.initialSub ?? '');
+    _main = TextEditingController(
+        text: e?.mainSpecialty ?? widget.initialMain ?? '');
+    _sub =
+        TextEditingController(text: e?.subSpecialty ?? widget.initialSub ?? '');
     _topic = TextEditingController(text: e?.topic ?? '');
     _brief = TextEditingController(text: e?.brief ?? '');
-    _detail = TextEditingController(text: e?.detail ?? '');
+    _detail = RichTextController(e?.detail ?? '', (_) {});
     _notes = TextEditingController(text: e?.notes ?? '');
     _source = TextEditingController(text: e?.source ?? '');
+    _detail.focus.addListener(() {
+      if (mounted) setState(() => _showToolbar = _detail.focus.hasFocus);
+    });
   }
 
   @override
   void dispose() {
-    for (final c in [_main, _sub, _topic, _brief, _detail, _notes, _source]) {
+    for (final c in [_main, _sub, _topic, _brief, _notes, _source]) {
       c.dispose();
     }
+    _detail.dispose();
     super.dispose();
   }
 
@@ -54,13 +64,18 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
       return;
     }
     setState(() => _saving = true);
+    // التفصيل: نخزّن Delta إن كان فيه نص، وإلا فارغًا.
+    final detailJson =
+        jsonEncode(_detail.quill.document.toDelta().toJson());
+    final detail = richToPlainText(detailJson).isEmpty ? '' : detailJson;
+
     final base = (widget.entry ?? InfoEntry(createdAt: DateTime.now()));
     final entry = base.copyWith(
       mainSpecialty: _main.text.trim(),
       subSpecialty: _sub.text.trim(),
       topic: _topic.text.trim(),
       brief: _brief.text.trim(),
-      detail: _detail.text.trim(),
+      detail: detail,
       notes: _notes.text.trim(),
       source: _source.text.trim(),
     );
@@ -73,7 +88,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   }
 
   Widget _field(TextEditingController c, String label, IconData icon,
-      {int maxLines = 1, String? hint}) {
+      {int maxLines = 1}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextField(
@@ -84,10 +99,45 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
             maxLines > 1 ? TextInputAction.newline : TextInputAction.next,
         decoration: InputDecoration(
           labelText: label,
-          hintText: hint,
           prefixIcon: Icon(icon),
           alignLabelWithHint: true,
         ),
+      ),
+    );
+  }
+
+  Widget _detailField(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).inputDecorationTheme.fillColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _showToolbar ? scheme.primary : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.notes, size: 20, color: scheme.primary),
+            const SizedBox(width: 8),
+            Text('التفصيل',
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(color: scheme.primary)),
+            const Spacer(),
+            Text('بأدوات تنسيق',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).hintColor)),
+          ]),
+          const Divider(),
+          RichTextEditorBody(controller: _detail),
+        ],
       ),
     );
   }
@@ -108,22 +158,36 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
       ),
       body: AbsorbPointer(
         absorbing: _saving,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            _field(_main, 'التخصص الرئيسي', Icons.account_tree_outlined),
-            _field(_sub, 'التخصص الفرعي', Icons.subdirectory_arrow_left),
-            _field(_topic, 'الموضوع', Icons.title),
-            _field(_brief, 'المختصر', Icons.short_text, maxLines: 3),
-            _field(_detail, 'التفصيل', Icons.notes, maxLines: 8),
-            _field(_notes, 'ملاحظات', Icons.sticky_note_2_outlined, maxLines: 4),
-            _field(_source, 'المصدر', Icons.link),
-            const SizedBox(height: 8),
-            FilledButton.icon(
-              onPressed: _saving ? null : _save,
-              icon: const Icon(Icons.save),
-              label: const Text('حفظ'),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _field(_main, 'التخصص الرئيسي', Icons.account_tree_outlined),
+                  _field(_sub, 'التخصص الفرعي', Icons.subdirectory_arrow_left),
+                  _field(_topic, 'الموضوع', Icons.title),
+                  _field(_brief, 'المختصر', Icons.short_text, maxLines: 3),
+                  _detailField(context),
+                  _field(_notes, 'ملاحظات', Icons.sticky_note_2_outlined,
+                      maxLines: 4),
+                  _field(_source, 'المصدر', Icons.link),
+                  const SizedBox(height: 8),
+                  FilledButton.icon(
+                    onPressed: _saving ? null : _save,
+                    icon: const Icon(Icons.save),
+                    label: const Text('حفظ'),
+                  ),
+                ],
+              ),
             ),
+            // شريط التنسيق يظهر فوق لوحة المفاتيح عند تحرير «التفصيل».
+            if (_showToolbar)
+              Padding(
+                padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                child: RichTextToolbar(controller: _detail),
+              ),
           ],
         ),
       ),
