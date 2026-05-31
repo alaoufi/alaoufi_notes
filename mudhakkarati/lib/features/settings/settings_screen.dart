@@ -119,6 +119,27 @@ class SettingsScreen extends StatelessWidget {
             onChanged: settings.setHideSelectionMenu,
           ),
 
+          // مكان صفحة «معلومات عامة»
+          ListTile(
+            leading: const Icon(Icons.menu_book_outlined),
+            title: const Text('مكان «معلومات عامة»'),
+            trailing: DropdownButton<InfoPlacement>(
+              value: settings.infoPlacement,
+              underline: const SizedBox.shrink(),
+              onChanged: (v) {
+                if (v != null) settings.setInfoPlacement(v);
+              },
+              items: const [
+                DropdownMenuItem(
+                    value: InfoPlacement.tab, child: Text('تبويب علوي')),
+                DropdownMenuItem(
+                    value: InfoPlacement.menu, child: Text('قائمة النقاط')),
+                DropdownMenuItem(
+                    value: InfoPlacement.drawer, child: Text('القائمة الجانبية')),
+              ],
+            ),
+          ),
+
           // طريقة العرض
           ListTile(
             leading: const Icon(Icons.dashboard_outlined),

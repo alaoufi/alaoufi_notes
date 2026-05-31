@@ -6,8 +6,12 @@ import 'info_detail_screen.dart';
 import 'info_edit_screen.dart';
 
 /// صفحة «معلومات عامة» — قاعدة بيانات داخلية مع بحث وعرض احترافي.
+///
+/// عند تمرير [filterMain]/[filterSub] تعرض فقط المواضيع تحت ذلك التخصص.
 class InfoListScreen extends StatefulWidget {
-  const InfoListScreen({super.key});
+  final String? filterMain;
+  final String? filterSub;
+  const InfoListScreen({super.key, this.filterMain, this.filterSub});
 
   @override
   State<InfoListScreen> createState() => _InfoListScreenState();
@@ -32,10 +36,24 @@ class _InfoListScreenState extends State<InfoListScreen> {
     super.dispose();
   }
 
+  bool get _filtered =>
+      widget.filterMain != null || widget.filterSub != null;
+
   Future<void> _load() async {
     setState(() => _loading = true);
-    final items =
-        _query.trim().isEmpty ? await _repo.getAll() : await _repo.search(_query);
+    List<InfoEntry> items;
+    if (_filtered) {
+      items = await _repo.filter(
+          main: widget.filterMain, sub: widget.filterSub);
+      final q = _query.trim().toLowerCase();
+      if (q.isNotEmpty) {
+        items = items.where((e) => _matches(e, q)).toList();
+      }
+    } else {
+      items = _query.trim().isEmpty
+          ? await _repo.getAll()
+          : await _repo.search(_query);
+    }
     if (mounted) {
       setState(() {
         _items = items;
@@ -44,10 +62,18 @@ class _InfoListScreenState extends State<InfoListScreen> {
     }
   }
 
+  bool _matches(InfoEntry e, String q) =>
+      [e.mainSpecialty, e.subSpecialty, e.topic, e.brief, e.detail, e.notes,
+              e.source]
+          .any((f) => f.toLowerCase().contains(q));
+
   Future<void> _add() async {
     final added = await Navigator.push<bool>(
       context,
-      MaterialPageRoute(builder: (_) => const InfoEditScreen()),
+      MaterialPageRoute(
+        builder: (_) => InfoEditScreen(
+            initialMain: widget.filterMain, initialSub: widget.filterSub),
+      ),
     );
     if (added == true) _load();
   }
@@ -70,7 +96,9 @@ class _InfoListScreenState extends State<InfoListScreen> {
     final scheme = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('معلومات عامة'),
+        title: Text(widget.filterSub ??
+            widget.filterMain ??
+            'معلومات عامة'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(

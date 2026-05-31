@@ -6,7 +6,10 @@ import '../../data/repositories/info_repository.dart';
 /// شاشة إضافة/تعديل عنصر في قاعدة المعلومات العامة.
 class InfoEditScreen extends StatefulWidget {
   final InfoEntry? entry;
-  const InfoEditScreen({super.key, this.entry});
+  final String? initialMain;
+  final String? initialSub;
+  const InfoEditScreen(
+      {super.key, this.entry, this.initialMain, this.initialSub});
 
   @override
   State<InfoEditScreen> createState() => _InfoEditScreenState();
@@ -27,8 +30,8 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   void initState() {
     super.initState();
     final e = widget.entry;
-    _main = TextEditingController(text: e?.mainSpecialty ?? '');
-    _sub = TextEditingController(text: e?.subSpecialty ?? '');
+    _main = TextEditingController(text: e?.mainSpecialty ?? widget.initialMain ?? '');
+    _sub = TextEditingController(text: e?.subSpecialty ?? widget.initialSub ?? '');
     _topic = TextEditingController(text: e?.topic ?? '');
     _brief = TextEditingController(text: e?.brief ?? '');
     _detail = TextEditingController(text: e?.detail ?? '');

@@ -33,6 +33,28 @@ class InfoRepository {
     return rows.map(InfoEntry.fromMap).toList();
   }
 
+  /// تصفية حسب التخصص الرئيسي و/أو الفرعي (مطابقة تامة).
+  Future<List<InfoEntry>> filter({String? main, String? sub}) async {
+    final db = await _db;
+    final where = <String>[];
+    final args = <Object>[];
+    if (main != null) {
+      where.add('main_specialty = ?');
+      args.add(main);
+    }
+    if (sub != null) {
+      where.add('sub_specialty = ?');
+      args.add(sub);
+    }
+    final rows = await db.query(
+      'info_entries',
+      where: where.isEmpty ? null : where.join(' AND '),
+      whereArgs: args.isEmpty ? null : args,
+      orderBy: 'created_at DESC',
+    );
+    return rows.map(InfoEntry.fromMap).toList();
+  }
+
   /// قائمة التخصصات الرئيسية الفريدة (للاقتراح والتصفية).
   Future<List<String>> mainSpecialties() async {
     final db = await _db;

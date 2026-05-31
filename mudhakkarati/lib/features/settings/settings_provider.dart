@@ -5,6 +5,9 @@ import '../../core/theme/app_colors.dart';
 import '../../data/models/enums.dart';
 import '../../services/notification_service.dart';
 
+/// مكان زرّ صفحة «معلومات عامة».
+enum InfoPlacement { tab, menu, drawer }
+
 /// إعدادات المظهر واللغة والعرض. تُحفظ محليًا في SharedPreferences.
 class SettingsProvider extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
@@ -12,6 +15,7 @@ class SettingsProvider extends ChangeNotifier {
   double _fontScale = 1.0;
   String _fontFamily = 'Cairo';
   bool _hideSelectionMenu = false;
+  InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
@@ -21,6 +25,7 @@ class SettingsProvider extends ChangeNotifier {
   double get fontScale => _fontScale;
   String get fontFamily => _fontFamily;
   bool get hideSelectionMenu => _hideSelectionMenu;
+  InfoPlacement get infoPlacement => _infoPlacement;
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
@@ -58,6 +63,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kFont = 'font_scale';
   static const _kFontFamily = 'font_family';
   static const _kHideSelMenu = 'hide_selection_menu';
+  static const _kInfoPlacement = 'info_placement';
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
   static const _kTone = 'alarm_tone';
@@ -76,6 +82,9 @@ class SettingsProvider extends ChangeNotifier {
     final fam = prefs.getString(_kFontFamily);
     if (fam != null && fontFamilies.contains(fam)) _fontFamily = fam;
     _hideSelectionMenu = prefs.getBool(_kHideSelMenu) ?? false;
+    final ip = prefs.getString(_kInfoPlacement);
+    _infoPlacement = InfoPlacement.values
+        .firstWhere((e) => e.name == ip, orElse: () => InfoPlacement.tab);
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
@@ -124,6 +133,13 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kHideSelMenu, hide);
+  }
+
+  Future<void> setInfoPlacement(InfoPlacement placement) async {
+    _infoPlacement = placement;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kInfoPlacement, placement.name);
   }
 
   Future<void> setLayout(NoteLayout layout) async {

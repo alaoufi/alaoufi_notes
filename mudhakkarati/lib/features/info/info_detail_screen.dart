@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
 import 'info_edit_screen.dart';
+import 'info_list_screen.dart';
 
 /// عرض احترافي لعنصر معلومة (مع نسخ/تعديل/حذف).
 class InfoDetailScreen extends StatefulWidget {
@@ -109,12 +110,24 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (_e.mainSpecialty.isNotEmpty)
-                  _chip(_e.mainSpecialty, scheme.primaryContainer,
-                      scheme.onPrimaryContainer, Icons.account_tree_outlined),
+                  _chip(
+                    _e.mainSpecialty,
+                    scheme.primaryContainer,
+                    scheme.onPrimaryContainer,
+                    Icons.account_tree_outlined,
+                    onTap: () => _openSpecialty(main: _e.mainSpecialty),
+                  ),
                 if (_e.subSpecialty.isNotEmpty) ...[
                   Icon(Icons.chevron_left, size: 18, color: theme.hintColor),
-                  _chip(_e.subSpecialty, scheme.secondaryContainer,
-                      scheme.onSecondaryContainer, Icons.subdirectory_arrow_left),
+                  _chip(
+                    _e.subSpecialty,
+                    scheme.secondaryContainer,
+                    scheme.onSecondaryContainer,
+                    Icons.subdirectory_arrow_left,
+                    onTap: () => _openSpecialty(
+                        main: _e.mainSpecialty.isEmpty ? null : _e.mainSpecialty,
+                        sub: _e.subSpecialty),
+                  ),
                 ],
               ],
             ),
@@ -173,16 +186,37 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
     );
   }
 
-  Widget _chip(String text, Color bg, Color fg, IconData icon) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration:
-            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 15, color: fg),
-          const SizedBox(width: 5),
-          Text(text,
-              style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
-        ]),
+  void _openSpecialty({String? main, String? sub}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InfoListScreen(filterMain: main, filterSub: sub),
+      ),
+    );
+  }
+
+  Widget _chip(String text, Color bg, Color fg, IconData icon,
+          {VoidCallback? onTap}) =>
+      Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(icon, size: 15, color: fg),
+              const SizedBox(width: 5),
+              Text(text,
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w600)),
+              if (onTap != null) ...[
+                const SizedBox(width: 3),
+                Icon(Icons.unfold_more, size: 14, color: fg),
+              ],
+            ]),
+          ),
+        ),
       );
 
   Widget _section(String label, IconData icon, String value, ThemeData theme) {

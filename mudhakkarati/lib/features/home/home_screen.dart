@@ -10,6 +10,7 @@ import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
+import '../info/info_list_screen.dart';
 import '../../services/security_service.dart';
 import '../security/note_unlock.dart';
 import '../security/pin_setup.dart';
@@ -77,18 +78,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
+  void _openInfo() {
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => const InfoListScreen()));
+  }
+
   Widget _overflowMenu(BuildContext context, S s, NotesProvider provider) {
+    final showInfo =
+        context.read<SettingsProvider>().infoPlacement == InfoPlacement.menu;
     return PopupMenuButton<String>(
       icon: const Icon(Icons.more_vert),
       tooltip: 'المزيد',
       onSelected: (v) {
-        if (v.startsWith('type_')) {
+        if (v == 'info') {
+          _openInfo();
+        } else if (v.startsWith('type_')) {
           _addTypedNote(NoteType.values.byName(v.substring(5)));
         } else if (v.startsWith('sort_')) {
           provider.setSort(NoteSort.values.byName(v.substring(5)));
         }
       },
       itemBuilder: (context) => [
+        if (showInfo) ...[
+          PopupMenuItem<String>(
+              value: 'info',
+              child: _menuRow(Icons.menu_book_outlined, 'معلومات عامة')),
+          const PopupMenuDivider(),
+        ],
         const PopupMenuItem<String>(
             enabled: false, child: Text('إضافة نوع آخر')),
         PopupMenuItem<String>(
@@ -258,18 +274,28 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(height: 12),
-          _categoryChips(context, s, provider),
+          _categoryChips(context, s, settings, provider),
         ],
       ),
     );
   }
 
-  Widget _categoryChips(BuildContext context, S s, NotesProvider provider) {
+  Widget _categoryChips(
+      BuildContext context, S s, SettingsProvider settings, NotesProvider provider) {
     return SizedBox(
       height: 40,
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
+          if (settings.infoPlacement == InfoPlacement.tab)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: ActionChip(
+                avatar: const Icon(Icons.menu_book_outlined, size: 18),
+                label: const Text('معلومات عامة'),
+                onPressed: _openInfo,
+              ),
+            ),
           _chip(
             label: s.t('all'),
             selected: provider.filterCategoryId == null && provider.filterTag == null,
