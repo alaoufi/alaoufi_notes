@@ -72,38 +72,18 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # خطوط عربية مضمّنة في التطبيق (تعمل دون اتصال).
+  # خطوط عربية مضمّنة في التطبيق (ثابتة الوزن — تعمل دون اتصال وعلى Impeller).
   fonts:
     - family: Cairo
       fonts:
-        - asset: assets/fonts/Cairo.ttf
+        - asset: assets/fonts/Cairo-Regular.ttf
+        - asset: assets/fonts/Cairo-Bold.ttf
+          weight: 700
     - family: Tajawal
       fonts:
         - asset: assets/fonts/Tajawal-Regular.ttf
         - asset: assets/fonts/Tajawal-Bold.ttf
           weight: 700
-    - family: Amiri
-      fonts:
-        - asset: assets/fonts/Amiri-Regular.ttf
-        - asset: assets/fonts/Amiri-Bold.ttf
-          weight: 700
-    - family: Noto Naskh Arabic
-      fonts:
-        - asset: assets/fonts/NotoNaskhArabic.ttf
-    - family: Reem Kufi
-      fonts:
-        - asset: assets/fonts/ReemKufi.ttf
-    - family: Scheherazade New
-      fonts:
-        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
-        - asset: assets/fonts/ScheherazadeNew-Bold.ttf
-          weight: 700
-    - family: Markazi Text
-      fonts:
-        - asset: assets/fonts/MarkaziText.ttf
-    - family: El Messiri
-      fonts:
-        - asset: assets/fonts/ElMessiri.ttf
     - family: Almarai
       fonts:
         - asset: assets/fonts/Almarai-Regular.ttf
@@ -116,13 +96,74 @@ flutter:
           weight: 700
     - family: Readex Pro
       fonts:
-        - asset: assets/fonts/ReadexPro.ttf
+        - asset: assets/fonts/ReadexPro-Regular.ttf
+        - asset: assets/fonts/ReadexPro-Bold.ttf
+          weight: 700
+    - family: Mada
+      fonts:
+        - asset: assets/fonts/Mada-Regular.ttf
+        - asset: assets/fonts/Mada-Bold.ttf
+          weight: 700
     - family: Changa
       fonts:
-        - asset: assets/fonts/Changa.ttf
+        - asset: assets/fonts/Changa-Regular.ttf
+        - asset: assets/fonts/Changa-Bold.ttf
+          weight: 700
     - family: Vazirmatn
       fonts:
-        - asset: assets/fonts/Vazirmatn.ttf
+        - asset: assets/fonts/Vazirmatn-Regular.ttf
+        - asset: assets/fonts/Vazirmatn-Bold.ttf
+          weight: 700
+    - family: El Messiri
+      fonts:
+        - asset: assets/fonts/ElMessiri-Regular.ttf
+        - asset: assets/fonts/ElMessiri-Bold.ttf
+          weight: 700
+    - family: Markazi Text
+      fonts:
+        - asset: assets/fonts/MarkaziText-Regular.ttf
+        - asset: assets/fonts/MarkaziText-Bold.ttf
+          weight: 700
+    - family: Lemonada
+      fonts:
+        - asset: assets/fonts/Lemonada-Regular.ttf
+        - asset: assets/fonts/Lemonada-Bold.ttf
+          weight: 700
+    - family: Harmattan
+      fonts:
+        - asset: assets/fonts/Harmattan-Regular.ttf
+        - asset: assets/fonts/Harmattan-Bold.ttf
+          weight: 700
+    - family: Reem Kufi
+      fonts:
+        - asset: assets/fonts/ReemKufi-Regular.ttf
+        - asset: assets/fonts/ReemKufi-Bold.ttf
+          weight: 700
+    - family: Kufam
+      fonts:
+        - asset: assets/fonts/Kufam-Regular.ttf
+        - asset: assets/fonts/Kufam-Bold.ttf
+          weight: 700
+    - family: Marhey
+      fonts:
+        - asset: assets/fonts/Marhey-Regular.ttf
+        - asset: assets/fonts/Marhey-Bold.ttf
+          weight: 700
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: assets/fonts/NotoNaskhArabic-Regular.ttf
+        - asset: assets/fonts/NotoNaskhArabic-Bold.ttf
+          weight: 700
+    - family: Amiri
+      fonts:
+        - asset: assets/fonts/Amiri-Regular.ttf
+        - asset: assets/fonts/Amiri-Bold.ttf
+          weight: 700
+    - family: Scheherazade New
+      fonts:
+        - asset: assets/fonts/ScheherazadeNew-Regular.ttf
+        - asset: assets/fonts/ScheherazadeNew-Bold.ttf
+          weight: 700
     - family: Aref Ruqaa
       fonts:
         - asset: assets/fonts/ArefRuqaa-Regular.ttf
@@ -131,3 +172,15 @@ flutter:
     - family: Lalezar
       fonts:
         - asset: assets/fonts/Lalezar-Regular.ttf
+    - family: Rakkas
+      fonts:
+        - asset: assets/fonts/Rakkas-Regular.ttf
+    - family: Jomhuria
+      fonts:
+        - asset: assets/fonts/Jomhuria-Regular.ttf
+    - family: Gulzar
+      fonts:
+        - asset: assets/fonts/Gulzar-Regular.ttf
+    - family: Qahiri
+      fonts:
+        - asset: assets/fonts/Qahiri-Regular.ttf

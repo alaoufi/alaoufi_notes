@@ -6,11 +6,39 @@ import '../core/theme/app_colors.dart';
 /// نتيجة اختيار لون/نمط خلفية البطاقة.
 class ColorPickResult {
   final int? value; // لون (int) أو null للافتراضي
-  final int? bgStyle; // 0..3 أو null إن لم يتغيّر
+  final int? bgStyle; // 0..7 أو null إن لم يتغيّر
   const ColorPickResult(this.value, {this.bgStyle});
 }
 
-/// شيت لاختيار لون الخلفية ونمطها (سادة/مسطّر/شبكي/نقاط).
+/// أنماط خلفية الصفحة المتاحة (يطابق مؤشّرها _PaperPainter).
+const _pageStyles = <List<Object>>[
+  [0, 'سادة', Icons.crop_square],
+  [1, 'مسطّر', Icons.notes],
+  [2, 'شبكي', Icons.grid_on],
+  [3, 'نقاط', Icons.more_horiz],
+  [4, 'شبكة دقيقة', Icons.grid_4x4],
+  [5, 'نقاط كبيرة', Icons.blur_on],
+  [6, 'أسطر', Icons.drag_handle],
+  [7, 'مربعات', Icons.window_outlined],
+];
+
+/// طيف ألوان واسع لخلفية الملاحظة (هادئ ومناسب للقراءة).
+List<Color> _spectrum() {
+  final out = <Color>[];
+  // تدرّجات رمادية.
+  for (final l in [1.0, 0.92, 0.82, 0.68, 0.5]) {
+    out.add(HSLColor.fromAHSL(1, 0, 0, l).toColor());
+  }
+  // ألوان عبر الأطياف بثلاث درجات فاتحة.
+  for (var h = 0; h < 360; h += 30) {
+    for (final l in [0.9, 0.78, 0.62]) {
+      out.add(HSLColor.fromAHSL(1, h.toDouble(), 0.7, l).toColor());
+    }
+  }
+  return out;
+}
+
+/// شيت لاختيار لون الخلفية ونمطها مع تحكّم لوني كامل.
 Future<ColorPickResult?> showColorPicker(
   BuildContext context,
   int? current, {
@@ -18,6 +46,7 @@ Future<ColorPickResult?> showColorPicker(
 }) {
   final s = S.of(context);
   int selectedStyle = currentStyle;
+  int? selectedColor = current;
 
   return showModalBottomSheet<ColorPickResult>(
     context: context,
@@ -26,73 +55,105 @@ Future<ColorPickResult?> showColorPicker(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setSheet) => SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(s.t('color'),
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    for (var i = 0; i < AppColors.noteColorsLight.length; i++)
-                      _swatch(
-                        context,
-                        color: AppColors.noteColorsLight[i],
-                        onTap: () => Navigator.pop(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(s.t('color'),
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  // الألوان السريعة (الافتراضية).
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      for (var i = 0; i < AppColors.noteColorsLight.length; i++)
+                        _swatch(
                           context,
-                          ColorPickResult(
-                            i == 0 ? null : AppColors.noteColorsLight[i].value,
-                            bgStyle: selectedStyle,
+                          color: AppColors.noteColorsLight[i],
+                          onTap: () => setSheet(() => selectedColor =
+                              i == 0 ? null : AppColors.noteColorsLight[i].value),
+                          selected: i == 0
+                              ? selectedColor == null
+                              : selectedColor ==
+                                  AppColors.noteColorsLight[i].value,
+                          isReset: i == 0,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Text('طيف الألوان',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const Spacer(),
+                      TextButton.icon(
+                        onPressed: () async {
+                          final picked = await _showCustomColor(
+                              context, selectedColor ?? 0xFFFFFFFF);
+                          if (picked != null) {
+                            setSheet(() => selectedColor = picked);
+                          }
+                        },
+                        icon: const Icon(Icons.tune, size: 18),
+                        label: const Text('لون مخصص'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // طيف واسع للتحكم اللوني الكامل.
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final c in _spectrum())
+                        _swatch(
+                          context,
+                          color: c,
+                          size: 34,
+                          onTap: () => setSheet(() => selectedColor = c.value),
+                          selected: selectedColor == c.value,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text('نمط الصفحة',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final entry in _pageStyles)
+                        SizedBox(
+                          width: 78,
+                          child: _styleOption(
+                            context,
+                            label: entry[1] as String,
+                            icon: entry[2] as IconData,
+                            selected: selectedStyle == entry[0] as int,
+                            onTap: () =>
+                                setSheet(() => selectedStyle = entry[0] as int),
                           ),
                         ),
-                        selected: i == 0
-                            ? current == null
-                            : current == AppColors.noteColorsLight[i].value,
-                        isReset: i == 0,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                Text('نمط الصفحة',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    for (final entry in const [
-                      [0, 'سادة', Icons.crop_square],
-                      [1, 'مسطّر', Icons.notes],
-                      [2, 'شبكي', Icons.grid_on],
-                      [3, 'نقاط', Icons.more_horiz],
-                    ])
-                      Expanded(
-                        child: _styleOption(
-                          context,
-                          label: entry[1] as String,
-                          icon: entry[2] as IconData,
-                          selected: selectedStyle == entry[0] as int,
-                          onTap: () =>
-                              setSheet(() => selectedStyle = entry[0] as int),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: AlignmentDirectional.centerEnd,
-                  child: FilledButton(
-                    onPressed: () => Navigator.pop(
-                      context,
-                      ColorPickResult(current, bgStyle: selectedStyle),
-                    ),
-                    child: Text(s.t('ok')),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: FilledButton(
+                      onPressed: () => Navigator.pop(
+                        context,
+                        ColorPickResult(selectedColor, bgStyle: selectedStyle),
+                      ),
+                      child: Text(s.t('ok')),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -101,18 +162,77 @@ Future<ColorPickResult?> showColorPicker(
   );
 }
 
+/// منتقي لون دقيق (RGB) — تحكّم لوني كامل بأي لون.
+Future<int?> _showCustomColor(BuildContext context, int initial) {
+  var c = Color(initial);
+  double r = c.red.toDouble(), g = c.green.toDouble(), b = c.blue.toDouble();
+  return showDialog<int>(
+    context: context,
+    builder: (context) => StatefulBuilder(
+      builder: (context, setD) {
+        final color = Color.fromARGB(255, r.round(), g.round(), b.round());
+        Widget slider(String label, double v, Color tint, ValueChanged<double> on) =>
+            Row(children: [
+              SizedBox(width: 18, child: Text(label)),
+              Expanded(
+                child: Slider(
+                  min: 0,
+                  max: 255,
+                  value: v,
+                  activeColor: tint,
+                  onChanged: (nv) => setD(() => on(nv)),
+                ),
+              ),
+              SizedBox(width: 34, child: Text(v.round().toString())),
+            ]);
+        return AlertDialog(
+          title: const Text('لون مخصص'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                height: 56,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.black12),
+                ),
+              ),
+              const SizedBox(height: 8),
+              slider('R', r, Colors.red, (v) => r = v),
+              slider('G', g, Colors.green, (v) => g = v),
+              slider('B', b, Colors.blue, (v) => b = v),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(S.of(context).t('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, color.value),
+              child: Text(S.of(context).t('ok')),
+            ),
+          ],
+        );
+      },
+    ),
+  );
+}
+
 Widget _swatch(
   BuildContext context, {
   required Color color,
   required VoidCallback onTap,
   required bool selected,
+  double size = 46,
   bool isReset = false,
 }) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
-      width: 46,
-      height: 46,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: color,
         shape: BoxShape.circle,
@@ -125,6 +245,7 @@ Widget _swatch(
       ),
       child: selected
           ? Icon(Icons.check,
+              size: size * 0.45,
               color: ThemeData.estimateBrightnessForColor(color) ==
                       Brightness.dark
                   ? Colors.white
@@ -142,28 +263,25 @@ Widget _styleOption(
   required VoidCallback onTap,
 }) {
   final scheme = Theme.of(context).colorScheme;
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 4),
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? scheme.primary : Colors.black12,
-            width: selected ? 2 : 1,
-          ),
-          color: selected ? scheme.primaryContainer.withValues(alpha: 0.4) : null,
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: selected ? scheme.primary : Colors.black12,
+          width: selected ? 2 : 1,
         ),
-        child: Column(
-          children: [
-            Icon(icon, color: selected ? scheme.primary : null),
-            const SizedBox(height: 4),
-            Text(label, style: const TextStyle(fontSize: 12)),
-          ],
-        ),
+        color: selected ? scheme.primaryContainer.withValues(alpha: 0.4) : null,
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: selected ? scheme.primary : null),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
       ),
     ),
   );

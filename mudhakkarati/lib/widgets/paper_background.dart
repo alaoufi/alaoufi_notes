@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// خلفية ورقية للملاحظة: سادة (0) / مسطّر (1) / شبكي (2) / نقاط (3).
+/// خلفية ورقية للملاحظة:
+/// سادة (0) / مسطّر (1) / شبكي (2) / نقاط (3) /
+/// شبكة دقيقة (4) / نقاط كبيرة (5) / أسطر متقاربة (6) / مربعات كبيرة (7).
 class PaperBackground extends StatelessWidget {
   final int style;
   final Color lineColor;
@@ -56,6 +58,39 @@ class _PaperPainter extends CustomPainter {
           for (double x = gap; x < size.width; x += gap) {
             canvas.drawCircle(Offset(x, y), 1.2, dot);
           }
+        }
+        break;
+      case 4: // شبكة دقيقة
+        const g = 16.0;
+        for (double y = g; y < size.height; y += g) {
+          canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+        }
+        for (double x = g; x < size.width; x += g) {
+          canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+        }
+        break;
+      case 5: // نقاط كبيرة
+        final dot = Paint()..color = color;
+        const g = 38.0;
+        for (double y = g; y < size.height; y += g) {
+          for (double x = g; x < size.width; x += g) {
+            canvas.drawCircle(Offset(x, y), 2.2, dot);
+          }
+        }
+        break;
+      case 6: // أسطر متقاربة
+        const g = 20.0;
+        for (double y = g; y < size.height; y += g) {
+          canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+        }
+        break;
+      case 7: // مربعات كبيرة
+        const g = 46.0;
+        for (double y = g; y < size.height; y += g) {
+          canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+        }
+        for (double x = g; x < size.width; x += g) {
+          canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
         }
         break;
     }
