@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/l10n/app_strings.dart';
+import '../services/security_service.dart';
 import '../features/backup/backup_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
@@ -35,6 +36,19 @@ class AppDrawer extends StatelessWidget {
       if (ok && context.mounted) {
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const SecretNotesScreen()));
+      }
+    }
+
+    Future<void> goInfo() async {
+      Navigator.pop(context);
+      if (await SecurityService.instance.isInfoLocked()) {
+        if (!context.mounted) return;
+        final ok = await ensureUnlocked(context);
+        if (!ok) return;
+      }
+      if (context.mounted) {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const InfoListScreen()));
       }
     }
 
@@ -80,8 +94,7 @@ class AppDrawer extends StatelessWidget {
                 () => go(const SecuritySettingsScreen())),
             _tile(context, Icons.tag, s.t('tags_page'),
                 () => go(const TagsScreen())),
-            _tile(context, Icons.menu_book_outlined, 'معلومات',
-                () => go(const InfoListScreen())),
+            _tile(context, Icons.menu_book_outlined, 'معلومات', goInfo),
             const Divider(),
             _tile(context, Icons.category_outlined, s.t('manage_categories'),
                 () => go(const ManageCategoriesScreen())),

@@ -28,49 +28,68 @@ class ManageCategoriesScreen extends StatelessWidget {
         onPressed: () => _edit(context, null),
         child: const Icon(Icons.add),
       ),
-      body: ReorderableListView.builder(
-        padding: const EdgeInsets.only(bottom: 90),
-        itemCount: cats.length,
-        onReorder: (oldIndex, newIndex) {
-          final list = List<Category>.from(cats);
-          if (newIndex > oldIndex) newIndex -= 1;
-          final item = list.removeAt(oldIndex);
-          list.insert(newIndex, item);
-          provider.reorderCategories(list);
-        },
-        itemBuilder: (context, i) {
-          final c = cats[i];
-          return ListTile(
-            key: ValueKey(c.id),
+      body: Column(
+        children: [
+          // حماية صفحة «معلومات» (تظهر هنا مع إدارة التصنيفات).
+          ListTile(
             leading: CircleAvatar(
-              backgroundColor: Color(c.color),
-              child: Icon(categoryIconByIndex(c.iconCode),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: const Icon(Icons.menu_book_outlined,
                   color: Colors.white, size: 20),
             ),
-            title: Text(c.name),
-            subtitle: FutureBuilder<int>(
-              future: provider.countByCategory(c.id!),
-              builder: (context, snap) => Text(
-                  '${snap.data ?? 0} ${s.t('notes_count')}',
-                  style: Theme.of(context).textTheme.bodySmall),
+            title: const Text('صفحة المعلومات'),
+            subtitle: Text('قفل الوصول إلى صفحة «معلومات»',
+                style: Theme.of(context).textTheme.bodySmall),
+            trailing: const _LockInfoButton(),
+          ),
+          const Divider(height: 1),
+          Expanded(
+            child: ReorderableListView.builder(
+              padding: const EdgeInsets.only(bottom: 90),
+              itemCount: cats.length,
+              onReorder: (oldIndex, newIndex) {
+                final list = List<Category>.from(cats);
+                if (newIndex > oldIndex) newIndex -= 1;
+                final item = list.removeAt(oldIndex);
+                list.insert(newIndex, item);
+                provider.reorderCategories(list);
+              },
+              itemBuilder: (context, i) {
+                final c = cats[i];
+                return ListTile(
+                  key: ValueKey(c.id),
+                  leading: CircleAvatar(
+                    backgroundColor: Color(c.color),
+                    child: Icon(categoryIconByIndex(c.iconCode),
+                        color: Colors.white, size: 20),
+                  ),
+                  title: Text(c.name),
+                  subtitle: FutureBuilder<int>(
+                    future: provider.countByCategory(c.id!),
+                    builder: (context, snap) => Text(
+                        '${snap.data ?? 0} ${s.t('notes_count')}',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _LockCategoryButton(categoryId: c.id!),
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _edit(context, c),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => provider.deleteCategory(c.id!),
+                      ),
+                      const Icon(Icons.drag_handle),
+                    ],
+                  ),
+                );
+              },
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _LockCategoryButton(categoryId: c.id!),
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined),
-                  onPressed: () => _edit(context, c),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () => provider.deleteCategory(c.id!),
-                ),
-                const Icon(Icons.drag_handle),
-              ],
-            ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }
@@ -166,6 +185,45 @@ class ManageCategoriesScreen extends StatelessWidget {
 }
 
 /// زر قفل/فتح تصنيف. التصنيف المقفل تتطلب ملاحظاته رقمًا سريًا لعرضها.
+/// زر قفل/فتح صفحة «معلومات».
+class _LockInfoButton extends StatefulWidget {
+  const _LockInfoButton();
+
+  @override
+  State<_LockInfoButton> createState() => _LockInfoButtonState();
+}
+
+class _LockInfoButtonState extends State<_LockInfoButton> {
+  bool _locked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    SecurityService.instance
+        .isInfoLocked()
+        .then((v) => mounted ? setState(() => _locked = v) : null);
+  }
+
+  Future<void> _toggle() async {
+    if (!_locked) {
+      final ok = await ensurePinConfigured(context);
+      if (!ok) return;
+    }
+    await SecurityService.instance.setInfoLocked(!_locked);
+    if (mounted) setState(() => _locked = !_locked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: _locked ? 'إلغاء قفل المعلومات' : 'قفل المعلومات',
+      icon: Icon(_locked ? Icons.lock : Icons.lock_open_outlined,
+          color: _locked ? Theme.of(context).colorScheme.primary : null),
+      onPressed: _toggle,
+    );
+  }
+}
+
 class _LockCategoryButton extends StatefulWidget {
   final int categoryId;
   const _LockCategoryButton({required this.categoryId});

@@ -78,7 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
-  void _openInfo() {
+  Future<void> _openInfo() async {
+    if (await SecurityService.instance.isInfoLocked()) {
+      if (!mounted) return;
+      final ok = await ensureUnlocked(context);
+      if (!ok) return;
+    }
+    if (!mounted) return;
     Navigator.push(context,
         MaterialPageRoute(builder: (_) => const InfoListScreen()));
   }

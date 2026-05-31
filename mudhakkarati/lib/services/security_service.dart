@@ -13,6 +13,7 @@ class SecurityService {
   static const _kLockEnabled = 'lock_enabled';
   static const _kBiometric = 'biometric_enabled';
   static const _kLockedCats = 'locked_categories'; // معرّفات مفصولة بفواصل
+  static const _kInfoLocked = 'info_page_locked';
 
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -86,6 +87,15 @@ class SecurityService {
       set.remove(id);
     }
     await _storage.write(key: _kLockedCats, value: set.join(','));
+  }
+
+  // ---- قفل صفحة المعلومات ----
+
+  Future<bool> isInfoLocked() async =>
+      (await _storage.read(key: _kInfoLocked)) == 'true';
+
+  Future<void> setInfoLocked(bool locked) async {
+    await _storage.write(key: _kInfoLocked, value: locked ? 'true' : 'false');
   }
 
   Future<bool> authenticateBiometric(String reason) async {
