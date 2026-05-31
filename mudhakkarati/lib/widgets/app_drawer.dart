@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../features/backup/backup_screen.dart';
@@ -76,6 +77,22 @@ class AppDrawer extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         color: scheme.onPrimary.withOpacity(0.8), fontSize: 11),
+                  ),
+                  FutureBuilder<PackageInfo>(
+                    future: PackageInfo.fromPlatform(),
+                    builder: (context, snap) {
+                      final info = snap.data;
+                      if (info == null) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'v${info.version} • #${info.buildNumber}',
+                          style: TextStyle(
+                              color: scheme.onPrimary.withOpacity(0.7),
+                              fontSize: 11),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

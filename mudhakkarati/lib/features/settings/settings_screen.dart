@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -209,10 +210,25 @@ class SettingsScreen extends StatelessWidget {
           const Divider(),
           _section(context, s.t('about')),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Text(s.t('about_desc'),
                 style: Theme.of(context).textTheme.bodySmall),
           ),
+          FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snap) {
+              final info = snap.data;
+              final label = info == null
+                  ? '...'
+                  : 'الإصدار ${info.version}  •  رقم النسخة ${info.buildNumber}';
+              return ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text('إصدار التطبيق'),
+                subtitle: Text(label),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
         ],
       ),
     );
