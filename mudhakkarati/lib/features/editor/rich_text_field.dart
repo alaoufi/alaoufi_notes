@@ -71,11 +71,11 @@ class RichTextEditorBody extends StatelessWidget {
           expands: false,
           padding: const EdgeInsets.symmetric(vertical: 8),
           placeholder: 'اكتب ملاحظتك هنا...',
-          // عند تفعيل الإخفاء: نوقف شريط (نسخ/لصق/تحديد) كليًّا فلا يغطّي
-          // أدوات الخط والحجم. لا يزال بإمكانك تحديد النص وتنسيقه.
-          enableSelectionToolbar: !hide,
-          // عند الإظهار: نثبّت القائمة أعلى الشاشة كي لا تغطّي شريط التنسيق.
+          // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
+          // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
+          // وعند الإظهار نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
           contextMenuBuilder: (context, state) {
+            if (hide) return const SizedBox.shrink();
             final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
             final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
             return TextFieldTapRegion(
