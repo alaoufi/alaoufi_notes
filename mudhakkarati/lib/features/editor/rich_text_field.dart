@@ -54,39 +54,47 @@ class RichTextController {
 }
 
 /// منطقة تحرير النص الغني (بلا شريط أدوات — يوضع الشريط مثبّتًا في الأسفل).
+///
+/// [expand] = true يجعل المحرّر يملأ مساحته ويمرّر داخليًا (مع تمرير الـ viewport
+/// = أداء أفضل بكثير للمستندات الكبيرة لأنه يعرض الجزء المرئي فقط).
 class RichTextEditorBody extends StatelessWidget {
   final RichTextController controller;
-  const RichTextEditorBody({super.key, required this.controller});
+  final bool expand;
+  const RichTextEditorBody(
+      {super.key, required this.controller, this.expand = false});
 
   @override
   Widget build(BuildContext context) {
     final hide = context.watch<SettingsProvider>().hideSelectionMenu;
+    final editor = QuillEditor.basic(
+      controller: controller.quill,
+      focusNode: controller.focus,
+      config: QuillEditorConfig(
+        autoFocus: false,
+        expands: expand,
+        scrollable: expand,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        placeholder: 'اكتب ملاحظتك هنا...',
+        // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
+        // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
+        // وعند الإظهار نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
+        contextMenuBuilder: (context, state) {
+          if (hide) return const SizedBox.shrink();
+          final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
+          final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
+          return TextFieldTapRegion(
+            child: AdaptiveTextSelectionToolbar.buttonItems(
+              anchors: TextSelectionToolbarAnchors(primaryAnchor: anchor),
+              buttonItems: state.contextMenuButtonItems,
+            ),
+          );
+        },
+      ),
+    );
+    if (expand) return editor;
     return Container(
       constraints: const BoxConstraints(minHeight: 240),
-      child: QuillEditor.basic(
-        controller: controller.quill,
-        focusNode: controller.focus,
-        config: QuillEditorConfig(
-          autoFocus: false,
-          expands: false,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          placeholder: 'اكتب ملاحظتك هنا...',
-          // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
-          // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
-          // وعند الإظهار نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
-          contextMenuBuilder: (context, state) {
-            if (hide) return const SizedBox.shrink();
-            final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
-            final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
-            return TextFieldTapRegion(
-              child: AdaptiveTextSelectionToolbar.buttonItems(
-                anchors: TextSelectionToolbarAnchors(primaryAnchor: anchor),
-                buttonItems: state.contextMenuButtonItems,
-              ),
-            );
-          },
-        ),
-      ),
+      child: editor,
     );
   }
 }

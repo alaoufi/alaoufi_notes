@@ -347,44 +347,26 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  children: [
-                    TextField(
-                      controller: _titleCtrl,
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold),
-                      decoration: InputDecoration(
-                        hintText: s.t('title_hint'),
-                        border: InputBorder.none,
-                        filled: false,
+                child: _note.type == NoteType.text
+                    ? _textLayout(s, onBg)
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                        children: [
+                          _titleField(s),
+                          _metaRow(s),
+                          const Divider(),
+                          PaperBackground(
+                            style: _note.bgStyle,
+                            lineColor: onBg.withValues(alpha: 0.12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: _typeBody(s),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _tagsEditor(s),
+                        ],
                       ),
-                    ),
-                    Row(
-                      children: [
-                        Flexible(child: _categorySelector(s)),
-                        const SizedBox(width: 8),
-                        Text(
-                          _formatDate(_note.updatedAt),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).hintColor),
-                        ),
-                      ],
-                    ),
-                    const Divider(),
-                    // الأسطر/الخلفية جزء من المحتوى وتتحرك معه عند التمرير.
-                    PaperBackground(
-                      style: _note.bgStyle,
-                      lineColor: onBg.withValues(alpha: 0.12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: _typeBody(s),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    _tagsEditor(s),
-                  ],
-                ),
               ),
               // شريط أدوات التنسيق فوق لوحة المفاتيح مباشرة (يرتفع معها).
               if (_note.type == NoteType.text && _richCtrl != null)
@@ -431,6 +413,63 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           await _save(force: true);
         },
       ),
+    );
+  }
+
+  Widget _titleField(S s) => TextField(
+        controller: _titleCtrl,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        decoration: InputDecoration(
+          hintText: s.t('title_hint'),
+          border: InputBorder.none,
+          filled: false,
+        ),
+      );
+
+  Widget _metaRow(S s) => Row(
+        children: [
+          Flexible(child: _categorySelector(s)),
+          const SizedBox(width: 8),
+          Text(
+            _formatDate(_note.updatedAt),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: Theme.of(context).hintColor),
+          ),
+        ],
+      );
+
+  /// تخطيط ملاحظة النص: العنوان ثابت بالأعلى، والمحرّر يملأ الباقي ويمرّر
+  /// داخليًا (viewport) — أداء سلس حتى مع المستندات الطويلة جدًّا.
+  Widget _textLayout(S s, Color onBg) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [_titleField(s), _metaRow(s), const Divider()],
+          ),
+        ),
+        Expanded(
+          child: PaperBackground(
+            style: _note.bgStyle,
+            lineColor: onBg.withValues(alpha: 0.12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _richCtrl == null
+                  ? const SizedBox.shrink()
+                  : RichTextEditorBody(controller: _richCtrl!, expand: true),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: _tagsEditor(s),
+        ),
+      ],
     );
   }
 
