@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../core/l10n/app_strings.dart';
-import '../services/security_service.dart';
 import '../features/backup/backup_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
 import '../features/favorites/favorites_screen.dart';
 import '../features/info/info_list_screen.dart';
+import '../features/security/info_lock.dart';
 import '../features/reminders/reminders_screen.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
@@ -41,11 +41,8 @@ class AppDrawer extends StatelessWidget {
 
     Future<void> goInfo() async {
       Navigator.pop(context);
-      if (await SecurityService.instance.isInfoLocked()) {
-        if (!context.mounted) return;
-        final ok = await ensureUnlocked(context);
-        if (!ok) return;
-      }
+      if (!context.mounted) return;
+      if (!await ensureInfoUnlocked(context)) return;
       if (context.mounted) {
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const InfoListScreen()));

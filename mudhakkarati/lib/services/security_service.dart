@@ -14,6 +14,8 @@ class SecurityService {
   static const _kBiometric = 'biometric_enabled';
   static const _kLockedCats = 'locked_categories'; // معرّفات مفصولة بفواصل
   static const _kInfoLocked = 'info_page_locked';
+  static const _kInfoPinHash = 'info_pin_hash';
+  static const _kInfoPinSalt = 'info_pin_salt';
 
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -89,13 +91,35 @@ class SecurityService {
     await _storage.write(key: _kLockedCats, value: set.join(','));
   }
 
-  // ---- قفل صفحة المعلومات ----
+  // ---- قفل صفحة المعلومات (رمز مستقل خاص بها) ----
 
   Future<bool> isInfoLocked() async =>
       (await _storage.read(key: _kInfoLocked)) == 'true';
 
-  Future<void> setInfoLocked(bool locked) async {
-    await _storage.write(key: _kInfoLocked, value: locked ? 'true' : 'false');
+  Future<bool> hasInfoPin() async =>
+      (await _storage.read(key: _kInfoPinHash)) != null;
+
+  /// ضبط رمز مستقل لصفحة المعلومات وتفعيل قفلها.
+  Future<void> setInfoPin(String pin) async {
+    const salt = 'mudhakkarati_info';
+    final hash = EncryptionService.instance.hashSecret(pin, salt);
+    await _storage.write(key: _kInfoPinSalt, value: salt);
+    await _storage.write(key: _kInfoPinHash, value: hash);
+    await _storage.write(key: _kInfoLocked, value: 'true');
+  }
+
+  Future<bool> verifyInfoPin(String pin) async {
+    final salt = await _storage.read(key: _kInfoPinSalt) ?? 'mudhakkarati_info';
+    final stored = await _storage.read(key: _kInfoPinHash);
+    if (stored == null) return false;
+    return EncryptionService.instance.hashSecret(pin, salt) == stored;
+  }
+
+  /// إلغاء قفل صفحة المعلومات وحذف رمزها المستقل.
+  Future<void> clearInfoLock() async {
+    await _storage.write(key: _kInfoLocked, value: 'false');
+    await _storage.delete(key: _kInfoPinHash);
+    await _storage.delete(key: _kInfoPinSalt);
   }
 
   Future<bool> authenticateBiometric(String reason) async {

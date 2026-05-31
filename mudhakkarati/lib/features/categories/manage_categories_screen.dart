@@ -6,6 +6,7 @@ import '../../core/l10n/app_strings.dart';
 import '../../data/models/category.dart';
 import '../../services/security_service.dart';
 import '../home/notes_provider.dart';
+import '../security/info_lock.dart';
 import '../security/pin_setup.dart';
 
 class ManageCategoriesScreen extends StatelessWidget {
@@ -38,7 +39,7 @@ class ManageCategoriesScreen extends StatelessWidget {
                   color: Colors.white, size: 20),
             ),
             title: const Text('صفحة المعلومات'),
-            subtitle: Text('قفل الوصول إلى صفحة «معلومات»',
+            subtitle: Text('قفل صفحة «معلومات» برمز مستقل خاص بها',
                 style: Theme.of(context).textTheme.bodySmall),
             trailing: const _LockInfoButton(),
           ),
@@ -205,12 +206,19 @@ class _LockInfoButtonState extends State<_LockInfoButton> {
   }
 
   Future<void> _toggle() async {
+    final sec = SecurityService.instance;
     if (!_locked) {
-      final ok = await ensurePinConfigured(context);
-      if (!ok) return;
+      // ضبط رمز مستقل خاص بصفحة المعلومات.
+      final pin = await setupInfoPin(context);
+      if (pin == null) return;
+      await sec.setInfoPin(pin);
+      if (mounted) setState(() => _locked = true);
+    } else {
+      // يتطلب إلغاء القفل إدخال الرمز المستقل.
+      if (!await ensureInfoUnlocked(context)) return;
+      await sec.clearInfoLock();
+      if (mounted) setState(() => _locked = false);
     }
-    await SecurityService.instance.setInfoLocked(!_locked);
-    if (mounted) setState(() => _locked = !_locked);
   }
 
   @override

@@ -12,6 +12,7 @@ import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
 import '../../services/security_service.dart';
+import '../security/info_lock.dart';
 import '../security/note_unlock.dart';
 import '../security/pin_setup.dart';
 import '../settings/settings_provider.dart';
@@ -79,11 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   Future<void> _openInfo() async {
-    if (await SecurityService.instance.isInfoLocked()) {
-      if (!mounted) return;
-      final ok = await ensureUnlocked(context);
-      if (!ok) return;
-    }
+    if (!await ensureInfoUnlocked(context)) return;
     if (!mounted) return;
     Navigator.push(context,
         MaterialPageRoute(builder: (_) => const InfoListScreen()));
