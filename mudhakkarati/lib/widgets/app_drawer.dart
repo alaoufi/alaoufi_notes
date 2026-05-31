@@ -77,7 +77,7 @@ class AppDrawer extends StatelessWidget {
             _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
             _tile(context, Icons.tag, s.t('tags_page'),
                 () => go(const TagsScreen())),
-            _tile(context, Icons.menu_book_outlined, 'معلومات عامة',
+            _tile(context, Icons.menu_book_outlined, 'معلومات',
                 () => go(const InfoListScreen())),
             const Divider(),
             _tile(context, Icons.category_outlined, s.t('manage_categories'),

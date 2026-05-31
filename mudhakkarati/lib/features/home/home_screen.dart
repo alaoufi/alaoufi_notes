@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (showInfo) ...[
           PopupMenuItem<String>(
               value: 'info',
-              child: _menuRow(Icons.menu_book_outlined, 'معلومات عامة')),
+              child: _menuRow(Icons.menu_book_outlined, 'معلومات')),
           const PopupMenuDivider(),
         ],
         const PopupMenuItem<String>(
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.only(left: 8),
               child: ActionChip(
                 avatar: const Icon(Icons.menu_book_outlined, size: 18),
-                label: const Text('معلومات عامة'),
+                label: const Text('معلومات'),
                 onPressed: _openInfo,
               ),
             ),

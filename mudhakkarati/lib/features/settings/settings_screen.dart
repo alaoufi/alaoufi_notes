@@ -122,7 +122,7 @@ class SettingsScreen extends StatelessWidget {
           // مكان صفحة «معلومات عامة»
           ListTile(
             leading: const Icon(Icons.menu_book_outlined),
-            title: const Text('مكان «معلومات عامة»'),
+            title: const Text('مكان صفحة «معلومات»'),
             trailing: DropdownButton<InfoPlacement>(
               value: settings.infoPlacement,
               underline: const SizedBox.shrink(),

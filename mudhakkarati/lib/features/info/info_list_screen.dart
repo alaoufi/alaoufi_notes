@@ -87,8 +87,8 @@ class _InfoListScreenState extends State<InfoListScreen> {
     _load();
   }
 
-  String _date(DateTime d) =>
-      '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
+  String get _title =>
+      widget.filterSub ?? widget.filterMain ?? 'معلومات';
 
   @override
   Widget build(BuildContext context) {
@@ -96,9 +96,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
     final scheme = theme.colorScheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.filterSub ??
-            widget.filterMain ??
-            'معلومات عامة'),
+        title: Text(_title),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(
@@ -140,10 +138,11 @@ class _InfoListScreenState extends State<InfoListScreen> {
               : RefreshIndicator(
                   onRefresh: _load,
                   child: ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 90),
+                    padding: const EdgeInsets.only(bottom: 90),
                     itemCount: _items.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (context, i) => _card(_items[i], theme, scheme),
+                    separatorBuilder: (_, __) =>
+                        Divider(height: 1, indent: 16, endIndent: 16, color: theme.dividerColor.withValues(alpha: 0.4)),
+                    itemBuilder: (context, i) => _row(_items[i], theme, scheme),
                   ),
                 ),
     );
@@ -169,76 +168,40 @@ class _InfoListScreenState extends State<InfoListScreen> {
         ),
       );
 
-  Widget _card(InfoEntry e, ThemeData theme, ColorScheme scheme) {
+  /// صفّ مختصر: الاسم فقط (لعرض أكبر عدد). عند البحث يظهر سطر تعريفي
+  /// (التخصص + لمحة من المختصر) لتمييز النتائج.
+  Widget _row(InfoEntry e, ThemeData theme, ColorScheme scheme) {
     final title = e.topic.isNotEmpty ? e.topic : e.brief;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _open(e),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (e.mainSpecialty.isNotEmpty || e.subSpecialty.isNotEmpty)
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (e.mainSpecialty.isNotEmpty)
-                      _tag(e.mainSpecialty, scheme.primaryContainer,
-                          scheme.onPrimaryContainer),
-                    if (e.subSpecialty.isNotEmpty)
-                      _tag(e.subSpecialty, scheme.secondaryContainer,
-                          scheme.onSecondaryContainer),
-                  ],
-                ),
-              if (e.mainSpecialty.isNotEmpty || e.subSpecialty.isNotEmpty)
-                const SizedBox(height: 8),
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
-              if (e.topic.isNotEmpty && e.brief.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  e.brief,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.hintColor),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.event, size: 13, color: theme.hintColor),
-                  const SizedBox(width: 4),
-                  Text(_date(e.createdAt),
-                      style: theme.textTheme.bodySmall
-                          ?.copyWith(color: theme.hintColor)),
-                  const Spacer(),
-                  if (e.source.isNotEmpty)
-                    Icon(Icons.link, size: 15, color: theme.hintColor),
-                ],
-              ),
-            ],
-          ),
-        ),
+    final searching = _query.trim().isNotEmpty;
+    String? sub;
+    if (searching) {
+      final parts = <String>[];
+      final sp = [e.mainSpecialty, e.subSpecialty]
+          .where((x) => x.isNotEmpty)
+          .join(' › ');
+      if (sp.isNotEmpty) parts.add(sp);
+      if (e.topic.isNotEmpty && e.brief.isNotEmpty) parts.add(e.brief);
+      sub = parts.join('  •  ');
+    }
+    return ListTile(
+      dense: true,
+      visualDensity: const VisualDensity(vertical: -2),
+      leading: Icon(Icons.article_outlined, size: 20, color: scheme.primary),
+      title: Text(
+        title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
       ),
+      subtitle: (sub == null || sub.isEmpty)
+          ? null
+          : Text(sub,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style:
+                  theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+      trailing: Icon(Icons.chevron_left, size: 18, color: theme.hintColor),
+      onTap: () => _open(e),
     );
   }
-
-  Widget _tag(String text, Color bg, Color fg) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration:
-            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-        child: Text(text,
-            style: TextStyle(
-                color: fg, fontSize: 11, fontWeight: FontWeight.w600)),
-      );
 }
