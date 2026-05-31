@@ -5,6 +5,7 @@ import '../features/backup/backup_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
 import '../features/favorites/favorites_screen.dart';
+import '../features/info/info_list_screen.dart';
 import '../features/reminders/reminders_screen.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
@@ -76,6 +77,8 @@ class AppDrawer extends StatelessWidget {
             _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
             _tile(context, Icons.tag, s.t('tags_page'),
                 () => go(const TagsScreen())),
+            _tile(context, Icons.menu_book_outlined, 'معلومات عامة',
+                () => go(const InfoListScreen())),
             const Divider(),
             _tile(context, Icons.category_outlined, s.t('manage_categories'),
                 () => go(const ManageCategoriesScreen())),

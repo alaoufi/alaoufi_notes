@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 3;
+  static const _dbVersion = 4;
 
   Database? _db;
   Future<Database>? _opening;
@@ -244,6 +244,8 @@ class AppDatabase {
       )
     ''');
 
+    await _createInfoTable(db);
+
     await db.execute('CREATE INDEX idx_notes_category ON notes (category_id)');
     await db.execute('CREATE INDEX idx_notes_flags ON notes (is_deleted, is_archived)');
     await db.execute('CREATE INDEX idx_checklist_note ON checklist_items (note_id)');
@@ -261,6 +263,28 @@ class AppDatabase {
       await db.execute(
           'ALTER TABLE notes ADD COLUMN bg_style INTEGER NOT NULL DEFAULT 0');
     }
+    if (oldVersion < 4) {
+      await _createInfoTable(db);
+    }
+  }
+
+  /// جدول قاعدة المعلومات العامة (بحث/تصفّح داخلي).
+  Future<void> _createInfoTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE info_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        main_specialty TEXT NOT NULL DEFAULT '',
+        sub_specialty TEXT NOT NULL DEFAULT '',
+        topic TEXT NOT NULL DEFAULT '',
+        brief TEXT NOT NULL DEFAULT '',
+        detail TEXT NOT NULL DEFAULT '',
+        notes TEXT NOT NULL DEFAULT '',
+        source TEXT NOT NULL DEFAULT '',
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute(
+        'CREATE INDEX idx_info_specialty ON info_entries (main_specialty, sub_specialty)');
   }
 
   /// التصنيفات الافتراضية المطلوبة: شخصي، عمل، مهم، مواعيد، أفكار.
