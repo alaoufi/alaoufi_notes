@@ -32,7 +32,7 @@ class SecurityService {
 
   Future<void> setPin(String pin) async {
     const salt = 'mudhakkarati_pin';
-    final hash = EncryptionService.instance.hashSecret(pin, salt);
+    final hash = await EncryptionService.instance.hashSecretAsync(pin, salt);
     await _storage.write(key: _kPinSalt, value: salt);
     await _storage.write(key: _kPinHash, value: hash);
     await _storage.write(key: _kLockEnabled, value: 'true');
@@ -42,7 +42,7 @@ class SecurityService {
     final salt = await _storage.read(key: _kPinSalt) ?? 'mudhakkarati_pin';
     final stored = await _storage.read(key: _kPinHash);
     if (stored == null) return false;
-    return EncryptionService.instance.hashSecret(pin, salt) == stored;
+    return await EncryptionService.instance.hashSecretAsync(pin, salt) == stored;
   }
 
   Future<void> disableLock() async {
@@ -103,7 +103,7 @@ class SecurityService {
   /// ضبط رمز مستقل لصفحة المعلومات وتفعيل قفلها.
   Future<void> setInfoPin(String pin) async {
     const salt = 'mudhakkarati_info';
-    final hash = EncryptionService.instance.hashSecret(pin, salt);
+    final hash = await EncryptionService.instance.hashSecretAsync(pin, salt);
     await _storage.write(key: _kInfoPinSalt, value: salt);
     await _storage.write(key: _kInfoPinHash, value: hash);
     await _storage.write(key: _kInfoLocked, value: 'true');
@@ -113,7 +113,7 @@ class SecurityService {
     final salt = await _storage.read(key: _kInfoPinSalt) ?? 'mudhakkarati_info';
     final stored = await _storage.read(key: _kInfoPinHash);
     if (stored == null) return false;
-    return EncryptionService.instance.hashSecret(pin, salt) == stored;
+    return await EncryptionService.instance.hashSecretAsync(pin, salt) == stored;
   }
 
   /// إلغاء قفل صفحة المعلومات وحذف رمزها المستقل.
