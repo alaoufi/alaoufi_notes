@@ -32,7 +32,7 @@ class NoteRepository {
     final where = <String>[
       'n.is_deleted = 0',
       'n.is_archived = 0',
-      'n.is_locked = 0',
+      // الملاحظات المقفلة تبقى ظاهرة في مكانها (بمحتوى مُخفى) وتُفتح برقم سري.
     ];
     final args = <dynamic>[];
 
