@@ -1,7 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:crypto/crypto.dart' as crypto;
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// تفعيل التطبيق المربوط بالجهاز (يعمل دون إنترنت).
@@ -35,16 +38,41 @@ class LicenseService {
   bool get _keyConfigured =>
       _publicKeyB64.isNotEmpty && !_publicKeyB64.startsWith('REPLACE_');
 
-  /// معرّف الجهاز (يُنشأ مرة ويثبت). يُعرض للمستخدم بصيغة مقروءة.
+  /// معرّف الجهاز (يُعرض للمستخدم بصيغة مقروءة).
+  ///
+  /// يُشتق من معرّفات العتاد الفعلية (يبقى ثابتًا حتى بعد إعادة التثبيت)،
+  /// ويُخزَّن أيضًا بأمان كاحتياط إن تعذّرت قراءة العتاد.
   Future<String> deviceId() async {
-    var id = await _storage.read(key: _kDeviceId);
-    if (id == null || id.isEmpty) {
+    final cached = await _storage.read(key: _kDeviceId);
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    String? raw = await _hardwareFingerprint();
+    if (raw == null || raw.isEmpty) {
+      // احتياط: عشوائي ثابت يُخزَّن بأمان.
       final rnd = Random.secure();
-      final bytes = List<int>.generate(10, (_) => rnd.nextInt(256));
-      id = base32(bytes); // 16 حرفًا تقريبًا.
-      await _storage.write(key: _kDeviceId, value: id);
+      raw = base64Encode(List<int>.generate(16, (_) => rnd.nextInt(256)));
     }
+    // اشتقاق رقم قصير ثابت من البصمة عبر SHA-256.
+    final digest = crypto.sha256.convert(utf8.encode('mudhakkarati:$raw'));
+    final id = base32(digest.bytes.sublist(0, 10)); // 16 حرفًا تقريبًا.
+    await _storage.write(key: _kDeviceId, value: id);
     return id;
+  }
+
+  /// بصمة العتاد (Android/iOS). تُرجع null على المنصات غير المدعومة.
+  Future<String?> _hardwareFingerprint() async {
+    try {
+      final info = DeviceInfoPlugin();
+      if (Platform.isAndroid) {
+        final a = await info.androidInfo;
+        return [a.id, a.fingerprint, a.board, a.hardware, a.model].join('|');
+      }
+      if (Platform.isIOS) {
+        final i = await info.iosInfo;
+        return [i.identifierForVendor, i.model, i.systemName].join('|');
+      }
+    } catch (_) {/* تجاهل وارجع للاحتياط */}
+    return null;
   }
 
   /// معرّف الجهاز مُجمّلًا بمجموعات من 4 (XXXX-XXXX-...).
