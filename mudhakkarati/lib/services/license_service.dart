@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:android_id/android_id.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:device_info_plus/device_info_plus.dart';
@@ -59,17 +60,21 @@ class LicenseService {
     return id;
   }
 
-  /// بصمة العتاد (Android/iOS). تُرجع null على المنصات غير المدعومة.
+  /// بصمة العتاد الثابتة. تُرجع null على المنصات غير المدعومة.
+  ///
+  /// نستخدم معرّفات تبقى ثابتة عبر إعادة التثبيت وتحديثات النظام
+  /// (ANDROID_ID على أندرويد، identifierForVendor على iOS)، وتتغيّر فقط
+  /// عند إعادة ضبط المصنع. نتجنّب Build.FINGERPRINT/ID لأنهما يتغيّران مع
+  /// تحديثات النظام فيقفلان مستخدمًا شرعيًّا.
   Future<String?> _hardwareFingerprint() async {
     try {
-      final info = DeviceInfoPlugin();
       if (Platform.isAndroid) {
-        final a = await info.androidInfo;
-        return [a.id, a.fingerprint, a.board, a.hardware, a.model].join('|');
+        final aid = await const AndroidId().getId(); // Settings.Secure.ANDROID_ID
+        if (aid != null && aid.isNotEmpty) return aid;
       }
       if (Platform.isIOS) {
-        final i = await info.iosInfo;
-        return [i.identifierForVendor, i.model, i.systemName].join('|');
+        final i = await DeviceInfoPlugin().iosInfo;
+        return i.identifierForVendor;
       }
     } catch (_) {/* تجاهل وارجع للاحتياط */}
     return null;
