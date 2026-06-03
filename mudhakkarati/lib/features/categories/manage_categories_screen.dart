@@ -47,6 +47,7 @@ class ManageCategoriesScreen extends StatelessWidget {
           Expanded(
             child: ReorderableListView.builder(
               padding: const EdgeInsets.only(bottom: 90),
+              buildDefaultDragHandles: false,
               itemCount: cats.length,
               onReorder: (oldIndex, newIndex) {
                 final list = List<Category>.from(cats);
@@ -83,7 +84,13 @@ class ManageCategoriesScreen extends StatelessWidget {
                         icon: const Icon(Icons.delete_outline),
                         onPressed: () => provider.deleteCategory(c.id!),
                       ),
-                      const Icon(Icons.drag_handle),
+                      ReorderableDragStartListener(
+                        index: i,
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Icon(Icons.drag_handle),
+                        ),
+                      ),
                     ],
                   ),
                 );
