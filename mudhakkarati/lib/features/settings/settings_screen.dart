@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/note_gradient.dart';
 import '../../data/models/enums.dart';
+import '../../widgets/color_picker_sheet.dart';
+import '../../widgets/paper_background.dart';
 import '../backup/backup_screen.dart';
 import '../categories/manage_categories_screen.dart';
 import '../security/security_settings_screen.dart';
@@ -109,6 +112,13 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
+
+          const Divider(),
+          _section(context, 'الملاحظة الافتراضية (للملاحظات الجديدة)'),
+          ..._noteDefaults(context, s, settings),
+
+          const Divider(),
+          _section(context, 'التحرير والعرض'),
 
           // إخفاء قائمة (نسخ/لصق/تحديد الكل) أثناء الكتابة
           SwitchListTile(
@@ -234,6 +244,154 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  static const _styleNames = [
+    'سادة', 'مسطّر', 'شبكي', 'نقاط',
+    'شبكة دقيقة', 'نقاط كبيرة', 'أسطر', 'مربعات',
+  ];
+
+  /// عناصر قسم «الملاحظة الافتراضية»: لون/نمط الصفحة، خط المتن وحجمه وتباعده،
+  /// وتنسيق التسطير (السماكة/الشفافية/المحاذاة) مع معاينة حيّة.
+  List<Widget> _noteDefaults(BuildContext context, S s, SettingsProvider st) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final styleName = _styleNames[st.defaultBgStyle.clamp(0, 7)];
+    final defGrad = NoteGradient.parse(st.defaultGradient);
+
+    return [
+      // معاينة حيّة
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: _NotePreview(settings: st),
+      ),
+
+      // لون الخلفية ونمط الصفحة (يعيد استخدام منتقي الألوان نفسه)
+      ListTile(
+        leading: const Icon(Icons.palette_outlined),
+        title: const Text('لون/تدرّج الخلفية ونمط الصفحة'),
+        subtitle: Text(defGrad != null
+            ? 'تدرّج لوني • النمط: $styleName'
+            : 'النمط الحالي: $styleName'),
+        trailing: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: defGrad == null
+                ? AppColors.resolveNoteColor(st.defaultNoteColor, isDark)
+                : null,
+            gradient: defGrad?.toGradient(),
+            shape: BoxShape.circle,
+            border: Border.all(color: Theme.of(context).dividerColor),
+          ),
+        ),
+        onTap: () async {
+          final res = await showColorPicker(context, st.defaultNoteColor,
+              currentStyle: st.defaultBgStyle,
+              currentGradient: st.defaultGradient);
+          if (res != null) {
+            await st.setDefaultNoteColor(res.value);
+            if (res.bgStyle != null) await st.setDefaultBgStyle(res.bgStyle!);
+            await st.setDefaultGradient(res.gradient);
+          }
+        },
+      ),
+
+      // خط المتن
+      ListTile(
+        leading: const Icon(Icons.text_fields),
+        title: const Text('خط المتن'),
+        trailing: DropdownButton<String>(
+          value: st.noteFontFamily,
+          underline: const SizedBox.shrink(),
+          onChanged: (v) {
+            if (v != null) st.setNoteFontFamily(v);
+          },
+          items: [
+            for (final f in SettingsProvider.fontFamilies)
+              DropdownMenuItem(
+                value: f,
+                child: Text(f, style: TextStyle(fontFamily: f)),
+              ),
+          ],
+        ),
+      ),
+
+      // حجم خط المتن
+      ListTile(
+        leading: const Icon(Icons.format_size),
+        title: const Text('حجم خط المتن'),
+        subtitle: Slider(
+          min: 12,
+          max: 30,
+          divisions: 18,
+          label: st.noteFontSize.round().toString(),
+          value: st.noteFontSize.clamp(12, 30),
+          onChanged: st.setNoteFontSize,
+        ),
+      ),
+
+      // تباعد الأسطر
+      ListTile(
+        leading: const Icon(Icons.format_line_spacing),
+        title: const Text('تباعد الأسطر'),
+        subtitle: Slider(
+          min: 1.0,
+          max: 2.6,
+          divisions: 16,
+          label: st.noteLineHeight.toStringAsFixed(1),
+          value: st.noteLineHeight.clamp(1.0, 2.6),
+          onChanged: st.setNoteLineHeight,
+        ),
+      ),
+
+      const Padding(
+        padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
+        child: Text('تسطير الصفحة',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+
+      // محاذاة الكتابة: على السطر / بين السطرين
+      ListTile(
+        leading: const Icon(Icons.vertical_align_center),
+        title: const Text('محاذاة الكتابة'),
+        trailing: SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment(value: true, label: Text('على السطر')),
+            ButtonSegment(value: false, label: Text('بين السطرين')),
+          ],
+          selected: {st.ruleOnLine},
+          onSelectionChanged: (v) => st.setRuleOnLine(v.first),
+        ),
+      ),
+
+      // سماكة الأسطر
+      ListTile(
+        leading: const Icon(Icons.line_weight),
+        title: const Text('سماكة الأسطر'),
+        subtitle: Slider(
+          min: 0.5,
+          max: 3.0,
+          divisions: 10,
+          label: st.ruleThickness.toStringAsFixed(1),
+          value: st.ruleThickness.clamp(0.5, 3.0),
+          onChanged: st.setRuleThickness,
+        ),
+      ),
+
+      // شفافية الأسطر
+      ListTile(
+        leading: const Icon(Icons.opacity),
+        title: const Text('شفافية الأسطر'),
+        subtitle: Slider(
+          min: 0.03,
+          max: 0.6,
+          divisions: 19,
+          label: '${(st.ruleOpacity * 100).round()}%',
+          value: st.ruleOpacity.clamp(0.03, 0.6),
+          onChanged: st.setRuleOpacity,
+        ),
+      ),
+    ];
+  }
+
   Widget _section(BuildContext context, String title) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
@@ -251,6 +409,67 @@ class SettingsScreen extends StatelessWidget {
       trailing: const Icon(Icons.chevron_left),
       onTap: () => Navigator.push(
           context, MaterialPageRoute(builder: (_) => page)),
+    );
+  }
+}
+
+/// معاينة حيّة لشكل الملاحظة الافتراضية (لون + تسطير + خط المتن).
+class _NotePreview extends StatelessWidget {
+  final SettingsProvider settings;
+  const _NotePreview({required this.settings});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = AppColors.resolveNoteColor(settings.defaultNoteColor, isDark);
+    final grad = NoteGradient.parse(settings.defaultGradient);
+    final onBg = grad != null
+        ? grad.onColor
+        : (ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+            ? Colors.white
+            : Colors.black87);
+    final gap = settings.noteFontSize * settings.noteLineHeight;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: grad == null ? bg : null,
+        gradient: grad?.toGradient(),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Theme.of(context).dividerColor),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: PaperBackground(
+        style: settings.defaultBgStyle,
+        lineColor: onBg,
+        gap: gap,
+        thickness: settings.ruleThickness,
+        opacity: settings.ruleOpacity,
+        onLine: settings.ruleOnLine,
+        fontSize: settings.noteFontSize,
+        topPadding: 12,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final line in const [
+                'مثال على نص الملاحظة',
+                'تنتظم الكتابة مع التسطير',
+                'حسب الإعدادات المختارة',
+              ])
+                Text(
+                  line,
+                  style: TextStyle(
+                    color: onBg,
+                    fontFamily: settings.noteFontFamily,
+                    fontSize: settings.noteFontSize,
+                    height: settings.noteLineHeight,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

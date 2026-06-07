@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 4;
+  static const _dbVersion = 5;
 
   Database? _db;
   Future<Database>? _opening;
@@ -198,6 +198,7 @@ class AppDatabase {
         pdf_path TEXT,
         drawing_path TEXT,
         bg_style INTEGER NOT NULL DEFAULT 0,
+        gradient TEXT,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
         FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL
@@ -265,6 +266,9 @@ class AppDatabase {
     }
     if (oldVersion < 4) {
       await _createInfoTable(db);
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE notes ADD COLUMN gradient TEXT');
     }
   }
 

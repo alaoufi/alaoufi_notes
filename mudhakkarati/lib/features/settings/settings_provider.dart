@@ -20,6 +20,18 @@ class SettingsProvider extends ChangeNotifier {
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
 
+  // ---- الافتراضي للملاحظات الجديدة ----
+  int? _defaultNoteColor; // null = اللون الافتراضي للسمة
+  String? _defaultGradient; // تدرّج لوني افتراضي (مُرمَّز) أو null
+  int _defaultBgStyle = 0; // 0..7 (نمط صفحة الملاحظة)
+  String _noteFontFamily = 'Cairo'; // خط متن الملاحظة
+  double _noteFontSize = 16; // حجم خط المتن
+  double _noteLineHeight = 1.6; // تباعد الأسطر (مضاعف ارتفاع السطر)
+  // ---- تنسيق تسطير الصفحة ----
+  double _ruleThickness = 1.0; // سماكة الأسطر
+  double _ruleOpacity = 0.12; // شفافية الأسطر (0..1)
+  bool _ruleOnLine = true; // الكتابة على السطر (true) أو بين السطرين (false)
+
   ThemeMode get themeMode => _themeMode;
   Color get seedColor => _seedColor;
   double get fontScale => _fontScale;
@@ -29,6 +41,16 @@ class SettingsProvider extends ChangeNotifier {
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
+
+  int? get defaultNoteColor => _defaultNoteColor;
+  String? get defaultGradient => _defaultGradient;
+  int get defaultBgStyle => _defaultBgStyle;
+  String get noteFontFamily => _noteFontFamily;
+  double get noteFontSize => _noteFontSize;
+  double get noteLineHeight => _noteLineHeight;
+  double get ruleThickness => _ruleThickness;
+  double get ruleOpacity => _ruleOpacity;
+  bool get ruleOnLine => _ruleOnLine;
 
   /// الخطوط العربية المتاحة لاختيار الخط الافتراضي للتطبيق.
   static const fontFamilies = <String>[
@@ -56,6 +78,14 @@ class SettingsProvider extends ChangeNotifier {
     'Jomhuria',
     'Gulzar',
     'Qahiri',
+    'Noto Kufi Arabic',
+    'Noto Sans Arabic',
+    'Rubik',
+    'Baloo Bhaijaan 2',
+    'Lateef',
+    'Mirza',
+    'Katibeh',
+    'Alkalami',
   ];
 
   static const _kMode = 'theme_mode';
@@ -67,6 +97,15 @@ class SettingsProvider extends ChangeNotifier {
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
   static const _kTone = 'alarm_tone';
+  static const _kDefColor = 'def_note_color';
+  static const _kDefGradient = 'def_gradient';
+  static const _kDefBgStyle = 'def_bg_style';
+  static const _kNoteFont = 'note_font_family';
+  static const _kNoteFontSize = 'note_font_size';
+  static const _kNoteLineHeight = 'note_line_height';
+  static const _kRuleThickness = 'rule_thickness';
+  static const _kRuleOpacity = 'rule_opacity';
+  static const _kRuleOnLine = 'rule_on_line';
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -89,7 +128,91 @@ class SettingsProvider extends ChangeNotifier {
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
     NotificationService.instance.tone = _alarmTone;
+
+    _defaultNoteColor =
+        prefs.containsKey(_kDefColor) ? prefs.getInt(_kDefColor) : null;
+    _defaultGradient = prefs.getString(_kDefGradient);
+    _defaultBgStyle = prefs.getInt(_kDefBgStyle) ?? 0;
+    final nf = prefs.getString(_kNoteFont);
+    if (nf != null && fontFamilies.contains(nf)) _noteFontFamily = nf;
+    _noteFontSize = prefs.getDouble(_kNoteFontSize) ?? 16;
+    _noteLineHeight = prefs.getDouble(_kNoteLineHeight) ?? 1.6;
+    _ruleThickness = prefs.getDouble(_kRuleThickness) ?? 1.0;
+    _ruleOpacity = prefs.getDouble(_kRuleOpacity) ?? 0.12;
+    _ruleOnLine = prefs.getBool(_kRuleOnLine) ?? true;
+
     notifyListeners();
+  }
+
+  Future<void> setDefaultNoteColor(int? color) async {
+    _defaultNoteColor = color;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (color == null) {
+      await prefs.remove(_kDefColor);
+    } else {
+      await prefs.setInt(_kDefColor, color);
+    }
+  }
+
+  Future<void> setDefaultGradient(String? gradient) async {
+    _defaultGradient = gradient;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    if (gradient == null) {
+      await prefs.remove(_kDefGradient);
+    } else {
+      await prefs.setString(_kDefGradient, gradient);
+    }
+  }
+
+  Future<void> setDefaultBgStyle(int style) async {
+    _defaultBgStyle = style;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kDefBgStyle, style);
+  }
+
+  Future<void> setNoteFontFamily(String family) async {
+    _noteFontFamily = family;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kNoteFont, family);
+  }
+
+  Future<void> setNoteFontSize(double size) async {
+    _noteFontSize = size;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kNoteFontSize, size);
+  }
+
+  Future<void> setNoteLineHeight(double h) async {
+    _noteLineHeight = h;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kNoteLineHeight, h);
+  }
+
+  Future<void> setRuleThickness(double t) async {
+    _ruleThickness = t;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kRuleThickness, t);
+  }
+
+  Future<void> setRuleOpacity(double o) async {
+    _ruleOpacity = o;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_kRuleOpacity, o);
+  }
+
+  Future<void> setRuleOnLine(bool v) async {
+    _ruleOnLine = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kRuleOnLine, v);
   }
 
   Future<void> setAlarmTone(String tone) async {

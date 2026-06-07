@@ -52,8 +52,17 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
             ),
             tile(Icons.palette_outlined, s.t('color'), () async {
               Navigator.pop(context);
-              final res = await showColorPicker(context, note.color);
-              if (res != null) await provider.setColor(note, res.value);
+              final res = await showColorPicker(context, note.color,
+                  currentStyle: note.bgStyle, currentGradient: note.gradient);
+              if (res != null) {
+                await provider.saveNote(note.copyWith(
+                  color: res.value,
+                  clearColor: res.value == null,
+                  bgStyle: res.bgStyle,
+                  gradient: res.gradient,
+                  clearGradient: res.gradient == null,
+                ));
+              }
             }),
             tile(Icons.alarm, s.t('reminder'), () async {
               Navigator.pop(context);

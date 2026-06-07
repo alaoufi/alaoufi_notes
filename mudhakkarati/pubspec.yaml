@@ -188,3 +188,32 @@ flutter:
     - family: Qahiri
       fonts:
         - asset: assets/fonts/Qahiri-Regular.ttf
+    # خطوط عربية إضافية (متغيّرة الوزن وثابتة).
+    - family: Noto Kufi Arabic
+      fonts:
+        - asset: assets/fonts/NotoKufiArabic-Variable.ttf
+    - family: Noto Sans Arabic
+      fonts:
+        - asset: assets/fonts/NotoSansArabic-Variable.ttf
+    - family: Rubik
+      fonts:
+        - asset: assets/fonts/Rubik-Variable.ttf
+    - family: Baloo Bhaijaan 2
+      fonts:
+        - asset: assets/fonts/BalooBhaijaan2-Variable.ttf
+    - family: Lateef
+      fonts:
+        - asset: assets/fonts/Lateef-Regular.ttf
+        - asset: assets/fonts/Lateef-Bold.ttf
+          weight: 700
+    - family: Mirza
+      fonts:
+        - asset: assets/fonts/Mirza-Regular.ttf
+        - asset: assets/fonts/Mirza-Bold.ttf
+          weight: 700
+    - family: Katibeh
+      fonts:
+        - asset: assets/fonts/Katibeh-Regular.ttf
+    - family: Alkalami
+      fonts:
+        - asset: assets/fonts/Alkalami-Regular.ttf

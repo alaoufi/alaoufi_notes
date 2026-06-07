@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/note_gradient.dart';
 
 /// نتيجة اختيار لون/نمط خلفية البطاقة.
 class ColorPickResult {
   final int? value; // لون (int) أو null للافتراضي
   final int? bgStyle; // 0..7 أو null إن لم يتغيّر
-  const ColorPickResult(this.value, {this.bgStyle});
+  final String? gradient; // تدرّج مُرمَّز، أو null لخلفية سادة
+  const ColorPickResult(this.value, {this.bgStyle, this.gradient});
 }
 
 /// أنماط خلفية الصفحة المتاحة (يطابق مؤشّرها _PaperPainter).
@@ -43,10 +45,18 @@ Future<ColorPickResult?> showColorPicker(
   BuildContext context,
   int? current, {
   int currentStyle = 0,
+  String? currentGradient,
 }) {
   final s = S.of(context);
   int selectedStyle = currentStyle;
   int? selectedColor = current;
+
+  // حالة التدرّج اللوني.
+  final parsedGrad = NoteGradient.parse(currentGradient);
+  bool useGradient = parsedGrad != null;
+  List<int> gradColors =
+      parsedGrad?.colors ?? [0xFF42A5F5, 0xFF7E57C2];
+  int gradDir = parsedGrad?.direction ?? 2;
 
   return showModalBottomSheet<ColorPickResult>(
     context: context,
@@ -141,13 +151,102 @@ Future<ColorPickResult?> showColorPicker(
                         ),
                     ],
                   ),
+                  const SizedBox(height: 18),
+                  // ===== التدرّج اللوني =====
+                  Row(
+                    children: [
+                      Text('تدرّج لوني',
+                          style: Theme.of(context).textTheme.titleMedium),
+                      const Spacer(),
+                      Switch(
+                        value: useGradient,
+                        onChanged: (v) => setSheet(() => useGradient = v),
+                      ),
+                    ],
+                  ),
+                  if (useGradient) ...[
+                    const SizedBox(height: 8),
+                    // معاينة التدرّج
+                    Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.black12),
+                        gradient: NoteGradient(colors: gradColors, direction: gradDir)
+                            .toGradient(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // ألوان التدرّج (نقر لتغييره، مع إضافة/حذف لون ثالث)
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        for (var i = 0; i < gradColors.length; i++)
+                          GestureDetector(
+                            onTap: () async {
+                              final picked = await _showCustomColor(
+                                  context, gradColors[i]);
+                              if (picked != null) {
+                                setSheet(() => gradColors[i] = picked);
+                              }
+                            },
+                            onLongPress: gradColors.length > 2
+                                ? () => setSheet(() => gradColors.removeAt(i))
+                                : null,
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Color(gradColors[i]),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.black26, width: 2),
+                              ),
+                            ),
+                          ),
+                        if (gradColors.length < 3)
+                          IconButton.filledTonal(
+                            tooltip: 'إضافة لون',
+                            onPressed: () => setSheet(
+                                () => gradColors.add(0xFF26A69A)),
+                            icon: const Icon(Icons.add),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text('انقر اللون لتغييره • اضغط مطوّلًا لحذف لون ثالث',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 10),
+                    // اتجاه التدرّج
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (var d = 0; d < NoteGradient.directionNames.length; d++)
+                          ChoiceChip(
+                            label: Text(NoteGradient.directionNames[d]),
+                            selected: gradDir == d,
+                            onSelected: (_) => setSheet(() => gradDir = d),
+                          ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Align(
                     alignment: AlignmentDirectional.centerEnd,
                     child: FilledButton(
                       onPressed: () => Navigator.pop(
                         context,
-                        ColorPickResult(selectedColor, bgStyle: selectedStyle),
+                        ColorPickResult(
+                          selectedColor,
+                          bgStyle: selectedStyle,
+                          gradient: useGradient
+                              ? NoteGradient(
+                                      colors: gradColors, direction: gradDir)
+                                  .encode()
+                              : null,
+                        ),
                       ),
                       child: Text(s.t('ok')),
                     ),

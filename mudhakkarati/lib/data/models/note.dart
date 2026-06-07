@@ -33,6 +33,9 @@ class Note {
   /// نمط خلفية الصفحة: 0=سادة، 1=مسطّر، 2=شبكي، 3=نقاط.
   final int bgStyle;
 
+  /// تدرّج لوني للخلفية (مُرمَّز نصيًّا). null يعني لون سادة.
+  final String? gradient;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -57,6 +60,7 @@ class Note {
     this.pdfPath,
     this.drawingPath,
     this.bgStyle = 0,
+    this.gradient,
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
@@ -99,6 +103,7 @@ class Note {
       'pdf_path': pdfPath,
       'drawing_path': drawingPath,
       'bg_style': bgStyle,
+      'gradient': gradient,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
     };
@@ -125,6 +130,7 @@ class Note {
       pdfPath: map['pdf_path'] as String?,
       drawingPath: map['drawing_path'] as String?,
       bgStyle: (map['bg_style'] as int?) ?? 0,
+      gradient: map['gradient'] as String?,
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
       tags: tags,
@@ -152,6 +158,8 @@ class Note {
     String? pdfPath,
     String? drawingPath,
     int? bgStyle,
+    String? gradient,
+    bool clearGradient = false,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
@@ -174,6 +182,7 @@ class Note {
       pdfPath: pdfPath ?? this.pdfPath,
       drawingPath: drawingPath ?? this.drawingPath,
       bgStyle: bgStyle ?? this.bgStyle,
+      gradient: clearGradient ? null : (gradient ?? this.gradient),
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tags: tags ?? this.tags,

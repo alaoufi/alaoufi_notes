@@ -53,6 +53,31 @@ class RichTextController {
   }
 }
 
+/// يبني أنماط المحرّر الافتراضية (خط المتن وحجمه وتباعد أسطره) من الإعدادات.
+///
+/// نضبط تباعد الأسطر داخل الفقرة وبينها إلى صفر كي يكون ارتفاع كل سطر مساويًا
+/// تمامًا لـ(الحجم × التباعد) — فينتظم التسطير خلف الكتابة بدقّة.
+DefaultStyles buildNoteDefaultStyles(
+    BuildContext context, SettingsProvider settings) {
+  final base = TextStyle(
+    fontFamily: settings.noteFontFamily,
+    fontSize: settings.noteFontSize,
+    height: settings.noteLineHeight,
+    color: DefaultTextStyle.of(context).style.color,
+  );
+  const hs = HorizontalSpacing(0, 0);
+  const vs = VerticalSpacing(0, 0);
+  final block = DefaultTextBlockStyle(base, hs, vs, vs, null);
+  return DefaultStyles(
+    paragraph: block,
+    lineHeightNormal: block,
+  );
+}
+
+/// ارتفاع سطر المتن بالبكسل (لمطابقة تباعد التسطير مع الكتابة).
+double noteLineGap(SettingsProvider settings) =>
+    settings.noteFontSize * settings.noteLineHeight;
+
 /// منطقة تحرير النص الغني (بلا شريط أدوات — يوضع الشريط مثبّتًا في الأسفل).
 ///
 /// [expand] = true يجعل المحرّر يملأ مساحته ويمرّر داخليًا (مع تمرير الـ viewport
@@ -65,7 +90,8 @@ class RichTextEditorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hide = context.watch<SettingsProvider>().hideSelectionMenu;
+    final settings = context.watch<SettingsProvider>();
+    final hide = settings.hideSelectionMenu;
     final editor = QuillEditor.basic(
       controller: controller.quill,
       focusNode: controller.focus,
@@ -74,6 +100,7 @@ class RichTextEditorBody extends StatelessWidget {
         expands: expand,
         scrollable: expand,
         padding: const EdgeInsets.symmetric(vertical: 8),
+        customStyles: buildNoteDefaultStyles(context, settings),
         placeholder: 'اكتب ملاحظتك هنا...',
         // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
         // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
@@ -156,6 +183,14 @@ class RichTextToolbar extends StatelessWidget {
                   'جمهورية': 'Jomhuria',
                   'كلزار': 'Gulzar',
                   'قاهري': 'Qahiri',
+                  'نوتو كوفي': 'Noto Kufi Arabic',
+                  'نوتو سانس': 'Noto Sans Arabic',
+                  'روبيك': 'Rubik',
+                  'بالو': 'Baloo Bhaijaan 2',
+                  'لطيف': 'Lateef',
+                  'ميرزا': 'Mirza',
+                  'كتيبة': 'Katibeh',
+                  'القلمي': 'Alkalami',
                   'مسح': 'Clear',
                 },
               ),

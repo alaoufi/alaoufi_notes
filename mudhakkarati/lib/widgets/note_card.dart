@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../core/theme/app_colors.dart';
+import '../core/theme/note_gradient.dart';
 import '../data/models/category.dart';
 import '../data/models/enums.dart';
 import '../data/models/note.dart';
@@ -32,13 +33,21 @@ class NoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = AppColors.resolveNoteColor(note.color, isDark);
-    final onBg = ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
+    final grad = NoteGradient.parse(note.gradient);
+    final onBg = grad != null
+        ? grad.onColor
+        : (ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+            ? Colors.white
+            : Colors.black87);
 
     return Card(
-      color: bg,
-      child: InkWell(
+      color: grad != null ? Colors.transparent : bg,
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
+        decoration: grad != null
+            ? BoxDecoration(gradient: grad.toGradient())
+            : null,
+        child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
@@ -87,6 +96,7 @@ class NoteCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

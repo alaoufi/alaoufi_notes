@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/note_gradient.dart';
 import '../../data/models/checklist_item.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
@@ -19,6 +20,7 @@ import '../../widgets/paper_background.dart';
 import '../drawing/drawing_screen.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminder_dialog.dart';
+import '../settings/settings_provider.dart';
 import 'editor_attachments.dart';
 import 'rich_text_field.dart';
 
@@ -51,6 +53,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   RichTextController? _richCtrl; // وحدة تحكّم النص الغني (لنوع النص فقط)
 
   Timer? _debounce;
+  Color _fgColor = Colors.black87; // لون نص المتن المناسب للخلفية الحالية
   bool _loaded = false;
   bool _dirty = false;
   bool _drawingPrompted = false;
@@ -84,8 +87,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         _note = Note.create(type: widget.initialType);
       }
     } else {
+      // ملاحظة جديدة: طبّق الافتراضي (لون الخلفية ونمط الصفحة) من الإعدادات.
+      final settings = context.read<SettingsProvider>();
       _note = Note.create(
-          type: widget.initialType, categoryId: widget.initialCategoryId);
+              type: widget.initialType, categoryId: widget.initialCategoryId)
+          .copyWith(
+        color: settings.defaultNoteColor,
+        clearColor: settings.defaultNoteColor == null,
+        bgStyle: settings.defaultBgStyle,
+        gradient: settings.defaultGradient,
+      );
       if (_note.type == NoteType.checklist) {
         _checklist = [const ChecklistItem(noteId: 0, text: '')];
         _rebuildItemCtrls();
@@ -265,24 +276,22 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
     _onDrawingSetup();
 
+    final settings = context.watch<SettingsProvider>();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = AppColors.resolveNoteColor(_note.color, isDark);
-    final onBg = ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
-        ? Colors.white
-        : Colors.black87;
+    final grad = NoteGradient.parse(_note.gradient);
+    final onBg = grad != null
+        ? grad.onColor
+        : (ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+            ? Colors.white
+            : Colors.black87);
+    _fgColor = onBg;
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        await _onWillPop();
-        if (mounted) Navigator.pop(context);
-      },
-      child: Scaffold(
-        backgroundColor: bg,
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          backgroundColor: bg,
+    final scaffold = Scaffold(
+      backgroundColor: grad != null ? Colors.transparent : bg,
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+          backgroundColor: grad != null ? Colors.transparent : bg,
           actions: [
             IconButton(
               tooltip: _note.isPinned ? s.t('unpin') : s.t('pin'),
@@ -299,12 +308,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               icon: const Icon(Icons.palette_outlined),
               onPressed: () async {
                 final res = await showColorPicker(context, _note.color,
-                    currentStyle: _note.bgStyle);
+                    currentStyle: _note.bgStyle,
+                    currentGradient: _note.gradient);
                 if (res != null) {
                   setState(() => _note = _note.copyWith(
                         color: res.value,
                         clearColor: res.value == null,
                         bgStyle: res.bgStyle,
+                        gradient: res.gradient,
+                        clearGradient: res.gradient == null,
                       ));
                   _dirty = true;
                   await _ensureSaved();
@@ -344,11 +356,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ],
         ),
         body: SafeArea(
-          child: Column(
+          child: DefaultTextStyle.merge(
+            style: TextStyle(color: _fgColor),
+            child: Column(
             children: [
               Expanded(
                 child: _note.type == NoteType.text
-                    ? _textLayout(s, onBg)
+                    ? _textLayout(s, onBg, settings)
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                         children: [
@@ -357,7 +371,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                           const Divider(),
                           PaperBackground(
                             style: _note.bgStyle,
-                            lineColor: onBg.withValues(alpha: 0.12),
+                            lineColor: onBg,
+                            gap: noteLineGap(settings),
+                            thickness: settings.ruleThickness,
+                            opacity: settings.ruleOpacity,
+                            onLine: settings.ruleOnLine,
+                            fontSize: settings.noteFontSize,
+                            topPadding: 0,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: _typeBody(s),
@@ -377,8 +397,25 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 ),
             ],
           ),
+          ),
         ),
-      ),
+    );
+
+    final decorated = grad != null
+        ? Container(
+            decoration: BoxDecoration(gradient: grad.toGradient()),
+            child: scaffold,
+          )
+        : scaffold;
+
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _onWillPop();
+        if (mounted) Navigator.pop(context);
+      },
+      child: decorated,
     );
   }
 
@@ -418,7 +455,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Widget _titleField(S s) => TextField(
         controller: _titleCtrl,
-        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            fontSize: 22, fontWeight: FontWeight.bold, color: _fgColor),
         decoration: InputDecoration(
           hintText: s.t('title_hint'),
           border: InputBorder.none,
@@ -442,7 +480,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   /// تخطيط ملاحظة النص: العنوان ثابت بالأعلى، والمحرّر يملأ الباقي ويمرّر
   /// داخليًا (viewport) — أداء سلس حتى مع المستندات الطويلة جدًّا.
-  Widget _textLayout(S s, Color onBg) {
+  Widget _textLayout(S s, Color onBg, SettingsProvider settings) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -456,7 +494,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         Expanded(
           child: PaperBackground(
             style: _note.bgStyle,
-            lineColor: onBg.withValues(alpha: 0.12),
+            lineColor: onBg,
+            gap: noteLineGap(settings),
+            thickness: settings.ruleThickness,
+            opacity: settings.ruleOpacity,
+            onLine: settings.ruleOnLine,
+            fontSize: settings.noteFontSize,
+            topPadding: 8,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _richCtrl == null
@@ -507,7 +551,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       controller: _contentCtrl,
       maxLines: null,
       minLines: 8,
-      style: const TextStyle(fontSize: 16, height: 1.5),
+      style: TextStyle(fontSize: 16, height: 1.5, color: _fgColor),
       decoration: InputDecoration(
         hintText: s.t('content_hint'),
         border: InputBorder.none,
