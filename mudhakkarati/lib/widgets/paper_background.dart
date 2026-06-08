@@ -8,6 +8,9 @@ import 'package:flutter/material.dart';
 /// المطابق لارتفاع سطر النص، فتنتظم الكتابة إمّا **على السطر** ([onLine] = true)
 /// أو **بين السطرين** ([onLine] = false). كما يمكن التحكّم في [thickness]
 /// (سماكة الأسطر) و[opacity] (شفافيتها).
+///
+/// عند تمرير [scrollController] (محرّر النص الغني) تتحرّك الأسطر **مع** الكتابة
+/// وتبقى محاذيةً لها مهما طال النص، بدل أن تبقى ثابتة بينما يتحرّك الكلام.
 class PaperBackground extends StatelessWidget {
   final int style;
   final Color lineColor;
@@ -31,6 +34,9 @@ class PaperBackground extends StatelessWidget {
   /// حجم خط المتن (يُستخدم لتقدير موضع خط الأساس عند المحاذاة على السطر).
   final double fontSize;
 
+  /// وحدة تمرير المحرّر — عند توفّرها تُزاح الأسطر بمقدار التمرير فتتحرك مع النص.
+  final ScrollController? scrollController;
+
   const PaperBackground({
     super.key,
     required this.style,
@@ -42,6 +48,7 @@ class PaperBackground extends StatelessWidget {
     this.topPadding = 8,
     this.onLine = true,
     this.fontSize = 16,
+    this.scrollController,
   });
 
   @override
@@ -56,6 +63,7 @@ class PaperBackground extends StatelessWidget {
         topPadding: topPadding,
         onLine: onLine,
         fontSize: fontSize,
+        scroll: scrollController,
       ),
       child: child,
     );
@@ -70,6 +78,7 @@ class _PaperPainter extends CustomPainter {
   final double topPadding;
   final bool onLine;
   final double fontSize;
+  final ScrollController? scroll;
 
   _PaperPainter({
     required this.style,
@@ -79,7 +88,12 @@ class _PaperPainter extends CustomPainter {
     required this.topPadding,
     required this.onLine,
     required this.fontSize,
-  });
+    this.scroll,
+  }) : super(repaint: scroll);
+
+  /// إزاحة التمرير الحالية للمحرّر (0 إن لم يُربط أو لم يُهيّأ بعد).
+  double get _scrollOffset =>
+      (scroll != null && scroll!.hasClients) ? scroll!.offset : 0.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -140,14 +154,19 @@ class _PaperPainter extends CustomPainter {
     }
   }
 
-  /// يرسم خطوطًا أفقية متباعدة بمقدار [lineGap]، محاذاةً على السطر أو بينه.
+  /// يرسم خطوطًا أفقية متباعدة بمقدار [lineGap]، محاذاةً على السطر أو بينه،
+  /// ومُزاحةً بمقدار تمرير المحرّر كي تتحرّك الأسطر مع الكتابة وتبقى محاذية.
   void _ruled(Canvas canvas, Size size, Paint paint, double lineGap) {
     if (lineGap <= 0) return;
-    // تقدير عمق النزول أسفل خط الأساس لوضع الخط تحت الحروف مباشرة.
-    final descent = onLine ? fontSize * 0.22 : 0.0;
-    for (double box = topPadding + lineGap; box < size.height; box += lineGap) {
-      final y = box - descent;
-      if (y > 0 && y < size.height) {
+    // «على السطر»: نرفع الخط بمقدار نصف الفراغ الزائد (leading) فيلامس أسفل
+    // الحروف تمامًا. «بين السطرين»: الخط عند حدّ صندوق السطر (منتصف الفراغ).
+    final descent =
+        onLine ? ((lineGap - fontSize) / 2).clamp(0.0, lineGap) : 0.0;
+    // موضع أول حدّ سطر في إحداثيات العرض بعد طرح التمرير (الطور).
+    final base = topPadding - descent - _scrollOffset;
+    final start = base % lineGap; // ضمن [0, lineGap)
+    for (double y = start; y < size.height; y += lineGap) {
+      if (y >= 0) {
         canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
       }
     }
@@ -161,5 +180,6 @@ class _PaperPainter extends CustomPainter {
       old.gap != gap ||
       old.topPadding != topPadding ||
       old.onLine != onLine ||
-      old.fontSize != fontSize;
+      old.fontSize != fontSize ||
+      old.scroll != scroll;
 }

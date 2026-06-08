@@ -22,6 +22,8 @@ class RichTextController {
 
   late final QuillController quill;
   final FocusNode focus = FocusNode();
+  /// وحدة تمرير المحرّر — نشاركها مع خلفية الورق كي تتحرّك الأسطر مع الكتابة.
+  final ScrollController scroll = ScrollController();
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
 
@@ -50,6 +52,7 @@ class RichTextController {
     quill.removeListener(_handle);
     quill.dispose();
     focus.dispose();
+    scroll.dispose();
   }
 }
 
@@ -96,6 +99,7 @@ class RichTextEditorBody extends StatelessWidget {
     final editor = QuillEditor.basic(
       controller: controller.quill,
       focusNode: controller.focus,
+      scrollController: controller.scroll,
       config: QuillEditorConfig(
         autoFocus: false,
         expands: expand,
