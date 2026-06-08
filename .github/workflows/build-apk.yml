@@ -1,0 +1,107 @@
+name: بناء APK لتطبيق مذكراتي
+
+# يبني ملف APK تلقائيًا على خوادم GitHub، يدفعه إلى فرع apk-dist للتسليم،
+# وينشر سجل البناء إلى فرع build-log دائمًا (للتشخيص عند الفشل).
+
+on:
+  push:
+    branches:
+      - main
+      - claude/repository-data-check-41e6pd
+    paths:
+      - 'mudhakkarati/**'
+      - '.github/workflows/build-apk.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تهيئة Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: تهيئة Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.0
+          cache: true
+
+      - name: بناء APK (مع التقاط السجل)
+        working-directory: mudhakkarati
+        run: |
+          set -o pipefail
+          {
+            echo "===== flutter pub get ====="
+            flutter pub get
+            echo "===== flutter build apk (split per abi) ====="
+            flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}
+            echo "===== sizes ====="
+            ls -lh build/app/outputs/flutter-apk/
+          } 2>&1 | tee /tmp/build.log
+
+      - name: نشر سجل البناء إلى فرع build-log (تشخيص)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/logout
+          tail -n 500 /tmp/build.log > /tmp/logout/build.log 2>/dev/null || echo "no log captured" > /tmp/logout/build.log
+          cd /tmp/logout
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b build-log
+          git add build.log
+          git commit -q -m "build log #${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" build-log
+
+      - name: دفع APK (arm64 الأصغر) إلى فرع apk-dist (تسليم)
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/apkout
+          APKDIR=mudhakkarati/build/app/outputs/flutter-apk
+          cp "$APKDIR/app-arm64-v8a-release.apk" /tmp/apkout/AlaoufiNotes.apk
+          cd /tmp/apkout
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b apk-dist
+          git add AlaoufiNotes.apk
+          git commit -q -m "Alaoufi Notes APK (arm64) #${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" apk-dist
+
+      - name: نشر في Releases (تحميل مباشر من المتصفّح)
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Alaoufi Notes — أحدث نسخة
+          body: |
+            حمّل الملف المناسب لجوالك وثبّته:
+            • app-arm64-v8a-release.apk — لمعظم الأجهزة الحديثة (الأصغر، يُنصح به)
+            • app-armeabi-v7a-release.apk — لأجهزة 32-بت القديمة
+            • app-x86_64-release.apk — للمحاكيات
+          files: |
+            mudhakkarati/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            mudhakkarati/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            mudhakkarati/build/app/outputs/flutter-apk/app-x86_64-release.apk
+
+      - name: رفع APK كـ Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AlaoufiNotes-apk
+          path: mudhakkarati/build/app/outputs/flutter-apk/*.apk
+
