@@ -5,6 +5,8 @@ import '../core/l10n/app_strings.dart';
 import '../features/backup/backup_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
+import '../features/cleanup/cleanup_screen.dart';
+import '../features/insights/weekly_summary_screen.dart';
 import '../features/favorites/favorites_screen.dart';
 import '../features/info/info_list_screen.dart';
 import '../features/security/info_lock.dart';
@@ -109,6 +111,10 @@ class AppDrawer extends StatelessWidget {
             _tile(context, Icons.tag, s.t('tags_page'),
                 () => go(const TagsScreen())),
             _tile(context, Icons.menu_book_outlined, 'معلومات', goInfo),
+            _tile(context, Icons.insights_outlined, 'الملخّص الأسبوعي',
+                () => go(const WeeklySummaryScreen())),
+            _tile(context, Icons.cleaning_services_outlined, 'تنظيف المذكرات',
+                () => go(const CleanupScreen())),
             const Divider(),
             _tile(context, Icons.category_outlined, s.t('manage_categories'),
                 () => go(const ManageCategoriesScreen())),
