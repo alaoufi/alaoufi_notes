@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -38,6 +39,19 @@ class BackupService {
   static const _kLastShare = 'last_backup_share';
   static const _kLastRestore = 'last_restore';
 
+  // ---- إعدادات النسخ الاحتياطي التلقائي ----
+  static const _kAutoEnabled = 'auto_backup_enabled';
+  static const _kAutoIntervalDays = 'auto_backup_interval_days';
+  static const _kAutoKeep = 'auto_backup_keep';
+  static const _kLastAuto = 'last_auto_backup';
+  // كلمة مرور النسخ التلقائي تُحفظ في التخزين الآمن (Keystore) حتى تعمل
+  // النسخة دون تدخّل المستخدم.
+  static const _kAutoPwd = 'auto_backup_password';
+
+  final _secure = const FlutterSecureStorage(
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+  );
+
   Future<void> _stamp(String key) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(key, DateTime.now().millisecondsSinceEpoch);
@@ -52,6 +66,130 @@ class BackupService {
   Future<DateTime?> lastLocalBackup() => _readStamp(_kLastLocal);
   Future<DateTime?> lastShareBackup() => _readStamp(_kLastShare);
   Future<DateTime?> lastRestore() => _readStamp(_kLastRestore);
+  Future<DateTime?> lastAutoBackup() => _readStamp(_kLastAuto);
+
+  // ---- قراءة/ضبط إعدادات النسخ التلقائي ----
+
+  Future<bool> autoBackupEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kAutoEnabled) ?? false;
+  }
+
+  /// الفاصل الزمني بين النسخ التلقائية بالأيام (1 = يومي، 7 = أسبوعي).
+  Future<int> autoBackupIntervalDays() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kAutoIntervalDays) ?? 1;
+  }
+
+  /// عدد النسخ التلقائية المحفوظة قبل حذف الأقدم.
+  Future<int> autoBackupKeep() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_kAutoKeep) ?? 5;
+  }
+
+  Future<void> setAutoBackupEnabled(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kAutoEnabled, v);
+  }
+
+  Future<void> setAutoBackupIntervalDays(int days) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kAutoIntervalDays, days);
+  }
+
+  Future<void> setAutoBackupKeep(int n) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kAutoKeep, n);
+  }
+
+  Future<void> setAutoBackupPassword(String password) async {
+    await _secure.write(key: _kAutoPwd, value: password);
+  }
+
+  Future<bool> hasAutoBackupPassword() async {
+    final v = await _secure.read(key: _kAutoPwd);
+    return v != null && v.isNotEmpty;
+  }
+
+  /// مجلّد النسخ التلقائية داخل بيانات التطبيق الخاصة.
+  Future<Directory> autoBackupDir() async {
+    final base = await getApplicationDocumentsDirectory();
+    final dir = Directory(p.join(base.path, 'auto_backups'));
+    if (!await dir.exists()) await dir.create(recursive: true);
+    return dir;
+  }
+
+  /// قائمة ملفات النسخ التلقائية (الأحدث أولًا — الاسم يحمل طابعًا زمنيًا).
+  Future<List<File>> listAutoBackups() async {
+    final dir = await autoBackupDir();
+    if (!await dir.exists()) return [];
+    final files = dir
+        .listSync()
+        .whereType<File>()
+        .where((f) => f.path.endsWith('.$_ext'))
+        .toList();
+    files.sort((a, b) => b.path.compareTo(a.path));
+    return files;
+  }
+
+  /// ينشئ نسخة تلقائية الآن ويحفظها في المجلّد الداخلي مع تدوير الأقدم.
+  Future<BackupResult> runAutoBackup() async {
+    try {
+      final pwd = await _secure.read(key: _kAutoPwd);
+      if (pwd == null || pwd.isEmpty) {
+        return const BackupResult(false, 'لم تُضبط كلمة مرور النسخ التلقائي');
+      }
+      final encrypted = await _buildEncrypted(pwd);
+      final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
+      final dir = await autoBackupDir();
+      final file = File(p.join(dir.path, 'auto_$stamp.$_ext'));
+      await file.writeAsBytes(encrypted, flush: true);
+      await _rotateAutoBackups();
+      await _stamp(_kLastAuto);
+      return BackupResult(true, 'تم إنشاء نسخة تلقائية', filePath: file.path);
+    } catch (e) {
+      return BackupResult(false, 'فشل النسخ التلقائي: $e');
+    }
+  }
+
+  /// يحذف النسخ التلقائية الأقدم مُبقيًا على آخر [autoBackupKeep] نسخة.
+  Future<void> _rotateAutoBackups() async {
+    final keep = await autoBackupKeep();
+    final files = await listAutoBackups(); // الأحدث أولًا
+    if (files.length <= keep) return;
+    for (final f in files.sublist(keep)) {
+      try {
+        await f.delete();
+      } catch (_) {/* تجاهل */}
+    }
+  }
+
+  /// يُستدعى عند إقلاع التطبيق: ينفّذ نسخة تلقائية إن حان موعدها فقط.
+  Future<void> maybeRunAutoBackup() async {
+    if (!await autoBackupEnabled()) return;
+    if (!await hasAutoBackupPassword()) return;
+    final last = await lastAutoBackup();
+    if (last != null) {
+      final intervalDays = await autoBackupIntervalDays();
+      final due = last.add(Duration(days: intervalDays));
+      if (DateTime.now().isBefore(due)) return; // لم يحن الموعد بعد
+    }
+    await runAutoBackup();
+  }
+
+  /// استعادة من نسخة تلقائية محدّدة (مسار داخلي) بكلمة مرور النسخ التلقائي.
+  Future<BackupResult> restoreAutoBackup(File file) async {
+    try {
+      final pwd = await _secure.read(key: _kAutoPwd);
+      if (pwd == null || pwd.isEmpty) {
+        return const BackupResult(false, 'لا توجد كلمة مرور للنسخ التلقائي');
+      }
+      final encrypted = await file.readAsBytes();
+      return _restoreFromBytes(encrypted, pwd);
+    } catch (e) {
+      return BackupResult(false, 'فشل الاستعادة: $e');
+    }
+  }
 
   /// إنشاء نسخة احتياطية مشفّرة وحفظها عبر منتقي الملفات.
   Future<BackupResult> exportBackup(String password) async {
@@ -186,59 +324,64 @@ class BackupService {
       }
 
       final encrypted = await File(path).readAsBytes();
-
-      late Uint8List zipped;
-      try {
-        zipped = EncryptionService.instance.decryptBytes(encrypted, password);
-      } catch (_) {
-        return const BackupResult(false, 'كلمة المرور خاطئة أو الملف تالف');
-      }
-
-      final archive = ZipDecoder().decodeBytes(zipped);
-
-      // استبدال قاعدة البيانات.
-      final dbPath = await AppDatabase.instance.path;
-      final attDir = await FileService.instance.attachmentsDir();
-
-      // تنظيف المرفقات القديمة.
-      if (await attDir.exists()) {
-        for (final e in attDir.listSync()) {
-          if (e is File) await e.delete();
-        }
-      }
-
-      String? restoredKey;
-      for (final file in archive) {
-        if (!file.isFile) continue;
-        final data = file.content as List<int>;
-        if (file.name == 'database.db') {
-          await File(dbPath).writeAsBytes(data, flush: true);
-        } else if (file.name == 'dbkey.txt') {
-          restoredKey = utf8.decode(data);
-        } else if (file.name.startsWith('attachments/')) {
-          final dest = p.join(attDir.path, p.basename(file.name));
-          await File(dest).writeAsBytes(data, flush: true);
-        }
-      }
-
-      // ضبط مفتاح التشفير ليطابق القاعدة المستعادة.
-      if (restoredKey != null && restoredKey.isNotEmpty) {
-        // نسخة مشفّرة: استخدم مفتاحها وتجاوز الترحيل.
-        await DbKeyManager.instance.setKey(restoredKey);
-        await DbKeyManager.instance.markMigrated();
-      } else {
-        // نسخة قديمة (غير مشفّرة): أعد الترحيل لتشفيرها بمفتاح هذا الجهاز.
-        await DbKeyManager.instance.clearMigrated();
-      }
-
-      // إعادة فتح قاعدة البيانات بالبيانات المستعادة.
-      await AppDatabase.instance.reopen();
-
-      await _stamp(_kLastRestore);
-      return const BackupResult(true, 'تمت الاستعادة بنجاح');
+      return _restoreFromBytes(encrypted, password);
     } catch (e) {
       return BackupResult(false, 'فشل الاستيراد: $e');
     }
   }
 
+  /// المنطق المشترك لاستعادة نسخة مشفّرة من بايتاتها (يستخدمه الاستيراد اليدوي
+  /// والاستعادة من النسخ التلقائية).
+  Future<BackupResult> _restoreFromBytes(
+      Uint8List encrypted, String password) async {
+    late Uint8List zipped;
+    try {
+      zipped = EncryptionService.instance.decryptBytes(encrypted, password);
+    } catch (_) {
+      return const BackupResult(false, 'كلمة المرور خاطئة أو الملف تالف');
+    }
+
+    final archive = ZipDecoder().decodeBytes(zipped);
+
+    // استبدال قاعدة البيانات.
+    final dbPath = await AppDatabase.instance.path;
+    final attDir = await FileService.instance.attachmentsDir();
+
+    // تنظيف المرفقات القديمة.
+    if (await attDir.exists()) {
+      for (final e in attDir.listSync()) {
+        if (e is File) await e.delete();
+      }
+    }
+
+    String? restoredKey;
+    for (final file in archive) {
+      if (!file.isFile) continue;
+      final data = file.content as List<int>;
+      if (file.name == 'database.db') {
+        await File(dbPath).writeAsBytes(data, flush: true);
+      } else if (file.name == 'dbkey.txt') {
+        restoredKey = utf8.decode(data);
+      } else if (file.name.startsWith('attachments/')) {
+        final dest = p.join(attDir.path, p.basename(file.name));
+        await File(dest).writeAsBytes(data, flush: true);
+      }
+    }
+
+    // ضبط مفتاح التشفير ليطابق القاعدة المستعادة.
+    if (restoredKey != null && restoredKey.isNotEmpty) {
+      // نسخة مشفّرة: استخدم مفتاحها وتجاوز الترحيل.
+      await DbKeyManager.instance.setKey(restoredKey);
+      await DbKeyManager.instance.markMigrated();
+    } else {
+      // نسخة قديمة (غير مشفّرة): أعد الترحيل لتشفيرها بمفتاح هذا الجهاز.
+      await DbKeyManager.instance.clearMigrated();
+    }
+
+    // إعادة فتح قاعدة البيانات بالبيانات المستعادة.
+    await AppDatabase.instance.reopen();
+
+    await _stamp(_kLastRestore);
+    return const BackupResult(true, 'تمت الاستعادة بنجاح');
+  }
 }
