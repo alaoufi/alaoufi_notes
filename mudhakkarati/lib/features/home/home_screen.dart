@@ -11,6 +11,7 @@ import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
+import '../search/advanced_filter.dart';
 import '../templates/note_templates.dart';
 import '../../services/security_service.dart';
 import '../security/info_lock.dart';
@@ -307,6 +308,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     : Icons.grid_view_outlined),
                 onPressed: settings.toggleLayout,
               ),
+              IconButton(
+                tooltip: settings.privacyMode
+                    ? 'إيقاف وضع الخصوصية'
+                    : 'وضع الخصوصية',
+                icon: Icon(settings.privacyMode
+                    ? Icons.visibility_off
+                    : Icons.visibility_outlined),
+                color: settings.privacyMode
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+                onPressed: () => settings.setPrivacyMode(!settings.privacyMode),
+              ),
               _overflowMenu(context, s, provider),
             ],
           ),
@@ -318,15 +331,27 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: InputDecoration(
               hintText: s.t('search_hint'),
               prefixIcon: const Icon(Icons.search),
-              suffixIcon: _searchCtrl.text.isEmpty
-                  ? null
-                  : IconButton(
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    tooltip: 'بحث متقدّم',
+                    icon: Icon(Icons.tune,
+                        color: provider.hasAdvancedFilter
+                            ? Theme.of(context).colorScheme.primary
+                            : null),
+                    onPressed: () => showAdvancedFilter(context),
+                  ),
+                  if (_searchCtrl.text.isNotEmpty)
+                    IconButton(
                       icon: const Icon(Icons.close),
                       onPressed: () {
                         _searchCtrl.clear();
                         provider.setSearch('');
                       },
                     ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 12),

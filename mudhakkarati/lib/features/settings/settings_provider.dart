@@ -32,6 +32,7 @@ class SettingsProvider extends ChangeNotifier {
   double _ruleThickness = 1.0; // سماكة الأسطر
   double _ruleOpacity = 0.12; // شفافية الأسطر (0..1)
   bool _ruleOnLine = true; // الكتابة على السطر (true) أو بين السطرين (false)
+  bool _privacyMode = false; // إخفاء معاينات الملاحظات بسرعة
 
   ThemeMode get themeMode => _themeMode;
   Color get seedColor => _seedColor;
@@ -53,6 +54,7 @@ class SettingsProvider extends ChangeNotifier {
   double get ruleThickness => _ruleThickness;
   double get ruleOpacity => _ruleOpacity;
   bool get ruleOnLine => _ruleOnLine;
+  bool get privacyMode => _privacyMode;
 
   /// الخطوط العربية المتاحة لاختيار الخط الافتراضي للتطبيق.
   static const fontFamilies = <String>[
@@ -109,6 +111,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kRuleThickness = 'rule_thickness';
   static const _kRuleOpacity = 'rule_opacity';
   static const _kRuleOnLine = 'rule_on_line';
+  static const _kPrivacyMode = 'privacy_mode';
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
@@ -144,8 +147,16 @@ class SettingsProvider extends ChangeNotifier {
     _ruleThickness = prefs.getDouble(_kRuleThickness) ?? 1.0;
     _ruleOpacity = prefs.getDouble(_kRuleOpacity) ?? 0.12;
     _ruleOnLine = prefs.getBool(_kRuleOnLine) ?? true;
+    _privacyMode = prefs.getBool(_kPrivacyMode) ?? false;
 
     notifyListeners();
+  }
+
+  Future<void> setPrivacyMode(bool v) async {
+    _privacyMode = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kPrivacyMode, v);
   }
 
   Future<void> setDefaultNoteColor(int? color) async {

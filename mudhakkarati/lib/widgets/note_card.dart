@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/theme/app_colors.dart';
 import '../core/theme/note_gradient.dart';
+import '../features/settings/settings_provider.dart';
 import '../data/models/category.dart';
 import '../data/models/enums.dart';
 import '../data/models/note.dart';
@@ -91,6 +93,8 @@ class NoteCard extends StatelessWidget {
               ],
               if (note.isLocked && !revealLocked)
                 _lockedBody(context, onBg)
+              else if (context.watch<SettingsProvider>().privacyMode)
+                _hiddenBody(context, onBg)
               else
                 _body(context, onBg),
             ],
@@ -110,6 +114,22 @@ class NoteCard extends StatelessWidget {
         NoteType.drawing => Icons.brush,
         NoteType.password => Icons.vpn_key,
       };
+
+  /// معاينة مخفية في «وضع الخصوصية» (يظهر العنوان فقط).
+  Widget _hiddenBody(BuildContext context, Color onBg) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Icon(Icons.visibility_off_outlined,
+              size: 16, color: onBg.withOpacity(0.5)),
+          const SizedBox(width: 8),
+          Text('المحتوى مخفي',
+              style: TextStyle(color: onBg.withOpacity(0.6), fontSize: 12)),
+        ],
+      ),
+    );
+  }
 
   Widget _lockedBody(BuildContext context, Color onBg) {
     return Padding(

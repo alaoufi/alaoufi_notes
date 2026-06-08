@@ -32,6 +32,36 @@ class NotesProvider extends ChangeNotifier {
 
   int? get inboxId => _inboxId;
 
+  // فلاتر البحث المتقدّم.
+  NoteType? fType;
+  bool fPinned = false,
+      fLocked = false,
+      fImage = false,
+      fAudio = false,
+      fPdf = false,
+      fFav = false;
+  DateTime? fFrom, fTo;
+
+  bool get hasAdvancedFilter =>
+      fType != null ||
+      fPinned ||
+      fLocked ||
+      fImage ||
+      fAudio ||
+      fPdf ||
+      fFav ||
+      fFrom != null ||
+      fTo != null;
+
+  Future<void> applyAdvancedFilter() async => refresh();
+
+  void clearAdvancedFilter() {
+    fType = null;
+    fPinned = fLocked = fImage = fAudio = fPdf = fFav = false;
+    fFrom = fTo = null;
+    refresh();
+  }
+
   List<Note> get items => _items;
   List<Category> get categories => _categories;
   bool get loading => _loading;
@@ -100,6 +130,15 @@ class NotesProvider extends ChangeNotifier {
       tag: _filterTag,
       search: _search,
       sort: _sort,
+      onlyFavorites: fFav,
+      type: fType,
+      onlyPinned: fPinned,
+      onlyLocked: fLocked,
+      hasImage: fImage,
+      hasAudio: fAudio,
+      hasPdf: fPdf,
+      from: fFrom,
+      to: fTo,
     );
     _loading = false;
     notifyListeners();

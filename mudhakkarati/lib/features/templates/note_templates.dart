@@ -107,15 +107,14 @@ class _TemplateTile extends StatelessWidget {
   }
 
   Future<void> _useTemplate(BuildContext context, NoteTemplate t) async {
+    final nav = Navigator.of(context);
     final provider = context.read<NotesProvider>();
     final id = await provider.saveNote(
       Note.create(type: NoteType.text, categoryId: provider.inboxId)
           .copyWith(title: t.title, content: t.body),
     );
-    if (!context.mounted) return;
-    Navigator.pop(context); // إغلاق منتقي القوالب
-    await Navigator.push(
-      context,
+    nav.pop(); // إغلاق منتقي القوالب
+    await nav.push(
       MaterialPageRoute(builder: (_) => NoteEditorScreen(noteId: id)),
     );
   }

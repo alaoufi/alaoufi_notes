@@ -8,6 +8,7 @@ import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../features/editor/rich_text_field.dart';
 import '../features/home/notes_provider.dart';
+import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
 import 'color_picker_sheet.dart';
@@ -81,6 +82,10 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
                 await provider.setLocked(note, !note.isLocked);
               },
             ),
+            tile(Icons.link, 'الروابط [[ ]]', () async {
+              Navigator.pop(context);
+              await showNoteLinks(context, note);
+            }),
             tile(Icons.copy_all, s.t('duplicate'), () async {
               Navigator.pop(context);
               await provider.duplicate(note);

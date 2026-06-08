@@ -26,6 +26,15 @@ class NoteRepository {
     String? search,
     bool onlyFavorites = false,
     NoteSort sort = NoteSort.updatedDesc,
+    // فلاتر البحث المتقدّم (افتراضيًّا معطّلة فلا تؤثّر على النداءات الحالية).
+    NoteType? type,
+    bool onlyPinned = false,
+    bool onlyLocked = false,
+    bool hasImage = false,
+    bool hasAudio = false,
+    bool hasPdf = false,
+    DateTime? from,
+    DateTime? to,
   }) async {
     final db = await _db;
 
@@ -37,6 +46,23 @@ class NoteRepository {
     final args = <dynamic>[];
 
     if (onlyFavorites) where.add('n.is_favorite = 1');
+    if (onlyPinned) where.add('n.is_pinned = 1');
+    if (onlyLocked) where.add('n.is_locked = 1');
+    if (hasImage) where.add('n.image_path IS NOT NULL');
+    if (hasAudio) where.add('n.audio_path IS NOT NULL');
+    if (hasPdf) where.add('n.pdf_path IS NOT NULL');
+    if (type != null) {
+      where.add('n.type = ?');
+      args.add(type.dbValue);
+    }
+    if (from != null) {
+      where.add('n.updated_at >= ?');
+      args.add(from.millisecondsSinceEpoch);
+    }
+    if (to != null) {
+      where.add('n.updated_at <= ?');
+      args.add(to.millisecondsSinceEpoch);
+    }
     if (categoryId != null) {
       where.add('n.category_id = ?');
       args.add(categoryId);
@@ -112,6 +138,16 @@ class NoteRepository {
     if (rows.isEmpty) return null;
     final notes = await _attachTags(db, rows);
     return notes.first;
+  }
+
+  /// الملاحظات التي تشير إلى عنوان معيّن عبر رابط داخلي [[العنوان]].
+  Future<List<Note>> findBacklinks(String title) async {
+    final t = title.trim();
+    if (t.isEmpty) return [];
+    final db = await _db;
+    final rows = await db.query('notes',
+        where: 'is_deleted = 0 AND content LIKE ?', whereArgs: ['%[[$t]]%']);
+    return _attachTags(db, rows);
   }
 
   /// يبحث عن ملاحظة نشطة بعنوان مطابق (يُستخدم لملاحظة اليوم).
