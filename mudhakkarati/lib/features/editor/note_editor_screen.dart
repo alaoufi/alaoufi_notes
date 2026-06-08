@@ -344,6 +344,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               },
             ),
             IconButton(
+              tooltip: s.t('tags'),
+              icon: const Icon(Icons.label_outline),
+              onPressed: () => _editTags(s),
+            ),
+            IconButton(
               icon: const Icon(Icons.more_vert),
               onPressed: () async {
                 await _ensureSaved();
@@ -383,8 +388,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                               children: _typeBody(s),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          _tagsEditor(s),
                         ],
                       ),
               ),
@@ -508,10 +511,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   : RichTextEditorBody(controller: _richCtrl!, expand: true),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: _tagsEditor(s),
         ),
       ],
     );
@@ -718,49 +717,68 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
-  Widget _tagsEditor(S s) {
-    final tags = List<String>.from(_note.tags);
+  /// تحرير وسوم الملاحظة في ورقة سفلية تُفتح عند الطلب فقط (لا تشغل حيّزًا دائمًا).
+  Future<void> _editTags(S s) async {
+    await _ensureSaved();
+    if (!mounted) return;
     final ctrl = TextEditingController();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(s.t('tags'), style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 6,
-          runSpacing: 6,
-          children: [
-            ...tags.map((t) => Chip(
-                  label: Text('#$t'),
-                  onDeleted: () async {
-                    final updated = List<String>.from(_note.tags)..remove(t);
-                    setState(() => _note = _note.copyWith(tags: updated));
-                    await _ensureSaved();
-                    await _save(force: true);
-                  },
-                )),
-            SizedBox(
-              width: 140,
-              child: TextField(
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheet) => Padding(
+          padding: EdgeInsets.fromLTRB(
+              16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s.t('tags'),
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              if (_note.tags.isNotEmpty)
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    for (final t in _note.tags)
+                      Chip(
+                        label: Text('#$t'),
+                        onDeleted: () async {
+                          final updated = List<String>.from(_note.tags)
+                            ..remove(t);
+                          _note = _note.copyWith(tags: updated);
+                          await _save(force: true);
+                          setSheet(() {});
+                          if (mounted) setState(() {});
+                        },
+                      ),
+                  ],
+                ),
+              const SizedBox(height: 8),
+              TextField(
                 controller: ctrl,
+                autofocus: true,
                 decoration: InputDecoration(
                   hintText: s.t('add_tag'),
-                  isDense: true,
+                  prefixIcon: const Icon(Icons.tag),
                 ),
                 onSubmitted: (value) async {
                   final v = value.trim();
                   if (v.isEmpty) return;
                   final updated = List<String>.from(_note.tags)..add(v);
-                  setState(() => _note = _note.copyWith(tags: updated));
+                  _note = _note.copyWith(tags: updated);
                   ctrl.clear();
-                  await _ensureSaved();
                   await _save(force: true);
+                  setSheet(() {});
+                  if (mounted) setState(() {});
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ],
+      ),
     );
   }
 }
