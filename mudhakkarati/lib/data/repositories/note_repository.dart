@@ -114,6 +114,18 @@ class NoteRepository {
     return notes.first;
   }
 
+  /// يبحث عن ملاحظة نشطة بعنوان مطابق (يُستخدم لملاحظة اليوم).
+  Future<Note?> findByTitle(String title) async {
+    final db = await _db;
+    final rows = await db.query('notes',
+        where: 'title = ? AND is_deleted = 0 AND is_archived = 0',
+        whereArgs: [title],
+        orderBy: 'updated_at DESC',
+        limit: 1);
+    if (rows.isEmpty) return null;
+    return (await _attachTags(db, rows)).first;
+  }
+
   Future<List<Note>> _attachTags(Database db, List<Map<String, Object?>> rows) async {
     if (rows.isEmpty) return [];
     // استعلام واحد لكل الوسوم (بدل استعلام لكل ملاحظة) — أسرع بكثير في القوائم الكبيرة.

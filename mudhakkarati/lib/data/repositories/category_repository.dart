@@ -20,6 +20,19 @@ class CategoryRepository {
     return db.insert('categories', category.toMap());
   }
 
+  /// يُرجع تصنيفًا بالاسم، ويُنشئه إن لم يكن موجودًا (يُستخدم لـ«الوارد»).
+  Future<int> ensureByName(String name,
+      {required int color, required int iconCode, int position = 0}) async {
+    final db = await _db;
+    final rows = await db
+        .query('categories', where: 'name = ?', whereArgs: [name], limit: 1);
+    if (rows.isNotEmpty) return rows.first['id'] as int;
+    return db.insert(
+        'categories',
+        Category(name: name, color: color, iconCode: iconCode, position: position)
+            .toMap());
+  }
+
   Future<void> update(Category category) async {
     final db = await _db;
     await db.update('categories', category.toMap(), where: 'id = ?', whereArgs: [category.id]);

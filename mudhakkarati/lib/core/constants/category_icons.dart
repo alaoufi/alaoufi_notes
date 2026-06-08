@@ -18,6 +18,7 @@ const List<IconData> kCategoryIcons = [
   Icons.shopping_cart, // 9
   Icons.flight, // 10
   Icons.fitness_center, // 11
+  Icons.inbox, // 12 (الوارد)
 ];
 
 /// تُعيد أيقونة ثابتة بأمان من الفهرس المخزَّن.

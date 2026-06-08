@@ -28,6 +28,9 @@ class NotesProvider extends ChangeNotifier {
   String? _filterTag;
   String _search = '';
   NoteSort _sort = NoteSort.updatedDesc;
+  int? _inboxId; // تصنيف «الوارد» الافتراضي للإضافة السريعة
+
+  int? get inboxId => _inboxId;
 
   List<Note> get items => _items;
   List<Category> get categories => _categories;
@@ -41,8 +44,47 @@ class NotesProvider extends ChangeNotifier {
   List<Note> get unpinned => _items.where((n) => !n.isPinned).toList();
 
   Future<void> init() async {
+    await ensureInbox();
     await Future.wait([loadCategories(), refresh()]);
     await notes.purgeOldTrash();
+  }
+
+  /// يضمن وجود تصنيف «الوارد» (يظهر أولًا) ويحفظ معرّفه.
+  Future<void> ensureInbox() async {
+    _inboxId = await categoriesRepo.ensureByName('الوارد',
+        color: 0xFF42A5F5, iconCode: 12, position: -1);
+  }
+
+  /// يفتح ملاحظة اليوم (يُنشئها بقالب إن لم تكن موجودة) ويعيد معرّفها.
+  Future<int> openOrCreateDaily() async {
+    final title = dailyTitle(DateTime.now());
+    final existing = await notes.findByTitle(title);
+    if (existing != null) return existing.id!;
+    const body = '• أهم شيء اليوم:\n\n'
+        '• مهام اليوم:\n- \n\n'
+        '• ملاحظات سريعة:\n\n'
+        '• أشياء لا أنساها:\n\n'
+        '• ملخص اليوم:\n';
+    final note = Note.create(type: NoteType.text, categoryId: _inboxId)
+        .copyWith(title: title, content: body);
+    final id = await notes.upsertNote(note);
+    await refresh();
+    return id;
+  }
+
+  static const _arDays = [
+    'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس',
+    'الجمعة', 'السبت', 'الأحد',
+  ];
+  static const _arMonths = [
+    'يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+    'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر',
+  ];
+
+  /// عنوان ملاحظة اليوم: «الاثنين 8 يونيو 2026».
+  static String dailyTitle(DateTime d) {
+    final day = _arDays[(d.weekday - 1) % 7];
+    return '$day ${d.day} ${_arMonths[d.month - 1]} ${d.year}';
   }
 
   Future<void> loadCategories() async {

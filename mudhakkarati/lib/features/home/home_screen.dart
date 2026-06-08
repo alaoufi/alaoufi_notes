@@ -11,6 +11,7 @@ import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
+import '../templates/note_templates.dart';
 import '../../services/security_service.dart';
 import '../security/info_lock.dart';
 import '../security/note_unlock.dart';
@@ -50,15 +51,65 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// زر + : ملاحظة نصية عادية مباشرة داخل القسم المفتوح حاليًا.
-  Future<void> _addNote() async {
-    final catId = context.read<NotesProvider>().filterCategoryId;
+  /// زر + : قائمة إضافة سريعة (تذهب الملاحظة إلى «الوارد»).
+  Future<void> _quickAdd() async {
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetCtx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _qa(sheetCtx, Icons.notes, 'ملاحظة نصية سريعة',
+                () => _quickType(NoteType.text)),
+            _qa(sheetCtx, Icons.mic, 'تسجيل صوتي سريع',
+                () => _quickType(NoteType.audio)),
+            _qa(sheetCtx, Icons.image, 'صورة سريعة',
+                () => _quickType(NoteType.image)),
+            _qa(sheetCtx, Icons.checklist, 'قائمة مهام سريعة',
+                () => _quickType(NoteType.checklist)),
+            const Divider(height: 1),
+            _qa(sheetCtx, Icons.dashboard_customize_outlined, 'قالب جاهز',
+                () => showTemplatePicker(context)),
+            _qa(sheetCtx, Icons.today, 'ملاحظة اليوم', _openDaily),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _qa(BuildContext sheetCtx, IconData icon, String label,
+      VoidCallback action) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(label),
+      onTap: () {
+        Navigator.pop(sheetCtx);
+        action();
+      },
+    );
+  }
+
+  /// إضافة سريعة لنوع محدّد إلى «الوارد».
+  Future<void> _quickType(NoteType type) async {
+    final provider = context.read<NotesProvider>();
+    final catId = provider.inboxId ?? provider.filterCategoryId;
     await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NoteEditorScreen(
-            initialType: NoteType.text, initialCategoryId: catId),
+        builder: (_) =>
+            NoteEditorScreen(initialType: type, initialCategoryId: catId),
       ),
+    );
+  }
+
+  /// يفتح/يُنشئ ملاحظة اليوم.
+  Future<void> _openDaily() async {
+    final id = await context.read<NotesProvider>().openOrCreateDaily();
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => NoteEditorScreen(noteId: id)),
     );
   }
 
@@ -171,7 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       drawer: const AppDrawer(),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addNote,
+        onPressed: _quickAdd,
         icon: const Icon(Icons.add),
         label: Text(s.t('add_note')),
       ),
