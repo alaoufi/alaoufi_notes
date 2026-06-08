@@ -101,6 +101,8 @@ class RichTextEditorBody extends StatelessWidget {
         scrollable: expand,
         padding: const EdgeInsets.symmetric(vertical: 8),
         customStyles: buildNoteDefaultStyles(context, settings),
+        // مكبّر يظهر أثناء سحب مقبض التحديد ⇒ تحديد الكلمات أدقّ بكثير.
+        quillMagnifierBuilder: defaultQuillMagnifierBuilder,
         placeholder: 'اكتب ملاحظتك هنا...',
         // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
         // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
