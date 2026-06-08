@@ -27,6 +27,7 @@ class SettingsProvider extends ChangeNotifier {
   String _noteFontFamily = 'Cairo'; // خط متن الملاحظة
   double _noteFontSize = 16; // حجم خط المتن
   double _noteLineHeight = 1.6; // تباعد الأسطر (مضاعف ارتفاع السطر)
+  bool _noteBold = false; // خط متن غامق افتراضيًّا
   // ---- تنسيق تسطير الصفحة ----
   double _ruleThickness = 1.0; // سماكة الأسطر
   double _ruleOpacity = 0.12; // شفافية الأسطر (0..1)
@@ -48,6 +49,7 @@ class SettingsProvider extends ChangeNotifier {
   String get noteFontFamily => _noteFontFamily;
   double get noteFontSize => _noteFontSize;
   double get noteLineHeight => _noteLineHeight;
+  bool get noteBold => _noteBold;
   double get ruleThickness => _ruleThickness;
   double get ruleOpacity => _ruleOpacity;
   bool get ruleOnLine => _ruleOnLine;
@@ -103,6 +105,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kNoteFont = 'note_font_family';
   static const _kNoteFontSize = 'note_font_size';
   static const _kNoteLineHeight = 'note_line_height';
+  static const _kNoteBold = 'note_bold';
   static const _kRuleThickness = 'rule_thickness';
   static const _kRuleOpacity = 'rule_opacity';
   static const _kRuleOnLine = 'rule_on_line';
@@ -137,6 +140,7 @@ class SettingsProvider extends ChangeNotifier {
     if (nf != null && fontFamilies.contains(nf)) _noteFontFamily = nf;
     _noteFontSize = prefs.getDouble(_kNoteFontSize) ?? 16;
     _noteLineHeight = prefs.getDouble(_kNoteLineHeight) ?? 1.6;
+    _noteBold = prefs.getBool(_kNoteBold) ?? false;
     _ruleThickness = prefs.getDouble(_kRuleThickness) ?? 1.0;
     _ruleOpacity = prefs.getDouble(_kRuleOpacity) ?? 0.12;
     _ruleOnLine = prefs.getBool(_kRuleOnLine) ?? true;
@@ -192,6 +196,13 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_kNoteLineHeight, h);
+  }
+
+  Future<void> setNoteBold(bool v) async {
+    _noteBold = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kNoteBold, v);
   }
 
   Future<void> setRuleThickness(double t) async {

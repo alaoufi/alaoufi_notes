@@ -63,6 +63,7 @@ DefaultStyles buildNoteDefaultStyles(
     fontFamily: settings.noteFontFamily,
     fontSize: settings.noteFontSize,
     height: settings.noteLineHeight,
+    fontWeight: settings.noteBold ? FontWeight.bold : null,
     color: DefaultTextStyle.of(context).style.color,
   );
   const hs = HorizontalSpacing(0, 0);

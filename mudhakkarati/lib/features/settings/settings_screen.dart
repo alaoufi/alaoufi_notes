@@ -342,6 +342,15 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
 
+      // خط غامق
+      SwitchListTile(
+        secondary: const Icon(Icons.format_bold),
+        title: const Text('خط غامق'),
+        subtitle: const Text('يجعل خط متن الملاحظة غامقًا افتراضيًّا'),
+        value: st.noteBold,
+        onChanged: st.setNoteBold,
+      ),
+
       const Padding(
         padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
         child: Text('تسطير الصفحة',
@@ -464,6 +473,8 @@ class _NotePreview extends StatelessWidget {
                     fontFamily: settings.noteFontFamily,
                     fontSize: settings.noteFontSize,
                     height: settings.noteLineHeight,
+                    fontWeight:
+                        settings.noteBold ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
             ],
