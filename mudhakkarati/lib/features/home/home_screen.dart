@@ -90,7 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final showInfo =
         context.read<SettingsProvider>().infoPlacement == InfoPlacement.menu;
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
+      icon: Icon(Icons.more_vert,
+          size: 28, color: Theme.of(context).colorScheme.onSurface),
       tooltip: 'المزيد',
       onSelected: (v) {
         if (v == 'info') {
@@ -233,7 +234,8 @@ class _HomeScreenState extends State<HomeScreen> {
               Builder(
                 builder: (context) => IconButton(
                   tooltip: 'القائمة',
-                  icon: const Icon(Icons.menu),
+                  icon: Icon(Icons.menu,
+                      size: 28, color: Theme.of(context).colorScheme.onSurface),
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),

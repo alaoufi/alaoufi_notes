@@ -32,6 +32,17 @@ class AppTheme {
         foregroundColor: scheme.onSurface,
         elevation: 0,
         centerTitle: false,
+        // أيقونات الشريط العلوي (⋮ القائمة و≡ والباقي) أوضح وأغمق وأثخن.
+        iconTheme: IconThemeData(
+          color: scheme.onSurface,
+          size: 28,
+          weight: 700,
+        ),
+        actionsIconTheme: IconThemeData(
+          color: scheme.onSurface,
+          size: 28,
+          weight: 700,
+        ),
         titleTextStyle: TextStyle(
           fontFamily: fontFamily,
           fontWeight: FontWeight.bold,
