@@ -139,8 +139,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _overflowMenu(BuildContext context, S s, NotesProvider provider) {
-    final showInfo =
-        context.read<SettingsProvider>().infoPlacement == InfoPlacement.menu;
+    final settings = context.read<SettingsProvider>();
+    final showInfo = settings.infoPlacement == InfoPlacement.menu;
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_vert,
           size: 28, color: Theme.of(context).colorScheme.onSurface),
@@ -148,6 +148,8 @@ class _HomeScreenState extends State<HomeScreen> {
       onSelected: (v) {
         if (v == 'info') {
           _openInfo();
+        } else if (v == 'privacy') {
+          settings.setPrivacyMode(!settings.privacyMode);
         } else if (v.startsWith('type_')) {
           _addTypedNote(NoteType.values.byName(v.substring(5)));
         } else if (v.startsWith('sort_')) {
@@ -155,6 +157,15 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
       itemBuilder: (context) => [
+        PopupMenuItem<String>(
+          value: 'privacy',
+          child: _menuRow(
+              settings.privacyMode
+                  ? Icons.visibility_off
+                  : Icons.visibility_outlined,
+              settings.privacyMode ? 'إيقاف وضع الخصوصية' : 'وضع الخصوصية'),
+        ),
+        const PopupMenuDivider(),
         if (showInfo) ...[
           PopupMenuItem<String>(
               value: 'info',
@@ -310,18 +321,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ? Icons.view_agenda_outlined
                     : Icons.grid_view_outlined),
                 onPressed: settings.toggleLayout,
-              ),
-              IconButton(
-                tooltip: settings.privacyMode
-                    ? 'إيقاف وضع الخصوصية'
-                    : 'وضع الخصوصية',
-                icon: Icon(settings.privacyMode
-                    ? Icons.visibility_off
-                    : Icons.visibility_outlined),
-                color: settings.privacyMode
-                    ? Theme.of(context).colorScheme.primary
-                    : null,
-                onPressed: () => settings.setPrivacyMode(!settings.privacyMode),
               ),
               _overflowMenu(context, s, provider),
             ],
