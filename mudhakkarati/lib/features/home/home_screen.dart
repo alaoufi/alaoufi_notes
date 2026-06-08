@@ -291,10 +291,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-              Text(s.t('app_name'),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold)),
-              const Spacer(),
+              Expanded(
+                child: Text(s.t('app_name'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold)),
+              ),
               IconButton(
                 tooltip: s.t('calendar'),
                 icon: const Icon(Icons.calendar_month_outlined),
