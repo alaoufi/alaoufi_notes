@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../services/backup_service.dart';
 import '../reminders/reminders_provider.dart';
 import 'home_screen.dart';
 import 'notes_provider.dart';
@@ -20,6 +21,8 @@ class _RootScreenState extends State<RootScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotesProvider>().init();
       context.read<RemindersProvider>().refresh();
+      // نسخة احتياطية تلقائية إن حان موعدها (بلا انتظار حتى لا تُعيق الواجهة).
+      BackupService.instance.maybeRunAutoBackup();
     });
   }
 

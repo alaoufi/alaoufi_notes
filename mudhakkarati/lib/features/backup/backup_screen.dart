@@ -22,6 +22,33 @@ class BackupScreen extends StatefulWidget {
 class _BackupScreenState extends State<BackupScreen> {
   bool _busy = false;
 
+  // حالة النسخ الاحتياطي التلقائي.
+  bool _autoEnabled = false;
+  int _autoInterval = 1; // 1 = يومي، 7 = أسبوعي
+  bool _autoHasPassword = false;
+  int _autoCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAuto();
+  }
+
+  Future<void> _loadAuto() async {
+    final bs = BackupService.instance;
+    final enabled = await bs.autoBackupEnabled();
+    final interval = await bs.autoBackupIntervalDays();
+    final hasPwd = await bs.hasAutoBackupPassword();
+    final count = (await bs.listAutoBackups()).length;
+    if (!mounted) return;
+    setState(() {
+      _autoEnabled = enabled;
+      _autoInterval = interval;
+      _autoHasPassword = hasPwd;
+      _autoCount = count;
+    });
+  }
+
   Future<String?> _askPassword(String title) async {
     final ctrl = TextEditingController();
     final s = S.of(context);
@@ -83,9 +110,10 @@ class _BackupScreenState extends State<BackupScreen> {
                 bs.lastLocalBackup(),
                 bs.lastShareBackup(),
                 bs.lastRestore(),
+                bs.lastAutoBackup(),
               ]),
               builder: (context, snap) {
-                final d = snap.data ?? const [null, null, null];
+                final d = snap.data ?? const [null, null, null, null];
                 Widget row(IconData i, String label, DateTime? t) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 3),
                       child: Row(
@@ -102,11 +130,87 @@ class _BackupScreenState extends State<BackupScreen> {
                   children: [
                     row(Icons.save_alt, 'حفظ محلي', d[0]),
                     row(Icons.ios_share, 'مشاركة سحابية', d[1]),
+                    row(Icons.autorenew, 'نسخة تلقائية', d[3]),
                     row(Icons.restore, 'آخر استعادة', d[2]),
                   ],
                 );
               },
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// بطاقة إعدادات النسخ الاحتياطي التلقائي.
+  Widget _autoBackupCard(BuildContext context) {
+    return Card(
+      color: Theme.of(context).colorScheme.tertiaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Column(
+          children: [
+            SwitchListTile(
+              secondary: const Icon(Icons.autorenew),
+              title: const Text('نسخ احتياطي تلقائي'),
+              subtitle: Text(_autoEnabled
+                  ? 'يُنشأ تلقائيًا عند فتح التطبيق ${_autoInterval == 1 ? 'يوميًا' : 'أسبوعيًا'} (محفوظ: $_autoCount).'
+                  : 'إنشاء نسخة مشفّرة تلقائيًا دون تدخّل منك.'),
+              value: _autoEnabled,
+              onChanged: _busy ? null : _toggleAuto,
+            ),
+            if (_autoEnabled) ...[
+              const Divider(height: 1),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    const Text('التكرار:'),
+                    const SizedBox(width: 12),
+                    SegmentedButton<int>(
+                      segments: const [
+                        ButtonSegment(value: 1, label: Text('يومي')),
+                        ButtonSegment(value: 7, label: Text('أسبوعي')),
+                      ],
+                      selected: {_autoInterval},
+                      onSelectionChanged: _busy
+                          ? null
+                          : (sel) => _setAutoInterval(sel.first),
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.play_circle_outline),
+                title: const Text('إنشاء نسخة تلقائية الآن'),
+                onTap: _busy ? null : _runAutoNow,
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.settings_backup_restore),
+                title: const Text('استعادة من نسخة تلقائية'),
+                subtitle: Text('عدد النسخ المحفوظة: $_autoCount'),
+                onTap: _busy ? null : _restoreFromAuto,
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.password),
+                title: Text(_autoHasPassword
+                    ? 'تغيير كلمة مرور النسخ التلقائي'
+                    : 'ضبط كلمة مرور النسخ التلقائي'),
+                onTap: _busy ? null : _changeAutoPassword,
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 0, 16, 10),
+                child: Text(
+                  'تُحفظ النسخ التلقائية داخل التطبيق على جهازك (تُحذف عند إزالة '
+                  'التطبيق). للأمان خارج الجهاز، استخدم «مشاركة إلى السحابة» من حين لآخر.',
+                  style: TextStyle(fontSize: 11),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -228,6 +332,126 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
+  // ---- النسخ الاحتياطي التلقائي ----
+
+  Future<void> _toggleAuto(bool value) async {
+    final bs = BackupService.instance;
+    if (!value) {
+      await bs.setAutoBackupEnabled(false);
+      setState(() => _autoEnabled = false);
+      _toast('أُوقف النسخ التلقائي');
+      return;
+    }
+
+    // التفعيل يتطلّب كلمة مرور تُحفظ بأمان لتشفير النسخ دون تدخّل.
+    if (!await bs.hasAutoBackupPassword()) {
+      final pwd = await _askPassword('كلمة مرور النسخ التلقائي');
+      if (pwd == null || pwd.isEmpty) return;
+      await bs.setAutoBackupPassword(pwd);
+    }
+    await bs.setAutoBackupEnabled(true);
+    if (!mounted) return;
+    setState(() {
+      _autoEnabled = true;
+      _autoHasPassword = true;
+    });
+
+    // تشغيل أول نسخة فورًا حتى لا ينتظر المستخدم حلول الموعد.
+    setState(() => _busy = true);
+    final r = await bs.runAutoBackup();
+    setState(() => _busy = false);
+    await _loadAuto();
+    _toast(r.message);
+  }
+
+  Future<void> _setAutoInterval(int days) async {
+    await BackupService.instance.setAutoBackupIntervalDays(days);
+    setState(() => _autoInterval = days);
+  }
+
+  Future<void> _runAutoNow() async {
+    setState(() => _busy = true);
+    final r = await BackupService.instance.runAutoBackup();
+    setState(() => _busy = false);
+    await _loadAuto();
+    _toast(r.message);
+  }
+
+  Future<void> _changeAutoPassword() async {
+    final pwd = await _askPassword('كلمة مرور النسخ التلقائي');
+    if (pwd == null || pwd.isEmpty) return;
+    await BackupService.instance.setAutoBackupPassword(pwd);
+    setState(() => _autoHasPassword = true);
+    _toast('تم تحديث كلمة المرور');
+  }
+
+  Future<void> _restoreFromAuto() async {
+    final bs = BackupService.instance;
+    final files = await bs.listAutoBackups();
+    if (!mounted) return;
+    if (files.isEmpty) {
+      _toast('لا توجد نسخ تلقائية بعد');
+      return;
+    }
+
+    final chosen = await showDialog<File>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('استعادة من نسخة تلقائية'),
+        children: [
+          for (final f in files)
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, f),
+              child: Row(
+                children: [
+                  const Icon(Icons.history, size: 18),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(_autoBackupLabel(f))),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+    if (chosen == null) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('تأكيد الاستعادة'),
+        content: Text(
+            'سيتم استبدال كل بياناتك الحالية بمحتوى:\n${_autoBackupLabel(chosen)}'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('إلغاء')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('استعادة')),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
+    setState(() => _busy = true);
+    final r = await bs.restoreAutoBackup(chosen);
+    setState(() => _busy = false);
+    _toast(r.message);
+
+    if (r.success && mounted) {
+      await context.read<NotesProvider>().init();
+      await context.read<RemindersProvider>().refresh();
+    }
+  }
+
+  /// عنوان مقروء لملف نسخة تلقائية مستخرَج من طابعه الزمني في الاسم.
+  String _autoBackupLabel(File f) {
+    final name = f.path.split(Platform.pathSeparator).last;
+    final m = RegExp(r'(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})').firstMatch(name);
+    if (m == null) return name;
+    return '${m.group(1)}  ${m.group(2)}:${m.group(3)}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -260,6 +484,8 @@ class _BackupScreenState extends State<BackupScreen> {
                   onTap: _busy ? null : _shareToCloud,
                 ),
               ),
+              const SizedBox(height: 8),
+              _autoBackupCard(context),
               const SizedBox(height: 8),
               Card(
                 child: ListTile(
