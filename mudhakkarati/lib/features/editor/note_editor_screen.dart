@@ -504,6 +504,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             onLine: settings.ruleOnLine,
             fontSize: settings.noteFontSize,
             topPadding: 8,
+            // تتحرّك الأسطر مع تمرير الكتابة وتبقى محاذية لها.
+            scrollController: _richCtrl?.scroll,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _richCtrl == null
