@@ -61,7 +61,9 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
                   currentOnLine: note.ruleOnLine ?? settings.ruleOnLine,
                   currentThickness:
                       note.ruleThickness ?? settings.ruleThickness,
-                  currentOpacity: note.ruleOpacity ?? settings.ruleOpacity);
+                  currentOpacity: note.ruleOpacity ?? settings.ruleOpacity,
+                  currentLineHeight:
+                      note.ruleLineHeight ?? settings.noteLineHeight);
               if (res != null) {
                 await provider.saveNote(note.copyWith(
                   color: res.value,
@@ -72,6 +74,7 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
                   ruleOnLine: res.ruleOnLine,
                   ruleThickness: res.ruleThickness,
                   ruleOpacity: res.ruleOpacity,
+                  ruleLineHeight: res.ruleLineHeight,
                 ));
               }
             }),

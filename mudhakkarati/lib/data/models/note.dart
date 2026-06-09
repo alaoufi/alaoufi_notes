@@ -46,6 +46,9 @@ class Note {
   /// شفافية أسطر التسطير (0..1).
   final double? ruleOpacity;
 
+  /// تباعد أسطر التسطير (مضاعف ارتفاع السطر؛ يضبط تباعد الكتابة والأسطر معًا).
+  final double? ruleLineHeight;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -74,6 +77,7 @@ class Note {
     this.ruleOnLine,
     this.ruleThickness,
     this.ruleOpacity,
+    this.ruleLineHeight,
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
@@ -120,6 +124,7 @@ class Note {
       'rule_on_line': ruleOnLine == null ? null : (ruleOnLine! ? 1 : 0),
       'rule_thickness': ruleThickness,
       'rule_opacity': ruleOpacity,
+      'rule_line_height': ruleLineHeight,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
     };
@@ -151,6 +156,7 @@ class Note {
           map['rule_on_line'] == null ? null : (map['rule_on_line'] as int) == 1,
       ruleThickness: (map['rule_thickness'] as num?)?.toDouble(),
       ruleOpacity: (map['rule_opacity'] as num?)?.toDouble(),
+      ruleLineHeight: (map['rule_line_height'] as num?)?.toDouble(),
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
       tags: tags,
@@ -183,6 +189,7 @@ class Note {
     bool? ruleOnLine,
     double? ruleThickness,
     double? ruleOpacity,
+    double? ruleLineHeight,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
@@ -209,6 +216,7 @@ class Note {
       ruleOnLine: ruleOnLine ?? this.ruleOnLine,
       ruleThickness: ruleThickness ?? this.ruleThickness,
       ruleOpacity: ruleOpacity ?? this.ruleOpacity,
+      ruleLineHeight: ruleLineHeight ?? this.ruleLineHeight,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tags: tags ?? this.tags,

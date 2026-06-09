@@ -288,7 +288,8 @@ class SettingsScreen extends StatelessWidget {
               currentGradient: st.defaultGradient,
               currentOnLine: st.ruleOnLine,
               currentThickness: st.ruleThickness,
-              currentOpacity: st.ruleOpacity);
+              currentOpacity: st.ruleOpacity,
+              currentLineHeight: st.noteLineHeight);
           if (res != null) {
             await st.setDefaultNoteColor(res.value);
             if (res.bgStyle != null) await st.setDefaultBgStyle(res.bgStyle!);
@@ -300,6 +301,9 @@ class SettingsScreen extends StatelessWidget {
             }
             if (res.ruleOpacity != null) {
               await st.setRuleOpacity(res.ruleOpacity!);
+            }
+            if (res.ruleLineHeight != null) {
+              await st.setNoteLineHeight(res.ruleLineHeight!);
             }
           }
         },

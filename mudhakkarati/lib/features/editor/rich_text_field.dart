@@ -61,11 +61,12 @@ class RichTextController {
 /// نضبط تباعد الأسطر داخل الفقرة وبينها إلى صفر كي يكون ارتفاع كل سطر مساويًا
 /// تمامًا لـ(الحجم × التباعد) — فينتظم التسطير خلف الكتابة بدقّة.
 DefaultStyles buildNoteDefaultStyles(
-    BuildContext context, SettingsProvider settings) {
+    BuildContext context, SettingsProvider settings,
+    {double? lineHeight}) {
   final base = TextStyle(
     fontFamily: settings.noteFontFamily,
     fontSize: settings.noteFontSize,
-    height: settings.noteLineHeight,
+    height: lineHeight ?? settings.noteLineHeight,
     fontWeight: settings.noteBold ? FontWeight.bold : null,
     color: DefaultTextStyle.of(context).style.color,
   );
@@ -79,8 +80,9 @@ DefaultStyles buildNoteDefaultStyles(
 }
 
 /// ارتفاع سطر المتن بالبكسل (لمطابقة تباعد التسطير مع الكتابة).
-double noteLineGap(SettingsProvider settings) =>
-    settings.noteFontSize * settings.noteLineHeight;
+/// [lineHeight] يتجاوز التباعد العام (لتباعد خاص بالملاحظة).
+double noteLineGap(SettingsProvider settings, {double? lineHeight}) =>
+    settings.noteFontSize * (lineHeight ?? settings.noteLineHeight);
 
 /// منطقة تحرير النص الغني (بلا شريط أدوات — يوضع الشريط مثبّتًا في الأسفل).
 ///
@@ -89,8 +91,14 @@ double noteLineGap(SettingsProvider settings) =>
 class RichTextEditorBody extends StatelessWidget {
   final RichTextController controller;
   final bool expand;
+
+  /// تباعد أسطر خاص بالملاحظة (يتجاوز الافتراضي العام). null = العام.
+  final double? lineHeight;
   const RichTextEditorBody(
-      {super.key, required this.controller, this.expand = false});
+      {super.key,
+      required this.controller,
+      this.expand = false,
+      this.lineHeight});
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +113,8 @@ class RichTextEditorBody extends StatelessWidget {
         expands: expand,
         scrollable: expand,
         padding: const EdgeInsets.symmetric(vertical: 8),
-        customStyles: buildNoteDefaultStyles(context, settings),
+        customStyles:
+            buildNoteDefaultStyles(context, settings, lineHeight: lineHeight),
         // مكبّر يظهر أثناء سحب مقبض التحديد ⇒ تحديد الكلمات أدقّ بكثير.
         quillMagnifierBuilder: defaultQuillMagnifierBuilder,
         placeholder: 'اكتب ملاحظتك هنا...',
@@ -150,7 +159,9 @@ class RichTextToolbar extends StatelessWidget {
         child: QuillSimpleToolbar(
           controller: controller.quill,
           config: QuillSimpleToolbarConfig(
-            multiRowsDisplay: false,
+            // صفوف متعددة بدل صفّ أفقي قابل للسحب: يمنع تعارض سحب الشريط
+            // مع إيماءات النظام السفلية (تبديل التطبيق/الرجوع) عند إخفاء الكيبورد.
+            multiRowsDisplay: true,
             showFontFamily: true,
             showFontSize: true,
             // زر سريع لإخفاء/إظهار قائمة (نسخ/لصق) أثناء التحرير.
