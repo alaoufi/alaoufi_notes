@@ -159,7 +159,9 @@ class RichTextToolbar extends StatelessWidget {
         child: QuillSimpleToolbar(
           controller: controller.quill,
           config: QuillSimpleToolbarConfig(
-            multiRowsDisplay: false,
+            // صفوف متعددة بدل صفّ أفقي قابل للسحب: يمنع تعارض سحب الشريط
+            // مع إيماءات النظام السفلية (تبديل التطبيق/الرجوع) عند إخفاء الكيبورد.
+            multiRowsDisplay: true,
             showFontFamily: true,
             showFontSize: true,
             // زر سريع لإخفاء/إظهار قائمة (نسخ/لصق) أثناء التحرير.
