@@ -84,28 +84,28 @@ DefaultStyles buildNoteDefaultStyles(
 double noteLineGap(SettingsProvider settings, {double? lineHeight}) =>
     settings.noteFontSize * (lineHeight ?? settings.noteLineHeight);
 
-/// حجم الخط الأغلب في مستند الملاحظة (مرجّحًا بعدد الأحرف).
+/// حجم خطّ التسطير: يعيد الحجم الموحّد للنص إن كانت الصفحة بحجم واحد، أو
+/// `null` إذا اختلفت الأحجام داخل الملاحظة (عندها نُلغي التسطير كليًّا لأنه لا
+/// يمكن لخطوط ثابتة المسافة أن تحاذي أسطرًا مختلفة الارتفاع).
 ///
-/// نستخدمه ليتبع تباعدُ التسطير الحجمَ الفعلي للكتابة بدل الحجم الأساسي الثابت،
-/// فينطبق سطر مرسوم واحد لكل سطر كتابة عند توحيد الحجم. يعيد [fallback] إن لم
-/// يكن في النص أي حجم صريح.
-double noteDominantFontSize(QuillController controller, double fallback) {
-  final counts = <double, int>{};
+/// النص بلا حجم صريح يُحسب على [fallback] (الحجم الأساسي). فلو كبّر المستخدم أو
+/// صغّر خطّ الصفحة كاملةً انضبط التسطير معه بدقّة؛ ولو خلط أحجامًا اختفت الخطوط.
+double? noteRulingFontSize(QuillController controller, double fallback) {
+  final sizes = <double>{};
   for (final op in controller.document.toDelta().toList()) {
     final data = op.data;
     if (data is! String) continue;
-    final len = data.replaceAll('\n', '').length;
-    if (len == 0) continue;
+    if (data.replaceAll('\n', '').isEmpty) continue;
     var size = fallback;
     final raw = op.attributes?['size'];
     if (raw != null) {
       final parsed = double.tryParse(raw.toString());
       if (parsed != null && parsed > 0) size = parsed;
     }
-    counts[size] = (counts[size] ?? 0) + len;
+    sizes.add(size);
+    if (sizes.length > 1) return null; // أحجام مختلفة ⇒ نُلغي التسطير
   }
-  if (counts.isEmpty) return fallback;
-  return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+  return sizes.isEmpty ? fallback : sizes.first;
 }
 
 /// منطقة تحرير النص الغني (بلا شريط أدوات — يوضع الشريط مثبّتًا في الأسفل).
