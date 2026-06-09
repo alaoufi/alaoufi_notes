@@ -309,7 +309,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               onPressed: () async {
                 final res = await showColorPicker(context, _note.color,
                     currentStyle: _note.bgStyle,
-                    currentGradient: _note.gradient);
+                    currentGradient: _note.gradient,
+                    currentOnLine: _note.ruleOnLine ?? settings.ruleOnLine,
+                    currentThickness:
+                        _note.ruleThickness ?? settings.ruleThickness,
+                    currentOpacity: _note.ruleOpacity ?? settings.ruleOpacity);
                 if (res != null) {
                   setState(() => _note = _note.copyWith(
                         color: res.value,
@@ -317,6 +321,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         bgStyle: res.bgStyle,
                         gradient: res.gradient,
                         clearGradient: res.gradient == null,
+                        ruleOnLine: res.ruleOnLine,
+                        ruleThickness: res.ruleThickness,
+                        ruleOpacity: res.ruleOpacity,
                       ));
                   _dirty = true;
                   await _ensureSaved();
@@ -378,9 +385,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                             style: _note.bgStyle,
                             lineColor: onBg,
                             gap: noteLineGap(settings),
-                            thickness: settings.ruleThickness,
-                            opacity: settings.ruleOpacity,
-                            onLine: settings.ruleOnLine,
+                            thickness:
+                                _note.ruleThickness ?? settings.ruleThickness,
+                            opacity:
+                                _note.ruleOpacity ?? settings.ruleOpacity,
+                            onLine: _note.ruleOnLine ?? settings.ruleOnLine,
                             fontSize: settings.noteFontSize,
                             topPadding: 0,
                             child: Column(
@@ -499,9 +508,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             style: _note.bgStyle,
             lineColor: onBg,
             gap: noteLineGap(settings),
-            thickness: settings.ruleThickness,
-            opacity: settings.ruleOpacity,
-            onLine: settings.ruleOnLine,
+            thickness: _note.ruleThickness ?? settings.ruleThickness,
+            opacity: _note.ruleOpacity ?? settings.ruleOpacity,
+            onLine: _note.ruleOnLine ?? settings.ruleOnLine,
             fontSize: settings.noteFontSize,
             topPadding: 8,
             // تتحرّك الأسطر مع تمرير الكتابة وتبقى محاذية لها.

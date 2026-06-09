@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 5;
+  static const _dbVersion = 6;
 
   Database? _db;
   Future<Database>? _opening;
@@ -199,6 +199,9 @@ class AppDatabase {
         drawing_path TEXT,
         bg_style INTEGER NOT NULL DEFAULT 0,
         gradient TEXT,
+        rule_on_line INTEGER,
+        rule_thickness REAL,
+        rule_opacity REAL,
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL,
         FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE SET NULL
@@ -269,6 +272,12 @@ class AppDatabase {
     }
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE notes ADD COLUMN gradient TEXT');
+    }
+    if (oldVersion < 6) {
+      // تسطير لكل ملاحظة (null = استخدام الافتراضي العام من الإعدادات).
+      await db.execute('ALTER TABLE notes ADD COLUMN rule_on_line INTEGER');
+      await db.execute('ALTER TABLE notes ADD COLUMN rule_thickness REAL');
+      await db.execute('ALTER TABLE notes ADD COLUMN rule_opacity REAL');
     }
   }
 

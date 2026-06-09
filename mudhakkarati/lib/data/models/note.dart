@@ -36,6 +36,16 @@ class Note {
   /// تدرّج لوني للخلفية (مُرمَّز نصيًّا). null يعني لون سادة.
   final String? gradient;
 
+  // ---- تسطير خاص بهذه الملاحظة (null = استخدام الافتراضي العام) ----
+  /// محاذاة الكتابة على السطر (true) أو بين السطرين (false).
+  final bool? ruleOnLine;
+
+  /// سماكة أسطر التسطير.
+  final double? ruleThickness;
+
+  /// شفافية أسطر التسطير (0..1).
+  final double? ruleOpacity;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -61,6 +71,9 @@ class Note {
     this.drawingPath,
     this.bgStyle = 0,
     this.gradient,
+    this.ruleOnLine,
+    this.ruleThickness,
+    this.ruleOpacity,
     required this.createdAt,
     required this.updatedAt,
     this.tags = const [],
@@ -104,6 +117,9 @@ class Note {
       'drawing_path': drawingPath,
       'bg_style': bgStyle,
       'gradient': gradient,
+      'rule_on_line': ruleOnLine == null ? null : (ruleOnLine! ? 1 : 0),
+      'rule_thickness': ruleThickness,
+      'rule_opacity': ruleOpacity,
       'created_at': createdAt.millisecondsSinceEpoch,
       'updated_at': updatedAt.millisecondsSinceEpoch,
     };
@@ -131,6 +147,10 @@ class Note {
       drawingPath: map['drawing_path'] as String?,
       bgStyle: (map['bg_style'] as int?) ?? 0,
       gradient: map['gradient'] as String?,
+      ruleOnLine:
+          map['rule_on_line'] == null ? null : (map['rule_on_line'] as int) == 1,
+      ruleThickness: (map['rule_thickness'] as num?)?.toDouble(),
+      ruleOpacity: (map['rule_opacity'] as num?)?.toDouble(),
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at'] as int),
       updatedAt: DateTime.fromMillisecondsSinceEpoch(map['updated_at'] as int),
       tags: tags,
@@ -160,6 +180,9 @@ class Note {
     int? bgStyle,
     String? gradient,
     bool clearGradient = false,
+    bool? ruleOnLine,
+    double? ruleThickness,
+    double? ruleOpacity,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<String>? tags,
@@ -183,6 +206,9 @@ class Note {
       drawingPath: drawingPath ?? this.drawingPath,
       bgStyle: bgStyle ?? this.bgStyle,
       gradient: clearGradient ? null : (gradient ?? this.gradient),
+      ruleOnLine: ruleOnLine ?? this.ruleOnLine,
+      ruleThickness: ruleThickness ?? this.ruleThickness,
+      ruleOpacity: ruleOpacity ?? this.ruleOpacity,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       tags: tags ?? this.tags,
