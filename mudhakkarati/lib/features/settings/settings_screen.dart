@@ -285,11 +285,22 @@ class SettingsScreen extends StatelessWidget {
         onTap: () async {
           final res = await showColorPicker(context, st.defaultNoteColor,
               currentStyle: st.defaultBgStyle,
-              currentGradient: st.defaultGradient);
+              currentGradient: st.defaultGradient,
+              currentOnLine: st.ruleOnLine,
+              currentThickness: st.ruleThickness,
+              currentOpacity: st.ruleOpacity);
           if (res != null) {
             await st.setDefaultNoteColor(res.value);
             if (res.bgStyle != null) await st.setDefaultBgStyle(res.bgStyle!);
             await st.setDefaultGradient(res.gradient);
+            // في سياق الإعدادات الافتراضية، التسطير يضبط الافتراضي العام.
+            if (res.ruleOnLine != null) await st.setRuleOnLine(res.ruleOnLine!);
+            if (res.ruleThickness != null) {
+              await st.setRuleThickness(res.ruleThickness!);
+            }
+            if (res.ruleOpacity != null) {
+              await st.setRuleOpacity(res.ruleOpacity!);
+            }
           }
         },
       ),

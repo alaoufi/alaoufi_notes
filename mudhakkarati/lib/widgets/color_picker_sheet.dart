@@ -9,7 +9,18 @@ class ColorPickResult {
   final int? value; // لون (int) أو null للافتراضي
   final int? bgStyle; // 0..7 أو null إن لم يتغيّر
   final String? gradient; // تدرّج مُرمَّز، أو null لخلفية سادة
-  const ColorPickResult(this.value, {this.bgStyle, this.gradient});
+  // تسطير خاص بالملاحظة (يُطبَّق عند نمط مسطّر).
+  final bool? ruleOnLine;
+  final double? ruleThickness;
+  final double? ruleOpacity;
+  const ColorPickResult(
+    this.value, {
+    this.bgStyle,
+    this.gradient,
+    this.ruleOnLine,
+    this.ruleThickness,
+    this.ruleOpacity,
+  });
 }
 
 /// أنماط خلفية الصفحة المتاحة (يطابق مؤشّرها _PaperPainter).
@@ -46,10 +57,19 @@ Future<ColorPickResult?> showColorPicker(
   int? current, {
   int currentStyle = 0,
   String? currentGradient,
+  // قيم التسطير الحالية للملاحظة (أو الافتراضي العام كقيمة ابتدائية).
+  bool currentOnLine = true,
+  double currentThickness = 1.0,
+  double currentOpacity = 0.12,
 }) {
   final s = S.of(context);
   int selectedStyle = currentStyle;
   int? selectedColor = current;
+
+  // حالة التسطير الخاص بالملاحظة.
+  bool ruleOnLine = currentOnLine;
+  double ruleThickness = currentThickness.clamp(0.5, 3.0);
+  double ruleOpacity = currentOpacity.clamp(0.03, 0.6);
 
   // حالة التدرّج اللوني.
   final parsedGrad = NoteGradient.parse(currentGradient);
@@ -151,6 +171,63 @@ Future<ColorPickResult?> showColorPicker(
                         ),
                     ],
                   ),
+                  // ===== تسطير/تنقيط الصفحة (يظهر عند اختيار نمط غير سادة) =====
+                  if (selectedStyle != 0) ...[
+                    const SizedBox(height: 18),
+                    Text('تسطير الصفحة',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    // محاذاة الكتابة (للأنماط المسطّرة فقط).
+                    if (selectedStyle == 1 || selectedStyle == 6)
+                      Row(
+                        children: [
+                          const Expanded(child: Text('محاذاة الكتابة')),
+                          SegmentedButton<bool>(
+                            segments: const [
+                              ButtonSegment(
+                                  value: true, label: Text('على السطر')),
+                              ButtonSegment(
+                                  value: false, label: Text('بين السطرين')),
+                            ],
+                            selected: {ruleOnLine},
+                            onSelectionChanged: (v) =>
+                                setSheet(() => ruleOnLine = v.first),
+                          ),
+                        ],
+                      ),
+                    Row(
+                      children: [
+                        const SizedBox(
+                            width: 96, child: Text('سماكة الأسطر')),
+                        Expanded(
+                          child: Slider(
+                            min: 0.5,
+                            max: 3.0,
+                            divisions: 10,
+                            label: ruleThickness.toStringAsFixed(1),
+                            value: ruleThickness,
+                            onChanged: (v) => setSheet(() => ruleThickness = v),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const SizedBox(
+                            width: 96, child: Text('شفافية الأسطر')),
+                        Expanded(
+                          child: Slider(
+                            min: 0.03,
+                            max: 0.6,
+                            divisions: 19,
+                            label: '${(ruleOpacity * 100).round()}%',
+                            value: ruleOpacity,
+                            onChanged: (v) => setSheet(() => ruleOpacity = v),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 18),
                   // ===== التدرّج اللوني =====
                   Row(
@@ -246,6 +323,9 @@ Future<ColorPickResult?> showColorPicker(
                                       colors: gradColors, direction: gradDir)
                                   .encode()
                               : null,
+                          ruleOnLine: ruleOnLine,
+                          ruleThickness: ruleThickness,
+                          ruleOpacity: ruleOpacity,
                         ),
                       ),
                       child: Text(s.t('ok')),

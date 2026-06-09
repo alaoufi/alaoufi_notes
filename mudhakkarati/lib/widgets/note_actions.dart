@@ -11,12 +11,14 @@ import '../features/home/notes_provider.dart';
 import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
+import '../features/settings/settings_provider.dart';
 import 'color_picker_sheet.dart';
 
 /// شيت إجراءات الملاحظة (عند الضغط المطوّل أو من المحرر).
 Future<void> showNoteActions(BuildContext context, Note note) async {
   final s = S.of(context);
   final provider = context.read<NotesProvider>();
+  final settings = context.read<SettingsProvider>();
 
   await showModalBottomSheet(
     context: context,
@@ -54,7 +56,12 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
             tile(Icons.palette_outlined, s.t('color'), () async {
               Navigator.pop(context);
               final res = await showColorPicker(context, note.color,
-                  currentStyle: note.bgStyle, currentGradient: note.gradient);
+                  currentStyle: note.bgStyle,
+                  currentGradient: note.gradient,
+                  currentOnLine: note.ruleOnLine ?? settings.ruleOnLine,
+                  currentThickness:
+                      note.ruleThickness ?? settings.ruleThickness,
+                  currentOpacity: note.ruleOpacity ?? settings.ruleOpacity);
               if (res != null) {
                 await provider.saveNote(note.copyWith(
                   color: res.value,
@@ -62,6 +69,9 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
                   bgStyle: res.bgStyle,
                   gradient: res.gradient,
                   clearGradient: res.gradient == null,
+                  ruleOnLine: res.ruleOnLine,
+                  ruleThickness: res.ruleThickness,
+                  ruleOpacity: res.ruleOpacity,
                 ));
               }
             }),
