@@ -13,6 +13,7 @@ class ColorPickResult {
   final bool? ruleOnLine;
   final double? ruleThickness;
   final double? ruleOpacity;
+  final double? ruleLineHeight;
   const ColorPickResult(
     this.value, {
     this.bgStyle,
@@ -20,6 +21,7 @@ class ColorPickResult {
     this.ruleOnLine,
     this.ruleThickness,
     this.ruleOpacity,
+    this.ruleLineHeight,
   });
 }
 
@@ -61,6 +63,7 @@ Future<ColorPickResult?> showColorPicker(
   bool currentOnLine = true,
   double currentThickness = 1.0,
   double currentOpacity = 0.12,
+  double currentLineHeight = 1.6,
 }) {
   final s = S.of(context);
   int selectedStyle = currentStyle;
@@ -70,6 +73,7 @@ Future<ColorPickResult?> showColorPicker(
   bool ruleOnLine = currentOnLine;
   double ruleThickness = currentThickness.clamp(0.5, 3.0);
   double ruleOpacity = currentOpacity.clamp(0.03, 0.6);
+  double ruleLineHeight = currentLineHeight.clamp(1.0, 2.6);
 
   // حالة التدرّج اللوني.
   final parsedGrad = NoteGradient.parse(currentGradient);
@@ -177,6 +181,23 @@ Future<ColorPickResult?> showColorPicker(
                     Text('تسطير الصفحة',
                         style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
+                    // تباعد الأسطر (يوسّع المسافة — مفيد للخط العربي).
+                    Row(
+                      children: [
+                        const SizedBox(width: 96, child: Text('تباعد الأسطر')),
+                        Expanded(
+                          child: Slider(
+                            min: 1.0,
+                            max: 2.6,
+                            divisions: 16,
+                            label: ruleLineHeight.toStringAsFixed(2),
+                            value: ruleLineHeight,
+                            onChanged: (v) =>
+                                setSheet(() => ruleLineHeight = v),
+                          ),
+                        ),
+                      ],
+                    ),
                     // محاذاة الكتابة (للأنماط المسطّرة فقط).
                     if (selectedStyle == 1 || selectedStyle == 6)
                       Row(
@@ -326,6 +347,7 @@ Future<ColorPickResult?> showColorPicker(
                           ruleOnLine: ruleOnLine,
                           ruleThickness: ruleThickness,
                           ruleOpacity: ruleOpacity,
+                          ruleLineHeight: ruleLineHeight,
                         ),
                       ),
                       child: Text(s.t('ok')),

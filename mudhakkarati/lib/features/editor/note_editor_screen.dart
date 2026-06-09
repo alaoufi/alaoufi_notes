@@ -313,7 +313,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     currentOnLine: _note.ruleOnLine ?? settings.ruleOnLine,
                     currentThickness:
                         _note.ruleThickness ?? settings.ruleThickness,
-                    currentOpacity: _note.ruleOpacity ?? settings.ruleOpacity);
+                    currentOpacity: _note.ruleOpacity ?? settings.ruleOpacity,
+                    currentLineHeight:
+                        _note.ruleLineHeight ?? settings.noteLineHeight);
                 if (res != null) {
                   setState(() => _note = _note.copyWith(
                         color: res.value,
@@ -324,6 +326,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         ruleOnLine: res.ruleOnLine,
                         ruleThickness: res.ruleThickness,
                         ruleOpacity: res.ruleOpacity,
+                        ruleLineHeight: res.ruleLineHeight,
                       ));
                   _dirty = true;
                   await _ensureSaved();
@@ -384,7 +387,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                           PaperBackground(
                             style: _note.bgStyle,
                             lineColor: onBg,
-                            gap: noteLineGap(settings),
+                            gap: noteLineGap(settings,
+                                lineHeight: _note.ruleLineHeight),
                             thickness:
                                 _note.ruleThickness ?? settings.ruleThickness,
                             opacity:
@@ -507,7 +511,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           child: PaperBackground(
             style: _note.bgStyle,
             lineColor: onBg,
-            gap: noteLineGap(settings),
+            gap: noteLineGap(settings, lineHeight: _note.ruleLineHeight),
             thickness: _note.ruleThickness ?? settings.ruleThickness,
             opacity: _note.ruleOpacity ?? settings.ruleOpacity,
             onLine: _note.ruleOnLine ?? settings.ruleOnLine,
@@ -519,7 +523,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _richCtrl == null
                   ? const SizedBox.shrink()
-                  : RichTextEditorBody(controller: _richCtrl!, expand: true),
+                  : RichTextEditorBody(
+                      controller: _richCtrl!,
+                      expand: true,
+                      lineHeight: _note.ruleLineHeight),
             ),
           ),
         ),
