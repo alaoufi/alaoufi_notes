@@ -508,27 +508,38 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
         ),
         Expanded(
-          child: PaperBackground(
-            style: _note.bgStyle,
-            lineColor: onBg,
-            gap: noteLineGap(settings, lineHeight: _note.ruleLineHeight),
-            thickness: _note.ruleThickness ?? settings.ruleThickness,
-            opacity: _note.ruleOpacity ?? settings.ruleOpacity,
-            onLine: _note.ruleOnLine ?? settings.ruleOnLine,
-            fontSize: settings.noteFontSize,
-            topPadding: 8,
-            // تتحرّك الأسطر مع تمرير الكتابة وتبقى محاذية لها.
-            scrollController: _richCtrl?.scroll,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _richCtrl == null
-                  ? const SizedBox.shrink()
-                  : RichTextEditorBody(
-                      controller: _richCtrl!,
-                      expand: true,
-                      lineHeight: _note.ruleLineHeight),
-            ),
-          ),
+          child: _richCtrl == null
+              ? const SizedBox.shrink()
+              // يُعاد بناء التسطير فقط (لا المحرّر) عند تغيّر المحتوى/الحجم،
+              // ليتبع تباعدُ الخطوط حجمَ الخط الأغلب فعليًا في الملاحظة.
+              : ListenableBuilder(
+                  listenable: _richCtrl!.quill,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: RichTextEditorBody(
+                        controller: _richCtrl!,
+                        expand: true,
+                        lineHeight: _note.ruleLineHeight),
+                  ),
+                  builder: (context, child) {
+                    final lh = _note.ruleLineHeight ?? settings.noteLineHeight;
+                    final baseFont = noteDominantFontSize(
+                        _richCtrl!.quill, settings.noteFontSize);
+                    return PaperBackground(
+                      style: _note.bgStyle,
+                      lineColor: onBg,
+                      gap: baseFont * lh,
+                      thickness: _note.ruleThickness ?? settings.ruleThickness,
+                      opacity: _note.ruleOpacity ?? settings.ruleOpacity,
+                      onLine: _note.ruleOnLine ?? settings.ruleOnLine,
+                      fontSize: baseFont,
+                      topPadding: 8,
+                      // تتحرّك الأسطر مع تمرير الكتابة وتبقى محاذية لها.
+                      scrollController: _richCtrl?.scroll,
+                      child: child!,
+                    );
+                  },
+                ),
         ),
       ],
     );
