@@ -523,10 +523,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   ),
                   builder: (context, child) {
                     final lh = _note.ruleLineHeight ?? settings.noteLineHeight;
-                    final baseFont = noteDominantFontSize(
-                        _richCtrl!.quill, settings.noteFontSize);
+                    // حجم موحّد ⇒ تسطير منضبط معه؛ أحجام مختلطة (null) ⇒ نُلغي
+                    // التسطير (نمط سادة) لأنه لا ينضبط مع أسطر متفاوتة الارتفاع.
+                    final rulingSize =
+                        noteRulingFontSize(_richCtrl!.quill, settings.noteFontSize);
+                    final baseFont = rulingSize ?? settings.noteFontSize;
                     return PaperBackground(
-                      style: _note.bgStyle,
+                      style: rulingSize == null ? 0 : _note.bgStyle,
                       lineColor: onBg,
                       gap: baseFont * lh,
                       thickness: _note.ruleThickness ?? settings.ruleThickness,
