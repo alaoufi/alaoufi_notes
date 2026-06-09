@@ -84,6 +84,30 @@ DefaultStyles buildNoteDefaultStyles(
 double noteLineGap(SettingsProvider settings, {double? lineHeight}) =>
     settings.noteFontSize * (lineHeight ?? settings.noteLineHeight);
 
+/// حجم الخط الأغلب في مستند الملاحظة (مرجّحًا بعدد الأحرف).
+///
+/// نستخدمه ليتبع تباعدُ التسطير الحجمَ الفعلي للكتابة بدل الحجم الأساسي الثابت،
+/// فينطبق سطر مرسوم واحد لكل سطر كتابة عند توحيد الحجم. يعيد [fallback] إن لم
+/// يكن في النص أي حجم صريح.
+double noteDominantFontSize(QuillController controller, double fallback) {
+  final counts = <double, int>{};
+  for (final op in controller.document.toDelta().toList()) {
+    final data = op.data;
+    if (data is! String) continue;
+    final len = data.replaceAll('\n', '').length;
+    if (len == 0) continue;
+    var size = fallback;
+    final raw = op.attributes?['size'];
+    if (raw != null) {
+      final parsed = double.tryParse(raw.toString());
+      if (parsed != null && parsed > 0) size = parsed;
+    }
+    counts[size] = (counts[size] ?? 0) + len;
+  }
+  if (counts.isEmpty) return fallback;
+  return counts.entries.reduce((a, b) => a.value >= b.value ? a : b).key;
+}
+
 /// منطقة تحرير النص الغني (بلا شريط أدوات — يوضع الشريط مثبّتًا في الأسفل).
 ///
 /// [expand] = true يجعل المحرّر يملأ مساحته ويمرّر داخليًا (مع تمرير الـ viewport
