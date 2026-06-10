@@ -99,31 +99,42 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
-            _tile(context, Icons.calendar_month, s.t('calendar'),
-                () => go(const CalendarScreen())),
-            _tile(context, Icons.alarm, s.t('reminders'),
-                () => go(const RemindersScreen())),
-            _tile(context, Icons.star, s.t('favorites'),
-                () => go(const FavoritesScreen())),
-            _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
-            _tile(context, Icons.security, 'الحماية والقفل',
-                () => go(const SecuritySettingsScreen())),
-            _tile(context, Icons.tag, s.t('tags_page'),
-                () => go(const TagsScreen())),
-            _tile(context, Icons.menu_book_outlined, 'معلومات', goInfo),
-            _tile(context, Icons.insights_outlined, 'الملخّص الأسبوعي',
-                () => go(const WeeklySummaryScreen())),
-            _tile(context, Icons.cleaning_services_outlined, 'تنظيف المذكرات',
-                () => go(const CleanupScreen())),
-            const Divider(),
-            _tile(context, Icons.category_outlined, s.t('manage_categories'),
-                () => go(const ManageCategoriesScreen())),
-            _tile(context, Icons.archive_outlined, s.t('archived'),
-                () => go(const ArchiveScreen())),
-            _tile(context, Icons.delete_outline, s.t('trash'),
-                () => go(const TrashScreen())),
-            _tile(context, Icons.backup_outlined, s.t('backup'),
-                () => go(const BackupScreen())),
+            // مجموعات قابلة للطيّ (تمدّد/انكماش) لتنظيم أوضح.
+            _group(context, Icons.explore_outlined, 'التنقّل السريع',
+                initiallyExpanded: true, children: [
+              _tile(context, Icons.calendar_month, s.t('calendar'),
+                  () => go(const CalendarScreen())),
+              _tile(context, Icons.alarm, s.t('reminders'),
+                  () => go(const RemindersScreen())),
+              _tile(context, Icons.star, s.t('favorites'),
+                  () => go(const FavoritesScreen())),
+              _tile(context, Icons.tag, s.t('tags_page'),
+                  () => go(const TagsScreen())),
+              _tile(context, Icons.menu_book_outlined, 'معلومات', goInfo),
+            ]),
+            _group(context, Icons.shield_outlined, 'الحماية والخصوصية',
+                children: [
+              _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
+              _tile(context, Icons.security, 'الحماية والقفل',
+                  () => go(const SecuritySettingsScreen())),
+            ]),
+            _group(context, Icons.handyman_outlined, 'الأدوات والتقارير',
+                children: [
+              _tile(context, Icons.insights_outlined, 'الملخّص الأسبوعي',
+                  () => go(const WeeklySummaryScreen())),
+              _tile(context, Icons.cleaning_services_outlined, 'تنظيف المذكرات',
+                  () => go(const CleanupScreen())),
+              _tile(context, Icons.category_outlined, s.t('manage_categories'),
+                  () => go(const ManageCategoriesScreen())),
+            ]),
+            _group(context, Icons.backup_outlined, 'النسخ والصيانة', children: [
+              _tile(context, Icons.archive_outlined, s.t('archived'),
+                  () => go(const ArchiveScreen())),
+              _tile(context, Icons.delete_outline, s.t('trash'),
+                  () => go(const TrashScreen())),
+              _tile(context, Icons.backup_outlined, s.t('backup'),
+                  () => go(const BackupScreen())),
+            ]),
             const Divider(),
             _tile(context, Icons.settings_outlined, s.t('settings'),
                 () => go(const SettingsScreen())),
@@ -137,8 +148,23 @@ class AppDrawer extends StatelessWidget {
       VoidCallback onTap) {
     return ListTile(
       leading: Icon(icon),
-      title: Text(label),
+      title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
       onTap: onTap,
+    );
+  }
+
+  /// مجموعة قابلة للطيّ (تمدّد/انكماش) تضمّ عناصر متشابهة.
+  Widget _group(BuildContext context, IconData icon, String title,
+      {required List<Widget> children, bool initiallyExpanded = false}) {
+    return ExpansionTile(
+      leading: Icon(icon),
+      title: Text(title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      initiallyExpanded: initiallyExpanded,
+      shape: const Border(),
+      collapsedShape: const Border(),
+      childrenPadding: const EdgeInsetsDirectional.only(start: 12),
+      children: children,
     );
   }
 }

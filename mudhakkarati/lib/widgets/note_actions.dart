@@ -32,7 +32,8 @@ Future<void> showNoteActions(BuildContext context, Note note,
           {Color? color}) {
         return ListTile(
           leading: Icon(icon, color: color),
-          title: Text(label, style: TextStyle(color: color)),
+          title: Text(label,
+              style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           onTap: onTap,
         );
       }
@@ -45,15 +46,6 @@ Future<void> showNoteActions(BuildContext context, Note note,
           child: SingleChildScrollView(
             child: Wrap(
               children: [
-            // حذف مباشرةً بأعلى القائمة مع رسالة تأكيد.
-            tile(Icons.delete_outline, s.t('delete'), () async {
-              final ok = await confirmDeleteNote(context);
-              if (!ok) return;
-              // نحذف قبل إغلاق الشيت كي يكتشف المحرّر الحذف بشكل موثوق.
-              await provider.moveToTrash(note);
-              if (context.mounted) Navigator.pop(context);
-            }, color: Theme.of(context).colorScheme.error),
-            const Divider(height: 1),
             if (onDetails != null) ...[
               tile(Icons.info_outline, 'تفاصيل (العنوان والتاريخ)', () {
                 Navigator.pop(context);
@@ -149,6 +141,15 @@ Future<void> showNoteActions(BuildContext context, Note note,
                 await provider.setArchived(note, !note.isArchived);
               },
             ),
+            const Divider(height: 1),
+            // حذف واضح بأسفل القائمة (أحمر) مع رسالة تأكيد.
+            tile(Icons.delete_outline, s.t('delete'), () async {
+              final ok = await confirmDeleteNote(context);
+              if (!ok) return;
+              // نحذف قبل إغلاق الشيت كي يكتشف المحرّر الحذف بشكل موثوق.
+              await provider.moveToTrash(note);
+              if (context.mounted) Navigator.pop(context);
+            }, color: Theme.of(context).colorScheme.error),
               ],
             ),
           ),
