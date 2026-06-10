@@ -33,6 +33,30 @@ class _TrashScreenState extends State<TrashScreen> {
     }
   }
 
+  /// رسالة تحذير قبل الحذف النهائي (لا رجعة فيه).
+  Future<bool> _confirm(String title, String message) async {
+    final scheme = Theme.of(context).colorScheme;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: Icon(Icons.warning_amber_rounded, color: scheme.error),
+        title: Text(title),
+        content: Text(message),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('إلغاء')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: scheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('حذف نهائي'),
+          ),
+        ],
+      ),
+    );
+    return ok ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
@@ -44,6 +68,10 @@ class _TrashScreenState extends State<TrashScreen> {
         if (_items.isNotEmpty)
           TextButton.icon(
             onPressed: () async {
+              if (!await _confirm('إفراغ سلة المهملات؟',
+                  'سيُحذف ${_items.length} عنصرًا نهائيًّا بلا إمكانية استرجاع.')) {
+                return;
+              }
               await provider.emptyTrash();
               await _load();
             },
@@ -89,6 +117,10 @@ class _TrashScreenState extends State<TrashScreen> {
                               color: scheme.error,
                               icon: const Icon(Icons.delete_forever),
                               onPressed: () async {
+                                if (!await _confirm('حذف نهائي؟',
+                                    'سيُحذف هذا العنصر نهائيًّا بلا إمكانية استرجاع.')) {
+                                  return;
+                                }
                                 await provider.deleteForever(n);
                                 await _load();
                               },

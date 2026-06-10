@@ -41,7 +41,8 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
-              ? Center(child: Text(s.t('no_favorites')))
+              ? EmptyState(
+                  icon: Icons.star_border, title: s.t('no_favorites'))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: _items

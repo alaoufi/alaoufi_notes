@@ -43,6 +43,8 @@ class NoteCard extends StatelessWidget {
             : Colors.black87);
 
     return Card(
+      // الشبكة تتكفّل بالتباعد؛ نُلغي هامش الثيم العام كي لا تتباعد البطاقات.
+      margin: EdgeInsets.zero,
       color: grad != null ? Colors.transparent : bg,
       clipBehavior: Clip.antiAlias,
       child: Ink(
@@ -97,12 +99,68 @@ class NoteCard extends StatelessWidget {
                 _hiddenBody(context, onBg)
               else
                 _body(context, onBg),
+              _footer(onBg),
             ],
           ),
         ),
       ),
       ),
     );
+  }
+
+  /// تذييل منظّم: شارة التصنيف (نقطة ملوّنة + اسم) والتاريخ.
+  Widget _footer(Color onBg) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: category == null
+                ? const SizedBox.shrink()
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 9,
+                        height: 9,
+                        decoration: BoxDecoration(
+                          color: Color(category!.color),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          category!.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: onBg.withOpacity(0.65)),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _shortDate(note.updatedAt),
+            style: TextStyle(fontSize: 10.5, color: onBg.withOpacity(0.5)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _shortDate(DateTime d) {
+    final now = DateTime.now();
+    String two(int n) => n.toString().padLeft(2, '0');
+    if (d.year == now.year && d.month == now.month && d.day == now.day) {
+      return '${two(d.hour)}:${two(d.minute)}';
+    }
+    if (d.year == now.year) return '${two(d.day)}/${two(d.month)}';
+    return '${d.year}/${two(d.month)}/${two(d.day)}';
   }
 
   IconData get _typeIcon => switch (note.type) {

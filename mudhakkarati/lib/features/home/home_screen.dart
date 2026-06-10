@@ -256,11 +256,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   sliver: SliverMasonryGrid.count(
                     crossAxisCount: settings.layout == NoteLayout.grid ? 2 : 1,
-                    mainAxisSpacing: 8,
-                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
                     childCount: provider.items.length,
                     itemBuilder: (context, i) {
                       final n = provider.items[i];
