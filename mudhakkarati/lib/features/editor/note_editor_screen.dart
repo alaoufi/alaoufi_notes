@@ -363,7 +363,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               icon: const Icon(Icons.more_vert),
               onPressed: () async {
                 await _ensureSaved();
-                if (mounted) await showNoteActions(context, _note);
+                if (mounted) {
+                  await showNoteActions(context, _note,
+                      onDetails: () => _showDetails(s));
+                }
                 // أعد التحميل لتحديث الحالة (لون/تثبيت/قفل).
                 final fresh = await context
                     .read<NotesProvider>()
@@ -392,9 +395,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     : ListView(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
                         children: [
-                          _titleField(s),
-                          _metaRow(s),
-                          const Divider(),
                           PaperBackground(
                             style: _note.bgStyle,
                             lineColor: onBg,
@@ -455,78 +455,131 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     return '${d.year}/${two(d.month)}/${two(d.day)}  ${two(d.hour)}:${two(d.minute)}';
   }
 
+  // يُستخدم داخل شيت «التفاصيل» (خارج build) ⇒ نقرأ القائمة بـ read، ونحدّث
+  // القيمة المعروضة محليًّا عبر StatefulBuilder.
   Widget _categorySelector(S s) {
-    final provider = context.watch<NotesProvider>();
-    return Align(
-      alignment: AlignmentDirectional.centerStart,
-      child: DropdownButton<int?>(
-        value: _note.categoryId,
-        isExpanded: true,
-        isDense: true,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Theme.of(context).hintColor),
-        hint: Text(s.t('no_category')),
-        underline: const SizedBox.shrink(),
-        items: [
-          DropdownMenuItem(value: null, child: Text(s.t('no_category'))),
-          ...provider.categories.map((c) => DropdownMenuItem(
-                value: c.id,
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  CircleAvatar(radius: 6, backgroundColor: Color(c.color)),
-                  const SizedBox(width: 8),
-                  Text(c.name),
-                ]),
-              )),
-        ],
-        onChanged: (v) async {
-          setState(() => _note = _note.copyWith(categoryId: v, clearCategory: v == null));
-          _dirty = true;
-          await _save(force: true);
-        },
+    final provider = context.read<NotesProvider>();
+    return StatefulBuilder(
+      builder: (context, setSel) => Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: DropdownButton<int?>(
+          value: _note.categoryId,
+          isExpanded: true,
+          isDense: true,
+          hint: Text(s.t('no_category')),
+          underline: const SizedBox.shrink(),
+          items: [
+            DropdownMenuItem(value: null, child: Text(s.t('no_category'))),
+            ...provider.categories.map((c) => DropdownMenuItem(
+                  value: c.id,
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    CircleAvatar(radius: 6, backgroundColor: Color(c.color)),
+                    const SizedBox(width: 8),
+                    Text(c.name),
+                  ]),
+                )),
+          ],
+          onChanged: (v) async {
+            setState(
+                () => _note = _note.copyWith(categoryId: v, clearCategory: v == null));
+            setSel(() {});
+            _dirty = true;
+            await _save(force: true);
+          },
+        ),
       ),
     );
   }
 
-  Widget _titleField(S s) => TextField(
-        controller: _titleCtrl,
-        style: TextStyle(
-            fontSize: 22, fontWeight: FontWeight.bold, color: _fgColor),
-        decoration: InputDecoration(
-          hintText: s.t('title_hint'),
-          border: InputBorder.none,
-          filled: false,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 4),
+  /// «تفاصيل» الملاحظة: تحرير العنوان والتصنيف، عرض التواريخ، وزر الحذف.
+  Future<void> _showDetails(S s) async {
+    await showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetCtx) => Padding(
+        padding: EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 4,
+            bottom: MediaQuery.of(sheetCtx).viewInsets.bottom + 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('تفاصيل الملاحظة',
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _titleCtrl,
+              textInputAction: TextInputAction.done,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                labelText: s.t('title_hint'),
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (_) {
+                _dirty = true;
+                if (mounted) setState(() {});
+              },
+            ),
+            const SizedBox(height: 12),
+            _categorySelector(s),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.schedule,
+                    size: 18, color: Theme.of(context).hintColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'أُنشئت: ${_formatDate(_note.createdAt)}\n'
+                    'عُدّلت: ${_formatDate(_note.updatedAt)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+            const Divider(height: 24),
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: TextButton.icon(
+                onPressed: () async {
+                  Navigator.pop(sheetCtx);
+                  await _deleteNote();
+                },
+                icon: Icon(Icons.delete_outline,
+                    color: Theme.of(context).colorScheme.error),
+                label: Text(s.t('delete'),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error)),
+              ),
+            ),
+          ],
         ),
-      );
+      ),
+    );
+  }
 
-  Widget _metaRow(S s) => Row(
-        children: [
-          Flexible(child: _categorySelector(s)),
-          const SizedBox(width: 8),
-          Text(
-            _formatDate(_note.updatedAt),
-            style: Theme.of(context)
-                .textTheme
-                .labelSmall
-                ?.copyWith(color: Theme.of(context).hintColor),
-          ),
-        ],
-      );
+  /// ينقل الملاحظة إلى المهملات ويُغلق المحرّر دون إعادة حفظها.
+  Future<void> _deleteNote() async {
+    await _ensureSaved();
+    if (_note.id != null) {
+      await context.read<NotesProvider>().moveToTrash(_note);
+    }
+    _deleted = true;
+    if (mounted) Navigator.pop(context);
+  }
 
   /// تخطيط ملاحظة النص: العنوان ثابت بالأعلى، والمحرّر يملأ الباقي ويمرّر
   /// داخليًا (viewport) — أداء سلس حتى مع المستندات الطويلة جدًّا.
   Widget _textLayout(S s, Color onBg, SettingsProvider settings) {
+    // العنوان والتاريخ مخفيّان من الصفحة (يظهران في «تفاصيل» بقائمة الثلاث نقاط)
+    // لتوفير أقصى مساحة للكتابة.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_titleField(s), _metaRow(s), const Divider(height: 8)],
-          ),
-        ),
         Expanded(
           child: _richCtrl == null
               ? const SizedBox.shrink()
