@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/note.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import '../editor/rich_text_field.dart';
 import '../home/notes_provider.dart';
@@ -100,49 +101,52 @@ class _CleanupScreenState extends State<CleanupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final allClean = _noTitle.isEmpty &&
+        _noCategory.isEmpty &&
+        _veryShort.isEmpty &&
+        _duplicates.isEmpty;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('تنظيف المذكرات'),
-        actions: [
-          IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: 'إعادة الفحص',
-              onPressed: _scan),
-        ],
-      ),
+      appBar: gradientAppBar(context, 'تنظيف المذكرات', actions: [
+        IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'إعادة الفحص',
+            onPressed: _scan),
+      ]),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              children: [
-                _section('ملاحظات بلا عنوان', Icons.title, _noTitle,
-                    canTrash: true),
-                _section('ملاحظات بلا تصنيف', Icons.folder_off, _noCategory),
-                _section('ملاحظات قصيرة جدًّا', Icons.short_text, _veryShort,
-                    canTrash: true),
-                _section('ملاحظات مكرّرة', Icons.copy_all, _duplicates,
-                    canTrash: true),
-                if (_noTitle.isEmpty &&
-                    _noCategory.isEmpty &&
-                    _veryShort.isEmpty &&
-                    _duplicates.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(child: Text('كل شيء مرتّب 🎉')),
-                  ),
-              ],
-            ),
+          : allClean
+              ? const EmptyState(
+                  icon: Icons.check_circle_outline,
+                  title: 'كل شيء مرتّب 🎉',
+                  subtitle: 'لا توجد ملاحظات تحتاج تنظيفًا')
+              : ListView(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  children: [
+                    _section('ملاحظات بلا عنوان', Icons.title, _noTitle,
+                        canTrash: true),
+                    _section('ملاحظات بلا تصنيف', Icons.folder_off, _noCategory),
+                    _section('ملاحظات قصيرة جدًّا', Icons.short_text, _veryShort,
+                        canTrash: true),
+                    _section('ملاحظات مكرّرة', Icons.copy_all, _duplicates,
+                        canTrash: true),
+                  ],
+                ),
     );
   }
 
   Widget _section(String label, IconData icon, List<Note> notes,
       {bool canTrash = false}) {
     if (notes.isEmpty) return const SizedBox.shrink();
-    return ExpansionTile(
-      leading: Icon(icon),
-      title: Text(label),
-      subtitle: Text('${notes.length} ملاحظة'),
-      childrenPadding: const EdgeInsets.only(bottom: 8),
-      children: [
+    return AppCard(
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: GradientIcon(icon, size: 40),
+          title: Text(label,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text('${notes.length} ملاحظة'),
+          childrenPadding: const EdgeInsets.only(bottom: 8),
+          children: [
         for (final n in notes.take(50))
           ListTile(
             dense: true,
@@ -171,7 +175,9 @@ class _CleanupScreenState extends State<CleanupScreen> {
               ),
             ),
           ),
-      ],
+          ],
+        ),
+      ),
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../services/security_service.dart';
+import '../../widgets/ui_kit.dart';
 import 'pin_entry.dart';
 
 class SecuritySettingsScreen extends StatefulWidget {
@@ -70,46 +71,66 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     if (!_loaded) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('security'))),
+      appBar: gradientAppBar(context, s.t('security')),
       body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         children: [
-          SwitchListTile(
-            secondary: const Icon(Icons.lock_outline),
-            title: Text(s.t('app_lock')),
-            subtitle: Text(s.t('use_pin')),
-            value: _lockEnabled,
-            onChanged: (v) async {
-              if (v) {
-                await _setupPin();
-              } else {
-                await _sec.disableLock();
-                await _load();
-              }
-            },
+          AppCard(
+            child: Column(
+              children: [
+                SwitchListTile(
+                  secondary: const GradientIcon(Icons.lock_outline),
+                  title: Text(s.t('app_lock'),
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(s.t('use_pin')),
+                  value: _lockEnabled,
+                  onChanged: (v) async {
+                    if (v) {
+                      await _setupPin();
+                    } else {
+                      await _sec.disableLock();
+                      await _load();
+                    }
+                  },
+                ),
+                if (_lockEnabled)
+                  ListTile(
+                    leading: const Icon(Icons.password),
+                    title: Text(s.t('set_pin')),
+                    trailing: const Icon(Icons.chevron_left),
+                    onTap: _setupPin,
+                  ),
+                if (_lockEnabled && _biometricAvailable)
+                  SwitchListTile(
+                    secondary: const Icon(Icons.fingerprint),
+                    title: Text(s.t('use_biometric')),
+                    value: _biometricEnabled,
+                    onChanged: (v) async {
+                      await _sec.setBiometric(v);
+                      await _load();
+                    },
+                  ),
+              ],
+            ),
           ),
-          if (_lockEnabled)
-            ListTile(
-              leading: const Icon(Icons.password),
-              title: Text(s.t('set_pin')),
-              onTap: _setupPin,
-            ),
-          if (_lockEnabled && _biometricAvailable)
-            SwitchListTile(
-              secondary: const Icon(Icons.fingerprint),
-              title: Text(s.t('use_biometric')),
-              value: _biometricEnabled,
-              onChanged: (v) async {
-                await _sec.setBiometric(v);
-                await _load();
-              },
-            ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'يمكنك قفل ملاحظة معينة من قائمة خيارات الملاحظة (اضغط مطولاً على الملاحظة). يتطلب فتحها الرقم السري أو البصمة.',
-              style: Theme.of(context).textTheme.bodySmall,
+          AppCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.info_outline, color: scheme.primary, size: 20),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'يمكنك قفل ملاحظة معينة من قائمة خيارات الملاحظة (اضغط مطولاً على الملاحظة). يتطلب فتحها الرقم السري أو البصمة.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

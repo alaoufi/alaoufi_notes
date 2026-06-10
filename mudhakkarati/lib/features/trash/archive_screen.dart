@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/note.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import '../home/notes_provider.dart';
 
@@ -39,30 +40,20 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     final provider = context.read<NotesProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('archived'))),
+      appBar: gradientAppBar(context, s.t('archived')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
-              ? Center(child: Text(s.t('archived')))
+              ? const EmptyState(
+                  icon: Icons.archive_outlined,
+                  title: 'لا توجد ملاحظات مؤرشفة',
+                  subtitle: 'الملاحظات المؤرشفة تظهر هنا')
               : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: _items.length,
                   itemBuilder: (context, i) {
                     final n = _items[i];
-                    return ListTile(
-                      leading: const Icon(Icons.archive_outlined),
-                      title: Text(
-                        n.title.isNotEmpty ? n.title : n.content,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: IconButton(
-                        tooltip: s.t('unarchive'),
-                        icon: const Icon(Icons.unarchive_outlined),
-                        onPressed: () async {
-                          await provider.setArchived(n, false);
-                          await _load();
-                        },
-                      ),
+                    return AppCard(
                       onTap: () async {
                         await Navigator.push(
                           context,
@@ -72,6 +63,23 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                         );
                         await _load();
                       },
+                      child: ListTile(
+                        leading: const GradientIcon(Icons.archive_outlined),
+                        title: Text(
+                          n.title.isNotEmpty ? n.title : n.content,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        trailing: IconButton(
+                          tooltip: s.t('unarchive'),
+                          icon: const Icon(Icons.unarchive_outlined),
+                          onPressed: () async {
+                            await provider.setArchived(n, false);
+                            await _load();
+                          },
+                        ),
+                      ),
                     );
                   },
                 ),
