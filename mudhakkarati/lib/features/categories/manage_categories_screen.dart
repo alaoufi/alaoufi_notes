@@ -5,6 +5,7 @@ import '../../core/constants/category_icons.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/category.dart';
 import '../../services/security_service.dart';
+import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 import '../security/info_lock.dart';
 import '../security/pin_setup.dart';
@@ -24,7 +25,7 @@ class ManageCategoriesScreen extends StatelessWidget {
     final cats = provider.categories;
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('categories'))),
+      appBar: gradientAppBar(context, s.t('categories')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _edit(context, null),
         child: const Icon(Icons.add),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../../widgets/ui_kit.dart';
 import 'info_detail_screen.dart';
 import 'info_edit_screen.dart';
 
@@ -95,8 +96,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_title),
+      appBar: gradientAppBar(context, _title,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(60),
           child: Padding(

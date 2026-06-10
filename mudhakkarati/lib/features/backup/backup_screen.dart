@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../services/backup_service.dart';
 import '../../services/easynotes_import.dart';
+import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
 
@@ -456,7 +457,7 @@ class _BackupScreenState extends State<BackupScreen> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('backup'))),
+      appBar: gradientAppBar(context, s.t('backup')),
       body: Stack(
         children: [
           ListView(

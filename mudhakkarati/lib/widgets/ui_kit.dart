@@ -5,12 +5,13 @@ import 'package:flutter/material.dart';
 
 /// شريط علوي بتدرّج لوني خفيف.
 AppBar gradientAppBar(BuildContext context, String title,
-    {List<Widget>? actions, PreferredSizeWidget? bottom}) {
+    {List<Widget>? actions, PreferredSizeWidget? bottom, Widget? leading}) {
   final scheme = Theme.of(context).colorScheme;
   return AppBar(
     title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
     actions: actions,
     bottom: bottom,
+    leading: leading,
     flexibleSpace: Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(

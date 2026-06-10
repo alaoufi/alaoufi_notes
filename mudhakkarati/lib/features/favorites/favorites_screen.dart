@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/note.dart';
 import '../../widgets/note_actions.dart';
+import '../../widgets/ui_kit.dart';
 import '../../widgets/note_card.dart';
 import '../editor/note_editor_screen.dart';
 import '../home/notes_provider.dart';
@@ -36,7 +37,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
     final provider = context.watch<NotesProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('favorites'))),
+      appBar: gradientAppBar(context, s.t('favorites')),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
