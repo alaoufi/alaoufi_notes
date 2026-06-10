@@ -233,7 +233,7 @@ class BackupService {
 
       // 4) الحفظ: نكتب أولًا في الملفات المؤقتة ثم نتيح حفظه للمستخدم.
       final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
-      final fileName = 'mudhakkarati_$stamp.$_ext';
+      final fileName = 'Notes_$stamp.$_ext';
 
       final tmpDir = await getTemporaryDirectory();
       final tmpPath = p.join(tmpDir.path, fileName);
@@ -262,7 +262,7 @@ class BackupService {
     try {
       final encrypted = await _buildEncrypted(password);
       final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
-      final fileName = 'mudhakkarati_$stamp.$_ext';
+      final fileName = 'Notes_$stamp.$_ext';
       final tmpDir = await getTemporaryDirectory();
       final tmpPath = p.join(tmpDir.path, fileName);
       await File(tmpPath).writeAsBytes(encrypted, flush: true);
