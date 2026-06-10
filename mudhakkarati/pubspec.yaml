@@ -192,15 +192,23 @@ flutter:
     - family: Noto Kufi Arabic
       fonts:
         - asset: assets/fonts/NotoKufiArabic-Variable.ttf
+        - asset: assets/fonts/NotoKufiArabic-Bold.ttf
+          weight: 700
     - family: Noto Sans Arabic
       fonts:
         - asset: assets/fonts/NotoSansArabic-Variable.ttf
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
+          weight: 700
     - family: Rubik
       fonts:
         - asset: assets/fonts/Rubik-Variable.ttf
+        - asset: assets/fonts/Rubik-Bold.ttf
+          weight: 700
     - family: Baloo Bhaijaan 2
       fonts:
         - asset: assets/fonts/BalooBhaijaan2-Variable.ttf
+        - asset: assets/fonts/BalooBhaijaan2-Bold.ttf
+          weight: 700
     - family: Lateef
       fonts:
         - asset: assets/fonts/Lateef-Regular.ttf
@@ -228,3 +236,5 @@ flutter:
     - family: Noto Nastaliq Urdu
       fonts:
         - asset: assets/fonts/NotoNastaliqUrdu-Variable.ttf
+        - asset: assets/fonts/NotoNastaliqUrdu-Bold.ttf
+          weight: 700
