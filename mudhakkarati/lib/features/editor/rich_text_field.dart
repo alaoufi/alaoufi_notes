@@ -73,16 +73,17 @@ DefaultStyles buildNoteDefaultStyles(
   const hs = HorizontalSpacing(0, 0);
   const vs = VerticalSpacing(0, 0);
   final block = DefaultTextBlockStyle(base, hs, vs, vs, null);
-  // نعرّف أنماط التنسيق المضمّن صراحةً (غامق/مائل/تسطير/شطب) كي تُطبَّق بثبات
-  // مع أنماطنا المخصّصة (وزن 700 يطابق ملفّات الخطوط الغامقة المجمّعة).
-  return DefaultStyles(
+  // مهم: في flutter_quill يَستبدل customStyles الأنماطَ الافتراضية بالكامل، فلو
+  // مرّرنا فقرتنا وحدها تُفقد أنماط الغامق/المائل/العناوين/القوائم. لذا ندمج
+  // تخصيصنا فوق أنماط المكتبة الافتراضية ونتجاوز فقرة المتن وتباعدها فقط.
+  return DefaultStyles.getInstance(context).merge(DefaultStyles(
     paragraph: block,
     lineHeightNormal: block,
     bold: const TextStyle(fontWeight: FontWeight.bold),
     italic: const TextStyle(fontStyle: FontStyle.italic),
     underline: const TextStyle(decoration: TextDecoration.underline),
     strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
-  );
+  ));
 }
 
 /// ارتفاع سطر المتن بالبكسل (لمطابقة تباعد التسطير مع الكتابة).
