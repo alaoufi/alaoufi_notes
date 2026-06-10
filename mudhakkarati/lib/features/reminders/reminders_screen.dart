@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import 'reminders_provider.dart';
 
@@ -16,22 +17,19 @@ class RemindersScreen extends StatelessWidget {
     final provider = context.watch<RemindersProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('reminders'))),
+      appBar: gradientAppBar(context, s.t('reminders')),
       body: provider.items.isEmpty
           ? _empty(context, s)
-          : ListView.separated(
-              padding: const EdgeInsets.all(12),
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: provider.items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, i) {
                 final view = provider.items[i];
                 final r = view.reminder;
                 final note = view.note;
-                return Card(
+                return AppCard(
                   child: ListTile(
-                    leading: CircleAvatar(
-                      child: Icon(_repeatIcon(r.repeat)),
-                    ),
+                    leading: GradientIcon(_repeatIcon(r.repeat)),
                     title: Text(
                       note?.title.isNotEmpty == true
                           ? note!.title
@@ -78,17 +76,8 @@ class RemindersScreen extends StatelessWidget {
         ReminderRepeat.yearly => s.t('repeat_yearly'),
       };
 
-  Widget _empty(BuildContext context, S s) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.notifications_off_outlined,
-              size: 80, color: Theme.of(context).disabledColor),
-          const SizedBox(height: 12),
-          Text(s.t('no_reminders')),
-        ],
-      ),
-    );
-  }
+  Widget _empty(BuildContext context, S s) => EmptyState(
+        icon: Icons.notifications_off_outlined,
+        title: s.t('no_reminders'),
+      );
 }

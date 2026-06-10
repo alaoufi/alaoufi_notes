@@ -127,7 +127,8 @@ class AppDrawer extends StatelessWidget {
               _tile(context, Icons.category_outlined, s.t('manage_categories'),
                   () => go(const ManageCategoriesScreen())),
             ]),
-            _group(context, Icons.backup_outlined, 'النسخ والصيانة', children: [
+            _group(context, Icons.backup_outlined, 'النسخ والصيانة',
+                initiallyExpanded: true, children: [
               _tile(context, Icons.archive_outlined, s.t('archived'),
                   () => go(const ArchiveScreen())),
               _tile(context, Icons.delete_outline, s.t('trash'),
