@@ -90,6 +90,9 @@ class SettingsProvider extends ChangeNotifier {
     'Mirza',
     'Katibeh',
     'Alkalami',
+    'Aref Ruqaa Ink',
+    'Amiri Quran',
+    'Noto Nastaliq Urdu',
   ];
 
   static const _kMode = 'theme_mode';

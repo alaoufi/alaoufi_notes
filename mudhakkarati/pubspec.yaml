@@ -217,3 +217,14 @@ flutter:
     - family: Alkalami
       fonts:
         - asset: assets/fonts/Alkalami-Regular.ttf
+    - family: Aref Ruqaa Ink
+      fonts:
+        - asset: assets/fonts/ArefRuqaaInk-Regular.ttf
+        - asset: assets/fonts/ArefRuqaaInk-Bold.ttf
+          weight: 700
+    - family: Amiri Quran
+      fonts:
+        - asset: assets/fonts/AmiriQuran-Regular.ttf
+    - family: Noto Nastaliq Urdu
+      fonts:
+        - asset: assets/fonts/NotoNastaliqUrdu-Variable.ttf
