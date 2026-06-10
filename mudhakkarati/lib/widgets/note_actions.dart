@@ -26,6 +26,7 @@ Future<void> showNoteActions(BuildContext context, Note note,
   await showModalBottomSheet(
     context: context,
     showDragHandle: true,
+    isScrollControlled: true,
     builder: (context) {
       Widget tile(IconData icon, String label, VoidCallback onTap,
           {Color? color}) {
@@ -36,9 +37,14 @@ Future<void> showNoteActions(BuildContext context, Note note,
         );
       }
 
+      // قابل للتمرير ومحدود الارتفاع كي يظهر كل العناصر (ومنها «حذف») دائمًا.
       return SafeArea(
-        child: Wrap(
-          children: [
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7),
+          child: SingleChildScrollView(
+            child: Wrap(
+              children: [
             if (onDetails != null) ...[
               tile(Icons.info_outline, 'تفاصيل (العنوان والتاريخ)', () {
                 Navigator.pop(context);
@@ -138,7 +144,9 @@ Future<void> showNoteActions(BuildContext context, Note note,
               Navigator.pop(context);
               await provider.moveToTrash(note);
             }, color: Theme.of(context).colorScheme.error),
-          ],
+              ],
+            ),
+          ),
         ),
       );
     },
