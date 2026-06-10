@@ -372,6 +372,15 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold)),
       ),
 
+      // تفعيل/إلغاء التسطير افتراضيًّا (إلغاء ⇒ خلفية سادة بلا خطوط).
+      SwitchListTile(
+        secondary: const Icon(Icons.format_align_justify),
+        title: const Text('إظهار التسطير'),
+        subtitle: const Text('عند الإيقاف تكون الخلفية سادة بلا خطوط'),
+        value: st.defaultBgStyle != 0,
+        onChanged: (on) => st.setDefaultBgStyle(on ? 1 : 0),
+      ),
+
       // محاذاة الكتابة: على السطر / بين السطرين
       ListTile(
         leading: const Icon(Icons.vertical_align_center),

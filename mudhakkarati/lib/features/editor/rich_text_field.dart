@@ -175,11 +175,6 @@ class RichTextToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
-    // الكيبورد ظاهر؟ حينها يكون الشريط مرفوعًا فوقه بعيدًا عن منطقة إيماءات
-    // النظام، فنستخدم صفًّا واحدًا مدمجًا (يوفّر مساحة الكتابة). وعند إخفائه
-    // يهبط الشريط إلى حافة الشاشة، فنستخدم صفوفًا متعددة (بلا سحب أفقي) كي لا
-    // يتعارض السحب مع إيماءات تبديل التطبيق/الرجوع.
-    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
@@ -188,7 +183,8 @@ class RichTextToolbar extends StatelessWidget {
         child: QuillSimpleToolbar(
           controller: controller.quill,
           config: QuillSimpleToolbarConfig(
-            multiRowsDisplay: !keyboardOpen,
+            // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
+            multiRowsDisplay: false,
             showFontFamily: true,
             showFontSize: true,
             // زر سريع لإخفاء/إظهار قائمة (نسخ/لصق) أثناء التحرير.

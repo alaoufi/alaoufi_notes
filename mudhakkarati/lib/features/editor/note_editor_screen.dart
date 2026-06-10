@@ -58,6 +58,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   bool _dirty = false;
   bool _drawingPrompted = false;
   bool _secured = false;
+  bool _deleted = false; // نُقلت للمهملات ⇒ لا تُحفظ ثانيةً عند الإغلاق
 
   @override
   void initState() {
@@ -149,7 +150,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   Future<void> _save({bool force = false}) async {
-    if (!_loaded) return;
+    if (!_loaded || _deleted) return;
     final provider = context.read<NotesProvider>();
 
     final title = _titleCtrl.text;
@@ -202,7 +203,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Future<bool> _onWillPop() async {
     _debounce?.cancel();
-    if (_dirty || _note.id == null) {
+    if (!_deleted && (_dirty || _note.id == null)) {
       await _save();
     }
     return true;
@@ -364,8 +365,18 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 await _ensureSaved();
                 if (mounted) await showNoteActions(context, _note);
                 // أعد التحميل لتحديث الحالة (لون/تثبيت/قفل).
-                final fresh = await context.read<NotesProvider>().notes.getNote(_note.id!);
-                if (fresh != null && mounted) setState(() => _note = fresh);
+                final fresh = await context
+                    .read<NotesProvider>()
+                    .notes
+                    .getNote(_note.id!);
+                if (!mounted) return;
+                // حُذفت (نُقلت للمهملات) ⇒ أغلق المحرّر دون إعادة حفظها.
+                if (fresh == null || fresh.isDeleted) {
+                  _deleted = true;
+                  Navigator.pop(context);
+                  return;
+                }
+                setState(() => _note = fresh);
               },
             ),
           ],
@@ -405,10 +416,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       ),
               ),
               // شريط أدوات التنسيق فوق لوحة المفاتيح مباشرة (يرتفع معها).
+              // عند إخفاء الكيبورد نرفعه قليلًا عن الحافة كي لا يقع سحبه الأفقي
+              // في منطقة إيماءات النظام السفلية (تبديل التطبيق/الرجوع).
               if (_note.type == NoteType.text && _richCtrl != null)
                 Padding(
                   padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom),
+                      bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                          ? MediaQuery.of(context).viewInsets.bottom
+                          : 6),
                   child: RichTextToolbar(controller: _richCtrl!),
                 ),
             ],
@@ -447,6 +462,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       child: DropdownButton<int?>(
         value: _note.categoryId,
         isExpanded: true,
+        isDense: true,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Theme.of(context).hintColor),
         hint: Text(s.t('no_category')),
         underline: const SizedBox.shrink(),
         items: [
@@ -477,6 +495,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           hintText: s.t('title_hint'),
           border: InputBorder.none,
           filled: false,
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 4),
         ),
       );
 
@@ -488,7 +508,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             _formatDate(_note.updatedAt),
             style: Theme.of(context)
                 .textTheme
-                .bodySmall
+                .labelSmall
                 ?.copyWith(color: Theme.of(context).hintColor),
           ),
         ],
@@ -501,10 +521,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [_titleField(s), _metaRow(s), const Divider()],
+            children: [_titleField(s), _metaRow(s), const Divider(height: 8)],
           ),
         ),
         Expanded(
