@@ -45,6 +45,15 @@ Future<void> showNoteActions(BuildContext context, Note note,
           child: SingleChildScrollView(
             child: Wrap(
               children: [
+            // حذف مباشرةً بأعلى القائمة مع رسالة تأكيد.
+            tile(Icons.delete_outline, s.t('delete'), () async {
+              final ok = await confirmDeleteNote(context);
+              if (!ok) return;
+              // نحذف قبل إغلاق الشيت كي يكتشف المحرّر الحذف بشكل موثوق.
+              await provider.moveToTrash(note);
+              if (context.mounted) Navigator.pop(context);
+            }, color: Theme.of(context).colorScheme.error),
+            const Divider(height: 1),
             if (onDetails != null) ...[
               tile(Icons.info_outline, 'تفاصيل (العنوان والتاريخ)', () {
                 Navigator.pop(context);
@@ -140,10 +149,6 @@ Future<void> showNoteActions(BuildContext context, Note note,
                 await provider.setArchived(note, !note.isArchived);
               },
             ),
-            tile(Icons.delete_outline, s.t('delete'), () async {
-              Navigator.pop(context);
-              await provider.moveToTrash(note);
-            }, color: Theme.of(context).colorScheme.error),
               ],
             ),
           ),
@@ -151,6 +156,31 @@ Future<void> showNoteActions(BuildContext context, Note note,
       );
     },
   );
+}
+
+/// رسالة تحذير قبل الحذف. تعيد true إن أكّد المستخدم.
+Future<bool> confirmDeleteNote(BuildContext context) async {
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      icon: Icon(Icons.delete_outline,
+          color: Theme.of(ctx).colorScheme.error),
+      title: const Text('حذف الملاحظة؟'),
+      content: const Text('ستُنقل إلى المهملات ويمكنك استرجاعها منها لاحقًا.'),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('إلغاء')),
+        FilledButton(
+          style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error),
+          onPressed: () => Navigator.pop(ctx, true),
+          child: const Text('حذف'),
+        ),
+      ],
+    ),
+  );
+  return ok ?? false;
 }
 
 /// نص النسخ/المشاركة: العنوان + المحتوى فقط — بدون التاريخ أو التصنيف.
