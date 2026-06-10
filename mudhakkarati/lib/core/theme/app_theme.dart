@@ -31,6 +31,10 @@ class AppTheme {
         backgroundColor: base.scaffoldBackgroundColor,
         foregroundColor: scheme.onSurface,
         elevation: 0,
+        // ارتفاع/ظلّ خفيف عند التمرير ⇒ إحساس طبقيّ عصري في كل الشاشات.
+        scrolledUnderElevation: 3,
+        surfaceTintColor: scheme.surfaceTint,
+        shadowColor: scheme.shadow,
         centerTitle: false,
         // أيقونات الشريط العلوي (⋮ القائمة و≡ والباقي) أوضح وأغمق وأثخن.
         iconTheme: IconThemeData(
@@ -49,6 +53,25 @@ class AppTheme {
           fontSize: 22 * fontScale,
           color: scheme.onSurface,
         ),
+      ),
+      // بطاقات بارزة (ثلاثية الأبعاد) موحّدة في كل الشاشات.
+      cardTheme: CardThemeData(
+        elevation: 3,
+        shadowColor: scheme.shadow.withOpacity(0.4),
+        surfaceTintColor: scheme.surfaceTint,
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        clipBehavior: Clip.antiAlias,
+      ),
+      // مجموعات قابلة للطيّ نظيفة (بلا خطوط حادّة) في كل الشاشات.
+      expansionTileTheme: const ExpansionTileThemeData(
+        shape: Border(),
+        collapsedShape: Border(),
+        childrenPadding: EdgeInsetsDirectional.only(start: 8, bottom: 8),
+      ),
+      listTileTheme: const ListTileThemeData(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12))),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: scheme.primary,

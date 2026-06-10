@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/rich_text_field.dart';
 import 'info_edit_screen.dart';
 import 'info_list_screen.dart';
@@ -83,9 +84,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('عرض المعلومة'),
-        actions: [
+      appBar: gradientAppBar(context, 'عرض المعلومة', actions: [
           IconButton(
               onPressed: _copyAll,
               icon: const Icon(Icons.copy_all),

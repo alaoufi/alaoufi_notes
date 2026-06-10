@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 
 /// ملخّص أسبوعي: إحصاءات سريعة عن الملاحظات لمساعدة المستخدم على المتابعة.
@@ -81,7 +82,7 @@ class _WeeklySummaryScreenState extends State<WeeklySummaryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('الملخّص الأسبوعي')),
+      appBar: gradientAppBar(context, 'الملخّص الأسبوعي'),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(

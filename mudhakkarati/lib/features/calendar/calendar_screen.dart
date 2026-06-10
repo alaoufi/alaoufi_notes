@@ -6,6 +6,7 @@ import 'package:table_calendar/table_calendar.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/note.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
@@ -58,9 +59,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(s.t('calendar')),
-        actions: [
+      appBar: gradientAppBar(context, s.t('calendar'), actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: SegmentedButton<bool>(

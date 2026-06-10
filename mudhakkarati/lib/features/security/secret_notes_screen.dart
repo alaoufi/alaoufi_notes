@@ -6,6 +6,7 @@ import '../../data/models/note.dart';
 import '../../services/secure_screen.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import '../home/notes_provider.dart';
 
@@ -46,14 +47,14 @@ class _SecretNotesScreenState extends State<SecretNotesScreen> {
     final provider = context.watch<NotesProvider>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(s.t('secret_notes')),
-        leading: const Icon(Icons.lock),
-      ),
+      appBar: gradientAppBar(context, s.t('secret_notes'),
+          leading: const Icon(Icons.lock)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
-              ? Center(child: Text(s.t('secret_empty')))
+              ? EmptyState(
+                  icon: Icons.lock_outline,
+                  title: s.t('secret_empty'))
               : ListView(
                   padding: const EdgeInsets.all(12),
                   children: _items

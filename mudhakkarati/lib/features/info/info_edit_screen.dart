@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../../widgets/ui_kit.dart';
 import '../editor/rich_text_field.dart';
 
 /// شاشة إضافة/تعديل عنصر في قاعدة المعلومات العامة.
@@ -146,16 +147,14 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   Widget build(BuildContext context) {
     final editing = widget.entry != null;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(editing ? 'تعديل معلومة' : 'إضافة معلومة'),
-        actions: [
-          IconButton(
-            onPressed: _saving ? null : _save,
-            icon: const Icon(Icons.check),
-            tooltip: 'حفظ',
-          ),
-        ],
-      ),
+      appBar: gradientAppBar(
+          context, editing ? 'تعديل معلومة' : 'إضافة معلومة', actions: [
+        IconButton(
+          onPressed: _saving ? null : _save,
+          icon: const Icon(Icons.check),
+          tooltip: 'حفظ',
+        ),
+      ]),
       body: AbsorbPointer(
         absorbing: _saving,
         child: Column(
