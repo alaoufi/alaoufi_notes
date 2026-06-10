@@ -73,9 +73,15 @@ DefaultStyles buildNoteDefaultStyles(
   const hs = HorizontalSpacing(0, 0);
   const vs = VerticalSpacing(0, 0);
   final block = DefaultTextBlockStyle(base, hs, vs, vs, null);
+  // نعرّف أنماط التنسيق المضمّن صراحةً (غامق/مائل/تسطير/شطب) كي تُطبَّق بثبات
+  // مع أنماطنا المخصّصة (وزن 700 يطابق ملفّات الخطوط الغامقة المجمّعة).
   return DefaultStyles(
     paragraph: block,
     lineHeightNormal: block,
+    bold: const TextStyle(fontWeight: FontWeight.bold),
+    italic: const TextStyle(fontStyle: FontStyle.italic),
+    underline: const TextStyle(decoration: TextDecoration.underline),
+    strikeThrough: const TextStyle(decoration: TextDecoration.lineThrough),
   );
 }
 
@@ -232,6 +238,9 @@ class RichTextToolbar extends StatelessWidget {
                   'ميرزا': 'Mirza',
                   'كتيبة': 'Katibeh',
                   'القلمي': 'Alkalami',
+                  'رقعة حبر': 'Aref Ruqaa Ink',
+                  'نسخ قرآني': 'Amiri Quran',
+                  'نستعليق': 'Noto Nastaliq Urdu',
                   'مسح': 'Clear',
                 },
               ),
