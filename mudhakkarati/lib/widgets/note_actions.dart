@@ -15,7 +15,10 @@ import '../features/settings/settings_provider.dart';
 import 'color_picker_sheet.dart';
 
 /// شيت إجراءات الملاحظة (عند الضغط المطوّل أو من المحرر).
-Future<void> showNoteActions(BuildContext context, Note note) async {
+///
+/// [onDetails] (من المحرّر) يضيف عنصر «تفاصيل» يفتح العنوان والتاريخ والحذف.
+Future<void> showNoteActions(BuildContext context, Note note,
+    {VoidCallback? onDetails}) async {
   final s = S.of(context);
   final provider = context.read<NotesProvider>();
   final settings = context.read<SettingsProvider>();
@@ -36,6 +39,13 @@ Future<void> showNoteActions(BuildContext context, Note note) async {
       return SafeArea(
         child: Wrap(
           children: [
+            if (onDetails != null) ...[
+              tile(Icons.info_outline, 'تفاصيل (العنوان والتاريخ)', () {
+                Navigator.pop(context);
+                onDetails();
+              }),
+              const Divider(height: 1),
+            ],
             tile(
               note.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
               note.isPinned ? s.t('unpin') : s.t('pin'),
