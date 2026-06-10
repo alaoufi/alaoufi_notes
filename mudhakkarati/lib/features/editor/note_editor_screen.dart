@@ -562,8 +562,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
-  /// ينقل الملاحظة إلى المهملات ويُغلق المحرّر دون إعادة حفظها.
+  /// ينقل الملاحظة إلى المهملات ويُغلق المحرّر دون إعادة حفظها (بعد تأكيد).
   Future<void> _deleteNote() async {
+    if (!await confirmDeleteNote(context)) return;
     await _ensureSaved();
     if (_note.id != null) {
       await context.read<NotesProvider>().moveToTrash(_note);
