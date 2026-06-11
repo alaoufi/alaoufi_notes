@@ -204,8 +204,18 @@ class RichTextToolbar extends StatelessWidget {
                 onPressed: () => settings.setHideSelectionMenu(!hide),
               ),
             ],
-            buttonOptions: const QuillSimpleToolbarButtonOptions(
-              fontFamily: QuillToolbarFontFamilyButtonOptions(
+            buttonOptions: QuillSimpleToolbarButtonOptions(
+              // أزرار تنسيق «ذكية»: المؤشر داخل كلمة (بلا تحديد) يطبّق التنسيق
+              // على الكلمة كاملة — كما في برامج التحرير الاحترافية.
+              bold: _smartToggleOptions(
+                  controller.quill, Icons.format_bold, Attribute.bold),
+              italic: _smartToggleOptions(
+                  controller.quill, Icons.format_italic, Attribute.italic),
+              underLine: _smartToggleOptions(
+                  controller.quill, Icons.format_underline, Attribute.underline),
+              strikeThrough: _smartToggleOptions(controller.quill,
+                  Icons.format_strikethrough, Attribute.strikeThrough),
+              fontFamily: const QuillToolbarFontFamilyButtonOptions(
                 items: {
                   'Cairo': 'Cairo',
                   'Tajawal': 'Tajawal',
@@ -245,7 +255,7 @@ class RichTextToolbar extends StatelessWidget {
                   'مسح': 'Clear',
                 },
               ),
-              fontSize: QuillToolbarFontSizeButtonOptions(
+              fontSize: const QuillToolbarFontSizeButtonOptions(
                 items: {
                   '10': '10',
                   '12': '12',
@@ -294,6 +304,57 @@ class RichTextToolbar extends StatelessWidget {
       ),
     );
   }
+}
+
+/// يبدّل سمة تنسيق مضمّنة «بذكاء»:
+/// - مع تحديد نصّ: يطبّقها على التحديد (السلوك المعتاد).
+/// - مؤشر داخل كلمة بلا تحديد: يطبّقها على الكلمة كاملة (مثل Word) —
+///   كان الضغط سابقًا يضبط تنسيق الكتابة القادمة فقط فيبدو أن الزرّ لا يعمل.
+/// - مؤشر على حافة كلمة/سطر فارغ: يضبط تنسيق ما سيُكتب بعده.
+void _smartToggleInline(QuillController c, Attribute attr, bool isOn) {
+  final sel = c.selection;
+  if (sel.isValid && sel.isCollapsed) {
+    final text = c.document.toPlainText();
+    bool isWord(int i) =>
+        i >= 0 && i < text.length && text[i].trim().isNotEmpty;
+    final caret = sel.baseOffset;
+    if (isWord(caret - 1) && isWord(caret)) {
+      var start = caret, end = caret;
+      while (isWord(start - 1)) {
+        start--;
+      }
+      while (isWord(end)) {
+        end++;
+      }
+      c.formatText(
+          start, end - start, isOn ? Attribute.clone(attr, null) : attr);
+      return;
+    }
+  }
+  c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
+}
+
+/// زرّ تبديل مخصّص يستخدم [_smartToggleInline] ويُظهر حالة التفعيل بوضوح.
+QuillToolbarToggleStyleButtonOptions _smartToggleOptions(
+    QuillController quill, IconData icon, Attribute attr) {
+  return QuillToolbarToggleStyleButtonOptions(
+    childBuilder: (options, extra) {
+      final toggled = extra.isToggled;
+      final scheme = Theme.of(extra.context).colorScheme;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 1),
+        child: IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: Icon(icon,
+              size: 23, color: toggled ? scheme.onPrimary : null),
+          style: IconButton.styleFrom(
+            backgroundColor: toggled ? scheme.primary : null,
+          ),
+          onPressed: () => _smartToggleInline(quill, attr, toggled),
+        ),
+      );
+    },
+  );
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
