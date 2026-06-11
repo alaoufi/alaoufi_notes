@@ -182,31 +182,25 @@ class RichTextToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
-    final primary = Theme.of(context).colorScheme.primary;
+    // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
+    // نحسب حالة التفعيل وقت الضغط فقط (تجنّبًا لأي استثناء أثناء البناء).
+    QuillToolbarCustomButtonOptions smart(
+        IconData icon, String tip, Attribute attr) {
+      return QuillToolbarCustomButtonOptions(
+        icon: Icon(icon),
+        tooltip: tip,
+        onPressed: () => _smartToggleInline(controller.quill, attr),
+      );
+    }
+
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         top: false,
-        // يُعاد بناء الشريط عند تغيّر التحديد/التنسيق كي تعكس أزرار B/I/U/S حالتها.
-        child: ListenableBuilder(
-          listenable: controller.quill,
-          builder: (context, _) {
-            final active = controller.quill.getSelectionStyle().attributes;
-            // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
-            QuillToolbarCustomButtonOptions smart(
-                IconData icon, String tip, Attribute attr) {
-              final on = active.containsKey(attr.key);
-              return QuillToolbarCustomButtonOptions(
-                icon: Icon(icon, color: on ? primary : null),
-                tooltip: tip,
-                onPressed: () => _smartToggleInline(controller.quill, attr, on),
-              );
-            }
-
-            return QuillSimpleToolbar(
-              controller: controller.quill,
-              config: QuillSimpleToolbarConfig(
+        child: QuillSimpleToolbar(
+          controller: controller.quill,
+          config: QuillSimpleToolbarConfig(
                 // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
                 multiRowsDisplay: false,
                 showFontFamily: true,
@@ -315,8 +309,6 @@ class RichTextToolbar extends StatelessWidget {
                 showUndo: true,
                 showRedo: true,
               ),
-            );
-          },
         ),
       ),
     );
@@ -328,7 +320,15 @@ class RichTextToolbar extends StatelessWidget {
 /// - مؤشر داخل كلمة بلا تحديد: يطبّقها على الكلمة كاملة (مثل Word) —
 ///   كان الضغط سابقًا يضبط تنسيق الكتابة القادمة فقط فيبدو أن الزرّ لا يعمل.
 /// - مؤشر على حافة كلمة/سطر فارغ: يضبط تنسيق ما سيُكتب بعده.
-void _smartToggleInline(QuillController c, Attribute attr, bool isOn) {
+void _smartToggleInline(QuillController c, Attribute attr) {
+  // حالة التفعيل الحالية (محسوبة بأمان وقت الضغط).
+  bool isOn;
+  try {
+    isOn = c.getSelectionStyle().attributes.containsKey(attr.key);
+  } catch (_) {
+    isOn = false;
+  }
+  final toggle = isOn ? Attribute.clone(attr, null) : attr;
   final sel = c.selection;
   if (sel.isValid && sel.isCollapsed) {
     final text = c.document.toPlainText();
@@ -343,12 +343,11 @@ void _smartToggleInline(QuillController c, Attribute attr, bool isOn) {
       while (isWord(end)) {
         end++;
       }
-      c.formatText(
-          start, end - start, isOn ? Attribute.clone(attr, null) : attr);
+      c.formatText(start, end - start, toggle);
       return;
     }
   }
-  c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
+  c.formatSelection(toggle);
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
