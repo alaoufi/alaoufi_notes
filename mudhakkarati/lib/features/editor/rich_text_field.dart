@@ -335,7 +335,8 @@ void _smartToggleInline(QuillController c, Attribute attr) {
     bool isWord(int i) =>
         i >= 0 && i < text.length && text[i].trim().isNotEmpty;
     final caret = sel.baseOffset;
-    if (isWord(caret - 1) && isWord(caret)) {
+    // المؤشر ملاصق لكلمة من أي جهة (داخلها أو عند حافتها) ⇒ نسّق الكلمة كاملة.
+    if (isWord(caret - 1) || isWord(caret)) {
       var start = caret, end = caret;
       while (isWord(start - 1)) {
         start--;
@@ -343,8 +344,10 @@ void _smartToggleInline(QuillController c, Attribute attr) {
       while (isWord(end)) {
         end++;
       }
-      c.formatText(start, end - start, toggle);
-      return;
+      if (end > start) {
+        c.formatText(start, end - start, toggle);
+        return;
+      }
     }
   }
   c.formatSelection(toggle);
