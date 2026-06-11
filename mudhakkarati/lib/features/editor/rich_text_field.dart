@@ -182,7 +182,6 @@ class RichTextToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
-<<<<<<< HEAD
     // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
     // نحسب حالة التفعيل وقت الضغط فقط (تجنّبًا لأي استثناء أثناء البناء).
     QuillToolbarCustomButtonOptions smart(
@@ -194,39 +193,14 @@ class RichTextToolbar extends StatelessWidget {
       );
     }
 
-=======
-    final primary = Theme.of(context).colorScheme.primary;
->>>>>>> origin/main
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         top: false,
-<<<<<<< HEAD
         child: QuillSimpleToolbar(
           controller: controller.quill,
           config: QuillSimpleToolbarConfig(
-=======
-        // يُعاد بناء الشريط عند تغيّر التحديد/التنسيق كي تعكس أزرار B/I/U/S حالتها.
-        child: ListenableBuilder(
-          listenable: controller.quill,
-          builder: (context, _) {
-            final active = controller.quill.getSelectionStyle().attributes;
-            // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
-            QuillToolbarCustomButtonOptions smart(
-                IconData icon, String tip, Attribute attr) {
-              final on = active.containsKey(attr.key);
-              return QuillToolbarCustomButtonOptions(
-                icon: Icon(icon, color: on ? primary : null),
-                tooltip: tip,
-                onPressed: () => _smartToggleInline(controller.quill, attr, on),
-              );
-            }
-
-            return QuillSimpleToolbar(
-              controller: controller.quill,
-              config: QuillSimpleToolbarConfig(
->>>>>>> origin/main
                 // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
                 multiRowsDisplay: false,
                 showFontFamily: true,
@@ -335,11 +309,6 @@ class RichTextToolbar extends StatelessWidget {
                 showUndo: true,
                 showRedo: true,
               ),
-<<<<<<< HEAD
-=======
-            );
-          },
->>>>>>> origin/main
         ),
       ),
     );
@@ -378,11 +347,7 @@ void _smartToggleInline(QuillController c, Attribute attr) {
       return;
     }
   }
-<<<<<<< HEAD
   c.formatSelection(toggle);
-=======
-  c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
->>>>>>> origin/main
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
