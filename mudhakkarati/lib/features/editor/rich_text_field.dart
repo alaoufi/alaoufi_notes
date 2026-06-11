@@ -182,40 +182,54 @@ class RichTextToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
+    final primary = Theme.of(context).colorScheme.primary;
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         top: false,
-        child: QuillSimpleToolbar(
-          controller: controller.quill,
-          config: QuillSimpleToolbarConfig(
-            // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
-            multiRowsDisplay: false,
-            showFontFamily: true,
-            showFontSize: true,
-            // زر سريع لإخفاء/إظهار قائمة (نسخ/لصق) أثناء التحرير.
-            customButtons: [
-              QuillToolbarCustomButtonOptions(
-                icon: Icon(hide
-                    ? Icons.content_paste_off_outlined
-                    : Icons.content_paste_outlined),
-                tooltip: hide ? 'إظهار قائمة النسخ/اللصق' : 'إخفاء قائمة النسخ/اللصق',
-                onPressed: () => settings.setHideSelectionMenu(!hide),
-              ),
-            ],
-            buttonOptions: QuillSimpleToolbarButtonOptions(
-              // أزرار تنسيق «ذكية»: المؤشر داخل كلمة (بلا تحديد) يطبّق التنسيق
-              // على الكلمة كاملة — كما في برامج التحرير الاحترافية.
-              bold: _smartToggleOptions(
-                  controller.quill, Icons.format_bold, Attribute.bold),
-              italic: _smartToggleOptions(
-                  controller.quill, Icons.format_italic, Attribute.italic),
-              underLine: _smartToggleOptions(
-                  controller.quill, Icons.format_underline, Attribute.underline),
-              strikeThrough: _smartToggleOptions(controller.quill,
-                  Icons.format_strikethrough, Attribute.strikeThrough),
-              fontFamily: const QuillToolbarFontFamilyButtonOptions(
+        // يُعاد بناء الشريط عند تغيّر التحديد/التنسيق كي تعكس أزرار B/I/U/S حالتها.
+        child: ListenableBuilder(
+          listenable: controller.quill,
+          builder: (context, _) {
+            final active = controller.quill.getSelectionStyle().attributes;
+            // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
+            QuillToolbarCustomButtonOptions smart(
+                IconData icon, String tip, Attribute attr) {
+              final on = active.containsKey(attr.key);
+              return QuillToolbarCustomButtonOptions(
+                icon: Icon(icon, color: on ? primary : null),
+                tooltip: tip,
+                onPressed: () => _smartToggleInline(controller.quill, attr, on),
+              );
+            }
+
+            return QuillSimpleToolbar(
+              controller: controller.quill,
+              config: QuillSimpleToolbarConfig(
+                // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
+                multiRowsDisplay: false,
+                showFontFamily: true,
+                showFontSize: true,
+                // أزرار تنسيق مخصّصة (ذكية) + زرّ إخفاء قائمة النسخ/اللصق.
+                customButtons: [
+                  smart(Icons.format_bold, 'غامق', Attribute.bold),
+                  smart(Icons.format_italic, 'مائل', Attribute.italic),
+                  smart(Icons.format_underline, 'تسطير', Attribute.underline),
+                  smart(Icons.format_strikethrough, 'شطب',
+                      Attribute.strikeThrough),
+                  QuillToolbarCustomButtonOptions(
+                    icon: Icon(hide
+                        ? Icons.content_paste_off_outlined
+                        : Icons.content_paste_outlined),
+                    tooltip: hide
+                        ? 'إظهار قائمة النسخ/اللصق'
+                        : 'إخفاء قائمة النسخ/اللصق',
+                    onPressed: () => settings.setHideSelectionMenu(!hide),
+                  ),
+                ],
+                buttonOptions: const QuillSimpleToolbarButtonOptions(
+                  fontFamily: QuillToolbarFontFamilyButtonOptions(
                 items: {
                   'Cairo': 'Cairo',
                   'Tajawal': 'Tajawal',
@@ -273,33 +287,36 @@ class RichTextToolbar extends StatelessWidget {
                 },
               ),
             ),
-            showBoldButton: true,
-            showItalicButton: true,
-            showUnderLineButton: true,
-            showStrikeThrough: true,
-            showColorButton: true,
-            showBackgroundColorButton: true,
-            showLineHeightButton: true,
-            showClearFormat: true,
-            showListBullets: true,
-            showListNumbers: true,
-            showListCheck: true,
-            showQuote: true,
-            showSmallButton: false,
-            showInlineCode: false,
-            showCodeBlock: false,
-            showIndent: false,
-            showLink: false,
-            showSearchButton: false,
-            showSubscript: false,
-            showSuperscript: false,
-            showHeaderStyle: true,
-            showAlignmentButtons: true,
-            showDirection: false,
-            showDividers: true,
-            showUndo: true,
-            showRedo: true,
-          ),
+                // الغامق/المائل/التسطير/الشطب صارت أزرارًا مخصّصة ذكية أعلاه.
+                showBoldButton: false,
+                showItalicButton: false,
+                showUnderLineButton: false,
+                showStrikeThrough: false,
+                showColorButton: true,
+                showBackgroundColorButton: true,
+                showLineHeightButton: true,
+                showClearFormat: true,
+                showListBullets: true,
+                showListNumbers: true,
+                showListCheck: true,
+                showQuote: true,
+                showSmallButton: false,
+                showInlineCode: false,
+                showCodeBlock: false,
+                showIndent: false,
+                showLink: false,
+                showSearchButton: false,
+                showSubscript: false,
+                showSuperscript: false,
+                showHeaderStyle: true,
+                showAlignmentButtons: true,
+                showDirection: false,
+                showDividers: true,
+                showUndo: true,
+                showRedo: true,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -332,29 +349,6 @@ void _smartToggleInline(QuillController c, Attribute attr, bool isOn) {
     }
   }
   c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
-}
-
-/// زرّ تبديل مخصّص يستخدم [_smartToggleInline] ويُظهر حالة التفعيل بوضوح.
-QuillToolbarToggleStyleButtonOptions _smartToggleOptions(
-    QuillController quill, IconData icon, Attribute attr) {
-  return QuillToolbarToggleStyleButtonOptions(
-    childBuilder: (options, extra) {
-      final toggled = extra.isToggled;
-      final scheme = Theme.of(extra.context).colorScheme;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 1),
-        child: IconButton(
-          visualDensity: VisualDensity.compact,
-          icon: Icon(icon,
-              size: 23, color: toggled ? scheme.onPrimary : null),
-          style: IconButton.styleFrom(
-            backgroundColor: toggled ? scheme.primary : null,
-          ),
-          onPressed: () => _smartToggleInline(quill, attr, toggled),
-        ),
-      );
-    },
-  );
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
