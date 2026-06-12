@@ -19,6 +19,10 @@ class RichTextController {
       selection: const TextSelection.collapsed(offset: 0),
     );
     quill.addListener(_handle);
+    // اتجاه تلقائي لكل سطر حسب لغته (عربي = يمين، إنجليزي = يسار).
+    quill.addListener(_autoDirection);
+    // وسم الأسطر العربية الموجودة مسبقًا بـ rtl وحفظها مرّة واحدة (يثبت الاتجاه).
+    _normalizeDirections();
   }
 
   late final QuillController quill;
@@ -27,6 +31,94 @@ class RichTextController {
   final ScrollController scroll = ScrollController();
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
+
+  bool _settingDir = false;
+
+  /// يضبط اتجاه السطر الحالي حسب أول حرف قويّ فيه (عربي ⇒ يمين، لاتيني ⇒ يسار).
+  ///
+  /// المحرّر افتراضيًّا LTR، فالأسطر اللاتينية تبقى يسارًا، والعربية نَسِمها بـ rtl.
+  /// نستخدم formatSelection على السطر الحالي (آلية زرّ الاتجاه) ويُحفظ التغيير.
+  void _autoDirection() {
+    if (_settingDir) return;
+    final sel = quill.selection;
+    if (!sel.isValid || !sel.isCollapsed) return;
+    try {
+      final text = quill.document.toPlainText();
+      if (text.isEmpty) return;
+      final offset = sel.baseOffset.clamp(0, text.length);
+      final start =
+          offset <= 0 ? 0 : (text.lastIndexOf('\n', offset - 1) + 1);
+      var end = text.indexOf('\n', offset);
+      if (end < 0) end = text.length;
+      if (end <= start) return; // سطر فارغ
+      final dir = _detectDir(text.substring(start, end));
+      if (dir == null) return; // محايد (رموز/أرقام) ⇒ لا تغيير
+      // null (بلا سمة) = الافتراضي LTR.
+      final cur =
+          (quill.getSelectionStyle().attributes['direction']?.value) ?? 'ltr';
+      if (cur == dir) return; // مضبوط بالفعل
+      _settingDir = true;
+      if (dir == 'rtl') {
+        quill.formatSelection(Attribute.rtl);
+        quill.formatSelection(Attribute.rightAlignment);
+      } else {
+        // إزالة سمة الاتجاه ⇒ يعود للافتراضي LTR (يسار).
+        quill.formatSelection(Attribute.clone(Attribute.rtl, null));
+        quill.formatSelection(Attribute.leftAlignment);
+      }
+    } catch (_) {
+      // تجاهل أي خطأ حتى لا يتعطّل التحرير.
+    } finally {
+      _settingDir = false;
+    }
+  }
+
+  /// وسم الأسطر العربية بـ rtl عند الفتح (للملاحظات القديمة). يتجاوز الأسطر
+  /// الموسومة مسبقًا فلا يتكرّر الحفظ، فيثبت الاتجاه ولا يتغيّر عند إعادة الفتح.
+  void _normalizeDirections() {
+    _settingDir = true;
+    try {
+      final text = quill.document.toPlainText();
+      var pos = 0;
+      for (final line in text.split('\n')) {
+        final len = line.length;
+        if (len > 0 && _detectDir(line) == 'rtl') {
+          String? cur;
+          try {
+            cur = quill.document
+                .collectStyle(pos + len, 1)
+                .attributes['direction']
+                ?.value;
+          } catch (_) {}
+          if (cur != 'rtl') {
+            quill.formatText(pos, len + 1, Attribute.rtl);
+            quill.formatText(pos, len + 1, Attribute.rightAlignment);
+          }
+        }
+        pos += len + 1;
+      }
+    } catch (_) {
+    } finally {
+      _settingDir = false;
+    }
+  }
+
+  /// يكشف اتجاه السطر من أول حرف قويّ: 'rtl' عربي، 'ltr' لاتيني، null محايد.
+  static String? _detectDir(String s) {
+    for (final r in s.runes) {
+      if ((r >= 0x0590 && r <= 0x08FF) ||
+          (r >= 0xFB1D && r <= 0xFDFF) ||
+          (r >= 0xFE70 && r <= 0xFEFF)) {
+        return 'rtl';
+      }
+      if ((r >= 0x41 && r <= 0x5A) ||
+          (r >= 0x61 && r <= 0x7A) ||
+          (r >= 0xC0 && r <= 0x24F)) {
+        return 'ltr';
+      }
+    }
+    return null;
+  }
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -51,6 +143,7 @@ class RichTextController {
   void dispose() {
     _debounce?.cancel();
     quill.removeListener(_handle);
+    quill.removeListener(_autoDirection);
     quill.dispose();
     focus.dispose();
     scroll.dispose();
@@ -166,10 +259,13 @@ class RichTextEditorBody extends StatelessWidget {
         },
       ),
     );
-    if (expand) return editor;
+    // الاتجاه الافتراضي للمحرّر LTR: الأسطر اللاتينية يسارًا، والعربية تُوسَم
+    // rtl تلقائيًّا فتنتقل يمينًا (مع موضع مربع الاختيار في الجهة الصحيحة).
+    final body = Directionality(textDirection: TextDirection.ltr, child: editor);
+    if (expand) return body;
     return Container(
       constraints: const BoxConstraints(minHeight: 240),
-      child: editor,
+      child: body,
     );
   }
 }
@@ -481,13 +577,16 @@ class _RichTextViewerState extends State<RichTextViewer> {
 
   @override
   Widget build(BuildContext context) {
-    return QuillEditor.basic(
-      controller: _controller,
-      config: const QuillEditorConfig(
-        showCursor: false,
-        expands: false,
-        padding: EdgeInsets.zero,
-        autoFocus: false,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: QuillEditor.basic(
+        controller: _controller,
+        config: const QuillEditorConfig(
+          showCursor: false,
+          expands: false,
+          padding: EdgeInsets.zero,
+          autoFocus: false,
+        ),
       ),
     );
   }
