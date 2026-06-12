@@ -85,6 +85,13 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 _groupCard(
                   context,
+                  icon: Icons.notifications_active_outlined,
+                  title: 'التنبيهات',
+                  subtitle: 'نغمة التذكيرات',
+                  children: _notifications(context, s, settings),
+                ),
+                _groupCard(
+                  context,
                   icon: Icons.shield_outlined,
                   title: 'الأمان والنسخ الاحتياطي',
                   children: [
@@ -517,7 +524,12 @@ class SettingsScreen extends StatelessWidget {
             onSelectionChanged: (v) => st.setLayout(v.first),
           ),
         ),
+      ];
 
+  // ===================== التنبيهات =====================
+
+  List<Widget> _notifications(BuildContext context, S s, SettingsProvider st) =>
+      [
         // نغمة التنبيه
         ListTile(
           leading: const Icon(Icons.notifications_active_outlined),
@@ -555,6 +567,20 @@ class SettingsScreen extends StatelessWidget {
               }
             },
           ),
+        ),
+        // زرّ سريع لاختيار نغمة من الجهاز (أوضح من القائمة).
+        ListTile(
+          leading: const Icon(Icons.library_music_outlined),
+          title: const Text('اختر نغمة من الجهاز'),
+          subtitle: const Text('كل نغمات جهازك (بما فيها نغمات هواوي)'),
+          trailing: const Icon(Icons.chevron_left),
+          onTap: () async {
+            final uri = await RingtonePicker.pick(current: st.customToneUri);
+            if (uri != null) {
+              final title = await RingtonePicker.title(uri);
+              await st.setCustomTone(uri, title);
+            }
+          },
         ),
       ];
 
