@@ -132,6 +132,12 @@ class BackupService {
     return files;
   }
 
+  /// أحدث نسخة تلقائية محفوظة (أو null إن لم توجد).
+  Future<File?> latestAutoBackup() async {
+    final files = await listAutoBackups(); // الأحدث أولًا
+    return files.isEmpty ? null : files.first;
+  }
+
   /// ينشئ نسخة تلقائية الآن ويحفظها في المجلّد الداخلي مع تدوير الأقدم.
   Future<BackupResult> runAutoBackup() async {
     try {

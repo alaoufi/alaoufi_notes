@@ -8,7 +8,10 @@ import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
+import '../../services/backup_service.dart';
+import '../backup/backup_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../reminders/reminders_provider.dart';
 import '../reminders/reminders_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
@@ -30,6 +33,49 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchCtrl = TextEditingController();
+  bool _restoreChecked = false; // بحث تلقائي عن نسخة احتياطية مرّة واحدة
+
+  /// عند فراغ الملاحظات: يبحث تلقائيًا عن أحدث نسخة محفوظة ويعرض استعادتها.
+  /// [manual] = من زرّ المستخدم (يفتح منتقي الملفات إن لم توجد نسخة داخلية).
+  Future<void> _offerRestore({bool manual = false}) async {
+    final file = await BackupService.instance.latestAutoBackup();
+    if (!mounted) return;
+    if (file == null) {
+      // لا نسخة داخلية — إن كان طلبًا يدويًا نفتح شاشة النسخ لاختيار ملف.
+      if (manual) {
+        await Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const BackupScreen()));
+        if (mounted) await context.read<NotesProvider>().init();
+      }
+      return;
+    }
+    final stamp = file.path.split('/').last;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.restore),
+        title: const Text('استعادة نسخة احتياطية؟'),
+        content: Text('وُجدت نسخة محفوظة:\n$stamp\nهل تريد استعادة ملاحظاتك منها؟'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('لاحقًا')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('استعادة')),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final r = await BackupService.instance.restoreAutoBackup(file);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(r.message)));
+    if (r.success) {
+      await context.read<NotesProvider>().init();
+      if (mounted) await context.read<RemindersProvider>().refresh();
+    }
+  }
 
   @override
   void dispose() {
@@ -418,6 +464,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _empty(BuildContext context, S s) {
+    // بحث تلقائي عن آخر نسخة محفوظة عند أول ظهور للقائمة الفارغة.
+    if (!_restoreChecked) {
+      _restoreChecked = true;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _offerRestore());
+    }
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -430,6 +482,12 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 6),
           Text(s.t('empty_notes_hint'),
               style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: () => _offerRestore(manual: true),
+            icon: const Icon(Icons.restore),
+            label: const Text('استعادة من نسخة احتياطية'),
+          ),
         ],
       ),
     );
