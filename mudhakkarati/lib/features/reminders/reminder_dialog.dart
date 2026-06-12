@@ -6,6 +6,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
+import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
@@ -91,8 +92,7 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                   title: Text(s.t('pick_time')),
                   subtitle: Text(time.format(context)),
                   onTap: () async {
-                    final picked =
-                        await showTimePicker(context: context, initialTime: time);
+                    final picked = await pickTimeWheel(context, time);
                     if (picked != null) setState(() => time = picked);
                   },
                 ),

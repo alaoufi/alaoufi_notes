@@ -6,6 +6,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
+import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
@@ -115,10 +116,12 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
           }
 
           Future<void> pickTime() async {
-            final picked =
-                await showTimePicker(context: context, initialTime: time);
+            final picked = await pickTimeWheel(context, time);
             if (picked != null) setState(() => time = picked);
           }
+          // التاريخ غير مهمّ عند التكرار اليومي/الأسبوعي (يتكرّر بنفسه).
+          final showDate = repeat != ReminderRepeat.weekly &&
+              repeat != ReminderRepeat.daily;
 
           return Padding(
             padding:
@@ -159,12 +162,14 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                           ),
                           const SizedBox(height: 12),
                           Row(children: [
-                            pickerCard(
-                                Icons.calendar_today,
-                                'التاريخ',
-                                '${date.year}/${two(date.month)}/${two(date.day)}',
-                                pickDate),
-                            const SizedBox(width: 10),
+                            if (showDate) ...[
+                              pickerCard(
+                                  Icons.calendar_today,
+                                  'التاريخ',
+                                  '${date.year}/${two(date.month)}/${two(date.day)}',
+                                  pickDate),
+                              const SizedBox(width: 10),
+                            ],
                             pickerCard(Icons.access_time, 'الوقت',
                                 time.format(context), pickTime),
                           ]),
