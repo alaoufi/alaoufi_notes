@@ -9,6 +9,17 @@ import '../../services/tone_preview.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
+/// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
+const List<(int, String)> _weekdayDefs = [
+  (6, 'السبت'),
+  (7, 'الأحد'),
+  (1, 'الإثنين'),
+  (2, 'الثلاثاء'),
+  (3, 'الأربعاء'),
+  (4, 'الخميس'),
+  (5, 'الجمعة'),
+];
+
 const _toneNames = {
   'alarm': 'إنذار',
   'chime': 'لطيفة',
@@ -31,6 +42,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   DateTime date = existing?.time ?? DateTime.now().add(const Duration(hours: 1));
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = existing?.repeat ?? ReminderRepeat.once;
+  final Set<int> weekdays = {date.weekday};
 
   await showModalBottomSheet(
     context: context,
@@ -108,6 +120,31 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                     );
                   }).toList(),
                 ),
+                // عند «أسبوعي»: اختر أيام الأسبوع (يمكن تحديد عدّة أيام).
+                if (repeat == ReminderRepeat.weekly) ...[
+                  const SizedBox(height: 10),
+                  Text('أيام الأسبوع',
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      for (final d in _weekdayDefs)
+                        FilterChip(
+                          label: Text(d.$2),
+                          selected: weekdays.contains(d.$1),
+                          onSelected: (sel) => setState(() {
+                            if (sel) {
+                              weekdays.add(d.$1);
+                            } else {
+                              weekdays.remove(d.$1);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -171,9 +208,16 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                     const Spacer(),
                     FilledButton(
                       onPressed: () async {
-                        await provider.setStandalone(
-                            combined(), repeat, titleCtrl.text,
-                            existing: existing);
+                        if (repeat == ReminderRepeat.weekly &&
+                            weekdays.isNotEmpty) {
+                          await provider.setStandaloneWeekly(
+                              titleCtrl.text, time, weekdays,
+                              existing: existing);
+                        } else {
+                          await provider.setStandalone(
+                              combined(), repeat, titleCtrl.text,
+                              existing: existing);
+                        }
                         if (context.mounted) Navigator.pop(context);
                       },
                       child: Text(s.t('save')),
