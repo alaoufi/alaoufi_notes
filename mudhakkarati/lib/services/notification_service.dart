@@ -77,8 +77,17 @@ class NotificationService {
     _initialized = true;
   }
 
-  /// النغمات المتاحة (أسماء ملفات raw). forest = نغمة غابة أصلية مولّدة.
-  static const alarmTones = ['alarm', 'chime', 'bell', 'forest'];
+  /// النغمات المتاحة (أسماء ملفات raw). نغمات طبيعية ناعمة مولّدة أصليًّا.
+  static const alarmTones = [
+    'alarm',
+    'chime',
+    'bell',
+    'forest',
+    'birds',
+    'water',
+    'rain',
+    'ocean'
+  ];
 
   /// النغمة المختارة حاليًا (افتراضي alarm) — تُضبط من الإعدادات.
   /// قد تكون 'custom' عند اختيار نغمة من ملفات/نغمات الجهاز.

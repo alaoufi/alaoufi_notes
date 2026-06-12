@@ -4,7 +4,21 @@ import 'package:provider/provider.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
+import '../../services/ringtone_picker.dart';
+import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
+
+/// أسماء النغمات للعرض في منتقي التذكير.
+const _toneNames = {
+  'alarm': 'إنذار',
+  'chime': 'لطيفة',
+  'bell': 'جرس',
+  'forest': 'غابة 🌳',
+  'birds': 'طيور 🐦',
+  'water': 'ماء 💧',
+  'rain': 'مطر 🌧️',
+  'ocean': 'محيط 🌊',
+};
 
 /// حوار لإضافة/تعديل تذكير لملاحظة (تاريخ + وقت + تكرار).
 Future<void> showReminderDialog(BuildContext context, Note note) async {
@@ -12,6 +26,8 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
   DateTime date = DateTime.now().add(const Duration(hours: 1));
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = ReminderRepeat.once;
+
+  final settings = context.read<SettingsProvider>();
 
   // حمّل التذكير الحالي إن وُجد.
   final provider = context.read<RemindersProvider>();
@@ -93,7 +109,48 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 8),
+                // النغمة بجانب إنشاء التنبيه مباشرة.
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.music_note_outlined),
+                  title: const Text('النغمة'),
+                  subtitle: Text(settings.alarmTone == 'custom'
+                      ? (settings.customToneTitle ?? 'نغمة مخصّصة')
+                      : (_toneNames[settings.alarmTone] ?? 'إنذار')),
+                  trailing: DropdownButton<String>(
+                    value: _toneNames.containsKey(settings.alarmTone)
+                        ? settings.alarmTone
+                        : 'custom',
+                    underline: const SizedBox.shrink(),
+                    items: [
+                      for (final e in _toneNames.entries)
+                        DropdownMenuItem(value: e.key, child: Text(e.value)),
+                      if (settings.alarmTone == 'custom')
+                        DropdownMenuItem(
+                            value: 'custom',
+                            child: Text(settings.customToneTitle ?? 'مخصّصة 🎵',
+                                overflow: TextOverflow.ellipsis)),
+                      const DropdownMenuItem(
+                          value: 'pick', child: Text('من الجهاز… 📱')),
+                    ],
+                    onChanged: (v) async {
+                      if (v == null) return;
+                      if (v == 'pick') {
+                        final uri = await RingtonePicker.pick(
+                            current: settings.customToneUri);
+                        if (uri != null) {
+                          final title = await RingtonePicker.title(uri);
+                          await settings.setCustomTone(uri, title);
+                        }
+                      } else {
+                        await settings.setAlarmTone(v);
+                      }
+                      setState(() {});
+                    },
+                  ),
+                ),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     if (existing != null)
