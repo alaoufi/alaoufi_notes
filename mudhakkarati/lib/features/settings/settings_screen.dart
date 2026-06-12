@@ -528,61 +528,81 @@ class SettingsScreen extends StatelessWidget {
 
   // ===================== التنبيهات =====================
 
-  List<Widget> _notifications(BuildContext context, S s, SettingsProvider st) =>
-      [
-        // نغمة التنبيه
-        ListTile(
-          leading: const Icon(Icons.notifications_active_outlined),
-          title: const Text('نغمة التنبيه'),
-          subtitle: st.alarmTone == 'custom'
-              ? Text('من الجهاز: ${st.customToneTitle ?? 'نغمة مخصّصة'}',
-                  maxLines: 1, overflow: TextOverflow.ellipsis)
-              : null,
-          trailing: DropdownButton<String>(
-            value: st.alarmTone,
-            underline: const SizedBox.shrink(),
-            items: [
-              const DropdownMenuItem(value: 'alarm', child: Text('إنذار')),
-              const DropdownMenuItem(value: 'chime', child: Text('لطيفة')),
-              const DropdownMenuItem(value: 'bell', child: Text('جرس')),
-              const DropdownMenuItem(value: 'forest', child: Text('غابة 🌳')),
-              if (st.alarmTone == 'custom')
-                DropdownMenuItem(
-                    value: 'custom',
-                    child: Text(st.customToneTitle ?? 'مخصّصة 🎵',
-                        overflow: TextOverflow.ellipsis)),
-              const DropdownMenuItem(
-                  value: 'pick', child: Text('من الجهاز… 📱')),
-            ],
-            onChanged: (v) async {
-              if (v == null) return;
-              if (v == 'pick') {
-                final uri = await RingtonePicker.pick(current: st.customToneUri);
-                if (uri != null) {
-                  final title = await RingtonePicker.title(uri);
-                  await st.setCustomTone(uri, title);
-                }
-              } else {
-                await st.setAlarmTone(v);
-              }
-            },
-          ),
+  /// شارة عنوان مجموعة صغيرة داخل البطاقة.
+  Widget _miniHeader(BuildContext context, String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+        child: Text(text,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.bold)),
+      );
+
+  /// عنصر نغمة قابل للاختيار (أيقونة + اسم + علامة تحديد).
+  Widget _toneTile(BuildContext context, SettingsProvider st,
+      {required String value, required IconData icon, required String label}) {
+    final selected = st.alarmTone == value;
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      dense: true,
+      leading: Icon(icon, color: selected ? scheme.primary : null),
+      title: Text(label,
+          style: TextStyle(
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
+      trailing: selected
+          ? Icon(Icons.check_circle, color: scheme.primary)
+          : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+      onTap: () => st.setAlarmTone(value),
+    );
+  }
+
+  List<Widget> _notifications(BuildContext context, S s, SettingsProvider st) {
+    Future<void> pickDevice() async {
+      final uri = await RingtonePicker.pick(current: st.customToneUri);
+      if (uri != null) {
+        final title = await RingtonePicker.title(uri);
+        await st.setCustomTone(uri, title);
+      }
+    }
+
+    final scheme = Theme.of(context).colorScheme;
+    return [
+      _miniHeader(context, 'نغمات كلاسيكية'),
+      _toneTile(context, st,
+          value: 'alarm', icon: Icons.notifications_active, label: 'إنذار'),
+      _toneTile(context, st,
+          value: 'chime', icon: Icons.notifications_none, label: 'لطيفة'),
+      _toneTile(context, st,
+          value: 'bell', icon: Icons.notifications, label: 'جرس'),
+      const Divider(height: 1),
+      _miniHeader(context, 'نغمات طبيعية ناعمة 🌿'),
+      _toneTile(context, st,
+          value: 'forest', icon: Icons.forest, label: 'غابة 🌳'),
+      _toneTile(context, st,
+          value: 'birds', icon: Icons.flutter_dash, label: 'طيور 🐦'),
+      _toneTile(context, st,
+          value: 'water', icon: Icons.water_drop, label: 'ماء 💧'),
+      _toneTile(context, st,
+          value: 'rain', icon: Icons.grain, label: 'مطر 🌧️'),
+      const Divider(height: 1),
+      _miniHeader(context, 'من جهازك'),
+      ListTile(
+        leading: Icon(Icons.library_music_outlined,
+            color: st.alarmTone == 'custom' ? scheme.primary : null),
+        title: const Text('اختر نغمة من الجهاز'),
+        subtitle: Text(
+          st.alarmTone == 'custom'
+              ? 'الحالية: ${st.customToneTitle ?? 'نغمة مخصّصة'}'
+              : 'كل نغمات جهازك (بما فيها نغمات هواوي)',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
-        // زرّ سريع لاختيار نغمة من الجهاز (أوضح من القائمة).
-        ListTile(
-          leading: const Icon(Icons.library_music_outlined),
-          title: const Text('اختر نغمة من الجهاز'),
-          subtitle: const Text('كل نغمات جهازك (بما فيها نغمات هواوي)'),
-          trailing: const Icon(Icons.chevron_left),
-          onTap: () async {
-            final uri = await RingtonePicker.pick(current: st.customToneUri);
-            if (uri != null) {
-              final title = await RingtonePicker.title(uri);
-              await st.setCustomTone(uri, title);
-            }
-          },
-        ),
-      ];
+        trailing: st.alarmTone == 'custom'
+            ? Icon(Icons.check_circle, color: scheme.primary)
+            : const Icon(Icons.chevron_left),
+        onTap: pickDevice,
+      ),
+    ];
+  }
 
   // ===================== حول التطبيق =====================
 
