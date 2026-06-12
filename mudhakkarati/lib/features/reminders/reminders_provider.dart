@@ -72,6 +72,38 @@ class RemindersProvider extends ChangeNotifier {
   }
 
   Future<Reminder?> getForNote(int noteId) => _repo.getForNote(noteId);
+  Future<List<Reminder>> getAllForNote(int noteId) =>
+      _repo.getAllForNote(noteId);
+
+  /// تذكير أسبوعي لملاحظة على **أيام محدّدة**: يُلغي تذكيرات الملاحظة السابقة،
+  /// ثم يُنشئ تذكيرًا أسبوعيًّا لكل يوم مختار. [weekdays] بقيم DateTime.weekday.
+  Future<void> setNoteWeekly(
+    Note note,
+    TimeOfDay tod,
+    Set<int> weekdays,
+  ) async {
+    // إلغاء وحذف كل تذكيرات الملاحظة الحالية.
+    final existing = await _repo.getAllForNote(note.id!);
+    for (final r in existing) {
+      await NotificationService.instance.cancel(r.notificationId);
+    }
+    await _repo.deleteForNote(note.id!);
+
+    final title = note.title.trim().isEmpty ? 'تذكير' : note.title.trim();
+    for (final wd in weekdays) {
+      final when = _nextWeekday(wd, tod);
+      final reminder = Reminder(
+        noteId: note.id!,
+        time: when,
+        repeat: ReminderRepeat.weekly,
+        notificationId: _generateId(),
+      );
+      final id = await _repo.insert(reminder);
+      await NotificationService.instance
+          .schedule(reminder.copyWith(id: id), title, note.content);
+    }
+    await refresh();
+  }
 
   /// تعيين (أو تحديث) تذكير لملاحظة وجدولته كإشعار محلي.
   Future<void> setReminder(
@@ -164,12 +196,13 @@ class RemindersProvider extends ChangeNotifier {
   }
 
   Future<void> removeForNote(int noteId) async {
-    final r = await _repo.getForNote(noteId);
-    if (r != null) {
+    final all = await _repo.getAllForNote(noteId);
+    if (all.isEmpty) return;
+    for (final r in all) {
       await NotificationService.instance.cancel(r.notificationId);
-      await _repo.deleteForNote(noteId);
-      await refresh();
     }
+    await _repo.deleteForNote(noteId);
+    await refresh();
   }
 
   int _generateId() => Random().nextInt(1 << 30) + 1;

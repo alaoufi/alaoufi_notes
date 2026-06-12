@@ -30,6 +30,14 @@ class ReminderRepository {
     return Reminder.fromMap(rows.first);
   }
 
+  /// كل تذكيرات الملاحظة (قد تكون أكثر من واحد عند الأسبوعي بأيام متعددة).
+  Future<List<Reminder>> getAllForNote(int noteId) async {
+    final db = await _db;
+    final rows = await db
+        .query('reminders', where: 'note_id = ?', whereArgs: [noteId]);
+    return rows.map(Reminder.fromMap).toList();
+  }
+
   Future<int> insert(Reminder reminder) async {
     final db = await _db;
     return db.insert('reminders', reminder.toMap());

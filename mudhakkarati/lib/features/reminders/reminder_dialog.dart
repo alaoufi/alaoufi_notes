@@ -10,6 +10,17 @@ import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
+/// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
+const List<(int, String)> _weekdayDefs = [
+  (6, 'السبت'),
+  (7, 'الأحد'),
+  (1, 'الإثنين'),
+  (2, 'الثلاثاء'),
+  (3, 'الأربعاء'),
+  (4, 'الخميس'),
+  (5, 'الجمعة'),
+];
+
 /// أسماء النغمات للعرض في منتقي التذكير.
 const _toneNames = {
   'alarm': 'إنذار',
@@ -33,11 +44,22 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
 
   // حمّل التذكير الحالي إن وُجد.
   final provider = context.read<RemindersProvider>();
-  final existing = await provider.getForNote(note.id!);
+  final all = await provider.getAllForNote(note.id!);
+  final existing = all.isEmpty ? null : all.first;
+  final Set<int> weekdays = {date.weekday};
   if (existing != null) {
     date = existing.time;
     time = TimeOfDay.fromDateTime(existing.time);
     repeat = existing.repeat;
+    // عند الأسبوعي بأيام متعددة: اجمع أيام كل تذكيرات الملاحظة.
+    if (all.length > 1 || existing.repeat == ReminderRepeat.weekly) {
+      weekdays
+        ..clear()
+        ..addAll(all
+            .where((r) => r.repeat == ReminderRepeat.weekly)
+            .map((r) => r.time.weekday));
+      if (weekdays.isEmpty) weekdays.add(date.weekday);
+    }
   }
 
   if (!context.mounted) return;
@@ -70,22 +92,26 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                 Text(s.t('add_reminder'),
                     style: Theme.of(context).textTheme.titleLarge),
                 const SizedBox(height: 16),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.calendar_today),
-                  title: Text(s.t('pick_date')),
-                  subtitle: Text(
-                      '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}'),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: date,
-                      firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) setState(() => date = picked);
-                  },
-                ),
+                // التاريخ غير مهمّ عند التكرار اليومي/الأسبوعي (يتكرّر بنفسه).
+                if (repeat != ReminderRepeat.weekly &&
+                    repeat != ReminderRepeat.daily)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.calendar_today),
+                    title: Text(s.t('pick_date')),
+                    subtitle: Text(
+                        '${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}'),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: date,
+                        firstDate:
+                            DateTime.now().subtract(const Duration(days: 1)),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) setState(() => date = picked);
+                    },
+                  ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.access_time),
@@ -110,6 +136,30 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     );
                   }).toList(),
                 ),
+                if (repeat == ReminderRepeat.weekly) ...[
+                  const SizedBox(height: 12),
+                  Text('أيام الأسبوع',
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final d in _weekdayDefs)
+                        FilterChip(
+                          label: Text(d.$2),
+                          selected: weekdays.contains(d.$1),
+                          onSelected: (sel) => setState(() {
+                            if (sel) {
+                              weekdays.add(d.$1);
+                            } else {
+                              weekdays.remove(d.$1);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 // النغمة بجانب إنشاء التنبيه مباشرة.
                 ListTile(
@@ -165,7 +215,7 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     if (existing != null)
                       TextButton.icon(
                         onPressed: () async {
-                          await provider.removeReminder(existing);
+                          await provider.removeForNote(note.id!);
                           if (context.mounted) Navigator.pop(context);
                         },
                         icon: const Icon(Icons.delete_outline),
@@ -174,7 +224,12 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     const Spacer(),
                     FilledButton(
                       onPressed: () async {
-                        await provider.setReminder(note, combined(), repeat);
+                        if (repeat == ReminderRepeat.weekly &&
+                            weekdays.isNotEmpty) {
+                          await provider.setNoteWeekly(note, time, weekdays);
+                        } else {
+                          await provider.setReminder(note, combined(), repeat);
+                        }
                         if (context.mounted) Navigator.pop(context);
                       },
                       child: Text(s.t('save')),
