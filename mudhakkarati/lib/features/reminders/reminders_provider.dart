@@ -29,7 +29,12 @@ class RemindersProvider extends ChangeNotifier {
     final reminders = await _repo.getAll();
     final views = <ReminderView>[];
     for (final r in reminders) {
-      final note = await _notes.getNote(r.noteId);
+      if (r.isStandalone) {
+        // تنبيه مستقلّ (بلا ملاحظة) — يُعرض دائمًا.
+        views.add(ReminderView(r, null));
+        continue;
+      }
+      final note = await _notes.getNote(r.noteId!);
       // نتجاهل تذكيرات الملاحظات المحذوفة نهائيًا.
       if (note != null && !note.isDeleted) {
         views.add(ReminderView(r, note));
@@ -37,6 +42,33 @@ class RemindersProvider extends ChangeNotifier {
     }
     _items = views;
     notifyListeners();
+  }
+
+  /// إنشاء/تحديث تنبيه مستقلّ (غير مرتبط بملاحظة) بعنوان حرّ.
+  Future<void> setStandalone(
+    DateTime time,
+    ReminderRepeat repeat,
+    String title, {
+    Reminder? existing,
+  }) async {
+    if (existing != null) {
+      await NotificationService.instance.cancel(existing.notificationId);
+      await _repo.delete(existing.id!);
+    }
+    final notifId = _generateId();
+    final reminder = Reminder(
+      title: title.trim().isEmpty ? 'تنبيه' : title.trim(),
+      time: time,
+      repeat: repeat,
+      notificationId: notifId,
+    );
+    final id = await _repo.insert(reminder);
+    await NotificationService.instance.schedule(
+      reminder.copyWith(id: id),
+      reminder.title!,
+      '',
+    );
+    await refresh();
   }
 
   Future<Reminder?> getForNote(int noteId) => _repo.getForNote(noteId);

@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 7;
+  static const _dbVersion = 8;
 
   Database? _db;
   Future<Database>? _opening;
@@ -240,7 +240,8 @@ class AppDatabase {
     await db.execute('''
       CREATE TABLE reminders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        note_id INTEGER NOT NULL,
+        note_id INTEGER,
+        title TEXT,
         time INTEGER NOT NULL,
         repeat TEXT NOT NULL DEFAULT 'once',
         is_active INTEGER NOT NULL DEFAULT 1,
@@ -283,6 +284,34 @@ class AppDatabase {
     if (oldVersion < 7) {
       // تباعد أسطر التسطير لكل ملاحظة (null = الافتراضي العام).
       await db.execute('ALTER TABLE notes ADD COLUMN rule_line_height REAL');
+    }
+    if (oldVersion < 8) {
+      // تنبيهات مستقلّة: note_id يصبح اختياريًّا + عمود عنوان. نعيد بناء الجدول
+      // لأن SQLite لا يسمح بإزالة قيد NOT NULL. (إضافة فقط — لا تُفقد تذكيراتك.)
+      await db.execute('PRAGMA foreign_keys=off');
+      await db.execute('''
+        CREATE TABLE reminders_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          note_id INTEGER,
+          title TEXT,
+          time INTEGER NOT NULL,
+          repeat TEXT NOT NULL DEFAULT 'once',
+          is_active INTEGER NOT NULL DEFAULT 1,
+          notification_id INTEGER NOT NULL,
+          FOREIGN KEY (note_id) REFERENCES notes (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute('''
+        INSERT INTO reminders_new
+          (id, note_id, time, repeat, is_active, notification_id)
+        SELECT id, note_id, time, repeat, is_active, notification_id
+        FROM reminders
+      ''');
+      await db.execute('DROP TABLE reminders');
+      await db.execute('ALTER TABLE reminders_new RENAME TO reminders');
+      await db.execute(
+          'CREATE INDEX idx_reminders_note ON reminders (note_id)');
+      await db.execute('PRAGMA foreign_keys=on');
     }
   }
 
