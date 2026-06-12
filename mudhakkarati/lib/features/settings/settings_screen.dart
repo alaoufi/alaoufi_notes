@@ -11,6 +11,7 @@ import '../../services/tone_preview.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/paper_background.dart';
 import '../backup/backup_screen.dart';
+import '../backup/daily_backup_switch.dart';
 import '../categories/manage_categories_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../security/security_settings_screen.dart';
@@ -97,6 +98,7 @@ class SettingsScreen extends StatelessWidget {
                   icon: Icons.shield_outlined,
                   title: 'الأمان والنسخ الاحتياطي',
                   children: [
+                    const DailyBackupSwitch(),
                     _nav(context, Icons.lock_outline, s.t('security'),
                         const SecuritySettingsScreen()),
                     _nav(context, Icons.backup_outlined,

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
@@ -130,6 +131,22 @@ class BackupService {
         .toList();
     files.sort((a, b) => b.path.compareTo(a.path));
     return files;
+  }
+
+  /// تفعيل النسخة اليومية التلقائية بضغطة واحدة: يضبط الفترة يومًا، ويولّد كلمة
+  /// مرور عشوائية تُحفظ بأمان (تُستخدم تلقائيًا عند الاستعادة الداخلية)، ثم ينشئ
+  /// نسخة فورًا. لا يحتاج المستخدم لإدخال أي شيء.
+  Future<void> enableDailyAutoBackup() async {
+    await setAutoBackupIntervalDays(1);
+    if (!await hasAutoBackupPassword()) {
+      final rnd = Random.secure();
+      final pwd = List.generate(
+              24, (_) => rnd.nextInt(36).toRadixString(36))
+          .join();
+      await setAutoBackupPassword(pwd);
+    }
+    await setAutoBackupEnabled(true);
+    await runAutoBackup(); // نسخة فورية أولى.
   }
 
   /// أحدث نسخة تلقائية محفوظة (أو null إن لم توجد).
