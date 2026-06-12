@@ -228,6 +228,10 @@ class RichTextToolbar extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 6),
               children: [
+                // التراجع/الإعادة في أول الصفّ.
+                QuillToolbarHistoryButton(controller: q, isUndo: true),
+                QuillToolbarHistoryButton(controller: q, isUndo: false),
+                sep(),
                 // الخط + الحجم.
                 QuillToolbarFontFamilyButton(
                   controller: q,
@@ -270,10 +274,8 @@ class RichTextToolbar extends StatelessWidget {
                 alignBtn(Icons.format_align_justify, 'ضبط',
                     Attribute.justifyAlignment),
                 sep(),
-                // مسح التنسيق + تراجع/إعادة.
+                // مسح التنسيق.
                 QuillToolbarClearFormatButton(controller: q),
-                QuillToolbarHistoryButton(controller: q, isUndo: true),
-                QuillToolbarHistoryButton(controller: q, isUndo: false),
                 // إظهار/إخفاء قائمة النسخ واللصق.
                 IconButton(
                   icon: Icon(hide
