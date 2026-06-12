@@ -19,6 +19,7 @@ class SettingsProvider extends ChangeNotifier {
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
+  int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
   String? _customToneTitle; // اسم النغمة المخصّصة للعرض
   int _customToneSeq = 0; // معرّف متزايد لقناة النغمة المخصّصة
@@ -46,6 +47,7 @@ class SettingsProvider extends ChangeNotifier {
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
+  int get snoozeMinutes => _snoozeMinutes;
   String? get customToneUri => _customToneUri;
   String? get customToneTitle => _customToneTitle;
 
@@ -144,6 +146,8 @@ class SettingsProvider extends ChangeNotifier {
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
+    _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
+    NotificationService.instance.snoozeMinutes = _snoozeMinutes;
     _customToneUri = prefs.getString(_kCustomToneUri);
     _customToneTitle = prefs.getString(_kCustomToneTitle);
     _customToneSeq = prefs.getInt(_kCustomToneSeq) ?? 0;
@@ -261,6 +265,15 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kTone, tone);
+  }
+
+  /// مدّة الغفوة بالدقائق (0 = بلا غفوة).
+  Future<void> setSnoozeMinutes(int minutes) async {
+    _snoozeMinutes = minutes;
+    NotificationService.instance.snoozeMinutes = minutes;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('snooze_minutes', minutes);
   }
 
   /// يضبط نغمة مخصّصة مختارة من نغمات الجهاز ([uri] رابطها، [title] اسمها).

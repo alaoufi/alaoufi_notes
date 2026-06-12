@@ -258,6 +258,40 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               },
                             ),
                           ),
+                          const SizedBox(height: 10),
+                          label('الغفوة'),
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.snooze),
+                            title: const Text('مدّة الغفوة'),
+                            subtitle: Text(settings.snoozeMinutes == 0
+                                ? 'بلا غفوة'
+                                : '${settings.snoozeMinutes} دقيقة'),
+                            trailing: DropdownButton<int>(
+                              value: const [0, 5, 10, 15, 30]
+                                      .contains(settings.snoozeMinutes)
+                                  ? settings.snoozeMinutes
+                                  : 10,
+                              underline: const SizedBox.shrink(),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 0, child: Text('بلا غفوة')),
+                                DropdownMenuItem(
+                                    value: 5, child: Text('5 دقائق')),
+                                DropdownMenuItem(
+                                    value: 10, child: Text('10 دقائق')),
+                                DropdownMenuItem(
+                                    value: 15, child: Text('15 دقيقة')),
+                                DropdownMenuItem(
+                                    value: 30, child: Text('30 دقيقة')),
+                              ],
+                              onChanged: (v) async {
+                                if (v == null) return;
+                                await settings.setSnoozeMinutes(v);
+                                setState(() {});
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),

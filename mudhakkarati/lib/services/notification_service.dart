@@ -33,8 +33,8 @@ class NotificationService {
   static const _snoozeAction = 'snooze';
   static const _dismissAction = 'dismiss';
 
-  /// مدّة الغفوة بالدقائق.
-  static const snoozeMinutes = 10;
+  /// مدّة الغفوة بالدقائق (0 = بلا غفوة). تُضبط من الإعدادات.
+  int snoozeMinutes = 10;
 
   /// يُستدعى عند فتح ملاحظة من التذكير (يضبطه التطبيق).
   void Function(int noteId)? onOpenNote;
@@ -154,9 +154,12 @@ class NotificationService {
         vibrationPattern: Int64List.fromList([0, 600, 300, 600, 300, 600]),
         // FLAG_INSISTENT: يُكرّر الصوت حتى يوقفه المستخدم.
         additionalFlags: Int32List.fromList([4]),
-        // بلا غفوة — زرّ إيقاف فقط.
-        actions: const [
-          AndroidNotificationAction(_dismissAction, 'إيقاف',
+        // زرّ غفوة (إن فُعّلت) + زرّ إيقاف.
+        actions: [
+          if (snoozeMinutes > 0)
+            AndroidNotificationAction(_snoozeAction, 'غفوة',
+                showsUserInterface: false, cancelNotification: true),
+          const AndroidNotificationAction(_dismissAction, 'إيقاف',
               showsUserInterface: false, cancelNotification: true),
         ],
       );
@@ -234,7 +237,7 @@ class NotificationService {
     final title = _extractStr(payload, 'title:') ?? '⏰ تذكير';
     final body = _extractStr(payload, 'body:') ?? 'تذكير مؤجَّل';
     final when = tz.TZDateTime.now(tz.local)
-        .add(const Duration(minutes: snoozeMinutes));
+        .add(Duration(minutes: snoozeMinutes > 0 ? snoozeMinutes : 10));
     await _plugin.zonedSchedule(
       id, // نفس المعرّف.
       title,
