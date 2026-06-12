@@ -445,12 +445,14 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  /// عنوان مقروء لملف نسخة تلقائية مستخرَج من طابعه الزمني في الاسم.
+  /// عنوان مقروء لملف نسخة تلقائية (اسم اليوم + وقت آخر تعديل).
   String _autoBackupLabel(File f) {
-    final name = f.path.split(Platform.pathSeparator).last;
-    final m = RegExp(r'(\d{4}-\d{2}-\d{2})_(\d{2})(\d{2})').firstMatch(name);
-    if (m == null) return name;
-    return '${m.group(1)}  ${m.group(2)}:${m.group(3)}';
+    const days = ['', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة',
+      'السبت', 'الأحد'];
+    String two(int n) => n.toString().padLeft(2, '0');
+    final m = f.statSync().modified;
+    return '${days[m.weekday]}  ${m.year}/${two(m.month)}/${two(m.day)}  '
+        '${two(m.hour)}:${two(m.minute)}';
   }
 
   @override

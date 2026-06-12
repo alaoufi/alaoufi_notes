@@ -45,6 +45,7 @@ class BackupService {
   static const _kAutoIntervalDays = 'auto_backup_interval_days';
   static const _kAutoKeep = 'auto_backup_keep';
   static const _kLastAuto = 'last_auto_backup';
+  static const _kAutoDir = 'auto_backup_dir'; // مجلّد مخصّص يختاره المستخدم
   // كلمة مرور النسخ التلقائي تُحفظ في التخزين الآمن (Keystore) حتى تعمل
   // النسخة دون تدخّل المستخدم.
   static const _kAutoPwd = 'auto_backup_password';
@@ -112,15 +113,52 @@ class BackupService {
     return v != null && v.isNotEmpty;
   }
 
-  /// مجلّد النسخ التلقائية داخل بيانات التطبيق الخاصة.
+  /// المجلّد المخصّص الذي اختاره المستخدم لحفظ النسخ (أو null = الافتراضي الداخلي).
+  Future<String?> autoBackupCustomDir() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_kAutoDir);
+    return (v == null || v.isEmpty) ? null : v;
+  }
+
+  /// يضبط مجلّد الحفظ بعد اختبار قابليته للكتابة. يعيد true عند النجاح.
+  Future<bool> setAutoBackupCustomDir(String path) async {
+    try {
+      final d = Directory(path);
+      if (!await d.exists()) await d.create(recursive: true);
+      final test = File(p.join(path, '.write_test'));
+      await test.writeAsString('ok', flush: true);
+      await test.delete();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_kAutoDir, path);
+      return true;
+    } catch (_) {
+      return false; // غير قابل للكتابة على هذا النظام (مثلًا قيود التخزين).
+    }
+  }
+
+  /// يعيد مجلّد الحفظ إلى الداخلي الافتراضي.
+  Future<void> clearAutoBackupCustomDir() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kAutoDir);
+  }
+
+  /// مجلّد النسخ التلقائية: المخصّص إن وُجد وكان قابلًا للكتابة، وإلا الداخلي.
   Future<Directory> autoBackupDir() async {
+    final custom = await autoBackupCustomDir();
+    if (custom != null) {
+      try {
+        final d = Directory(custom);
+        if (!await d.exists()) await d.create(recursive: true);
+        return d;
+      } catch (_) {/* تعذّر — نرجع للداخلي */}
+    }
     final base = await getApplicationDocumentsDirectory();
     final dir = Directory(p.join(base.path, 'auto_backups'));
     if (!await dir.exists()) await dir.create(recursive: true);
     return dir;
   }
 
-  /// قائمة ملفات النسخ التلقائية (الأحدث أولًا — الاسم يحمل طابعًا زمنيًا).
+  /// قائمة ملفات النسخ التلقائية (الأحدث أولًا حسب وقت التعديل).
   Future<List<File>> listAutoBackups() async {
     final dir = await autoBackupDir();
     if (!await dir.exists()) return [];
@@ -129,7 +167,8 @@ class BackupService {
         .whereType<File>()
         .where((f) => f.path.endsWith('.$_ext'))
         .toList();
-    files.sort((a, b) => b.path.compareTo(a.path));
+    files.sort((a, b) =>
+        b.statSync().modified.compareTo(a.statSync().modified));
     return files;
   }
 
@@ -155,7 +194,8 @@ class BackupService {
     return files.isEmpty ? null : files.first;
   }
 
-  /// ينشئ نسخة تلقائية الآن ويحفظها في المجلّد الداخلي مع تدوير الأقدم.
+  /// ينشئ نسخة تلقائية الآن في **خانة يوم الأسبوع الحالي**: نسخة كل يوم تستبدل
+  /// نسخة نفس اليوم من الأسبوع الماضي ⇒ 7 نسخ دائمة دوريّة (واحدة لكل يوم).
   Future<BackupResult> runAutoBackup() async {
     try {
       final pwd = await _secure.read(key: _kAutoPwd);
@@ -163,27 +203,14 @@ class BackupService {
         return const BackupResult(false, 'لم تُضبط كلمة مرور النسخ التلقائي');
       }
       final encrypted = await _buildEncrypted(pwd);
-      final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       final dir = await autoBackupDir();
-      final file = File(p.join(dir.path, 'auto_$stamp.$_ext'));
+      // خانة ثابتة لكل يوم من الأسبوع (1=الإثنين .. 7=الأحد) — تُستبدل أسبوعيًّا.
+      final file = File(p.join(dir.path, 'auto_w${DateTime.now().weekday}.$_ext'));
       await file.writeAsBytes(encrypted, flush: true);
-      await _rotateAutoBackups();
       await _stamp(_kLastAuto);
       return BackupResult(true, 'تم إنشاء نسخة تلقائية', filePath: file.path);
     } catch (e) {
       return BackupResult(false, 'فشل النسخ التلقائي: $e');
-    }
-  }
-
-  /// يحذف النسخ التلقائية الأقدم مُبقيًا على آخر [autoBackupKeep] نسخة.
-  Future<void> _rotateAutoBackups() async {
-    final keep = await autoBackupKeep();
-    final files = await listAutoBackups(); // الأحدث أولًا
-    if (files.length <= keep) return;
-    for (final f in files.sublist(keep)) {
-      try {
-        await f.delete();
-      } catch (_) {/* تجاهل */}
     }
   }
 
