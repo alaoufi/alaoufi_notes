@@ -81,10 +81,42 @@ class NotificationService {
   static const alarmTones = ['alarm', 'chime', 'bell', 'forest'];
 
   /// النغمة المختارة حاليًا (افتراضي alarm) — تُضبط من الإعدادات.
+  /// قد تكون 'custom' عند اختيار نغمة من ملفات/نغمات الجهاز.
   String _tone = 'alarm';
   String get tone => _tone;
   set tone(String t) {
-    if (alarmTones.contains(t)) _tone = t;
+    if (alarmTones.contains(t) || t == 'custom') _tone = t;
+  }
+
+  // ===== نغمة مخصّصة من الجهاز (رابط URI يقرأه نظام الإشعارات) =====
+  String? _customUri;
+  String _customChannelId = 'alaoufi_alarm_custom_0';
+
+  /// يضبط نغمة مخصّصة من الجهاز ويُنشئ قناة جديدة لها (قنوات أندرويد لا
+  /// يمكن تغيير صوتها بعد الإنشاء، لذا نُنشئ قناة بمعرّف جديد عند كل تغيير).
+  Future<void> setCustomTone(String? uri, {int seq = 0}) async {
+    _customUri = uri;
+    if (uri == null || uri.isEmpty) return;
+    _tone = 'custom';
+    _customChannelId = 'alaoufi_alarm_custom_$seq';
+    final androidImpl = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    // حذف القنوات المخصّصة السابقة (تنظيف) قبل إنشاء الجديدة.
+    for (var i = seq - 1; i >= 0 && i >= seq - 3; i--) {
+      await androidImpl?.deleteNotificationChannel('alaoufi_alarm_custom_$i');
+    }
+    await androidImpl?.createNotificationChannel(
+      AndroidNotificationChannel(
+        _customChannelId,
+        'المنبّه (نغمة مخصّصة)',
+        description: 'تنبيهات بنغمة مختارة من الجهاز',
+        importance: Importance.max,
+        playSound: true,
+        sound: UriAndroidNotificationSound(uri),
+        audioAttributesUsage: AudioAttributesUsage.alarm,
+        enableVibration: true,
+      ),
+    );
   }
 
   Future<void> requestPermissions() async {
@@ -94,16 +126,20 @@ class NotificationService {
     await androidImpl?.requestExactAlarmsPermission();
   }
 
-  AndroidNotificationDetails get _alarmDetails => AndroidNotificationDetails(
-        'alaoufi_alarm_$_tone',
-        'المنبّه ($_tone)',
+  AndroidNotificationDetails get _alarmDetails {
+    final isCustom = _tone == 'custom' && _customUri != null;
+    return AndroidNotificationDetails(
+        isCustom ? _customChannelId : 'alaoufi_alarm_$_tone',
+        isCustom ? 'المنبّه (نغمة مخصّصة)' : 'المنبّه ($_tone)',
         channelDescription: 'تنبيهات المنبّه والتذكيرات',
         importance: Importance.max,
         priority: Priority.max,
         category: AndroidNotificationCategory.alarm,
         fullScreenIntent: true,
         playSound: true,
-        sound: RawResourceAndroidNotificationSound(_tone),
+        sound: isCustom
+            ? UriAndroidNotificationSound(_customUri!)
+            : RawResourceAndroidNotificationSound(_tone),
         audioAttributesUsage: AudioAttributesUsage.alarm,
         enableVibration: true,
         vibrationPattern: Int64List.fromList([0, 600, 300, 600, 300, 600]),
@@ -116,6 +152,7 @@ class NotificationService {
               showsUserInterface: false, cancelNotification: true),
         ],
       );
+  }
 
   NotificationDetails get _details =>
       NotificationDetails(android: _alarmDetails);
