@@ -7,6 +7,7 @@ import 'package:sqflite_sqlcipher/sqflite.dart';
 
 import '../../data/database/app_database.dart';
 import '../encryption_service.dart';
+import 'gdrive_backend.dart';
 import 'sync_backend.dart';
 import 'webdav_backend.dart';
 
@@ -34,6 +35,7 @@ class SyncService {
   static const _kWebdavUser = 'sync_webdav_user';
   static const _kAuto = 'sync_auto';
   static const _kLast = 'sync_last';
+  static const _kGDriveOn = 'sync_gdrive_on';
 
   static const _kWebdavPass = 'sync_webdav_pass'; // secure
   static const _kPassphrase = 'sync_passphrase'; // secure (مفتاح التشفير E2E)
@@ -109,7 +111,11 @@ class SyncService {
       final pass = await _secure.read(key: _kWebdavPass);
       return c.url.isNotEmpty && c.user.isNotEmpty && (pass ?? '').isNotEmpty;
     }
-    return false; // Google Drive لاحقًا.
+    if (p == SyncProvider.googleDrive) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_kGDriveOn) ?? false;
+    }
+    return false;
   }
 
   /// يبني المزوّد الحالي من الإعدادات (أو null إن لم يُهيَّأ).
@@ -126,7 +132,36 @@ class SyncService {
         fileName: _fileName,
       );
     }
+    if (p == SyncProvider.googleDrive) {
+      return GoogleDriveBackend(fileName: _fileName);
+    }
     return null;
+  }
+
+  // ===================== Google Drive =====================
+  /// تسجيل الدخول بحساب Google (تفاعلي). يعيد البريد عند النجاح أو null.
+  Future<String?> googleConnect() async {
+    final account =
+        await GoogleDriveBackend.ensureSignedIn(interactive: true);
+    if (account == null) return null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kGDriveOn, true);
+    await setProvider(SyncProvider.googleDrive);
+    return account.email;
+  }
+
+  Future<void> googleDisconnect() async {
+    try {
+      await GoogleDriveBackend.googleSignIn.signOut();
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kGDriveOn, false);
+  }
+
+  /// بريد الحساب المتّصل (يحاول الدخول الصامت)، أو null.
+  Future<String?> googleEmail() async {
+    final acc = await GoogleDriveBackend.ensureSignedIn(interactive: false);
+    return acc?.email;
   }
 
   Future<SyncTestResult> testConnection() async {

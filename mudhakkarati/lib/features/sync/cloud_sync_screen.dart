@@ -28,6 +28,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
   bool _busy = false;
   DateTime? _last;
   bool _loaded = false;
+  String? _googleEmail; // بريد حساب Google المتّصل (إن وُجد)
 
   @override
   void initState() {
@@ -49,6 +50,34 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
       _last = last;
       _loaded = true;
     });
+    // حدّث حالة اتصال Google في الخلفية (دخول صامت).
+    final email = await SyncService.instance.googleEmail();
+    if (mounted) setState(() => _googleEmail = email);
+  }
+
+  Future<void> _googleConnect() async {
+    setState(() => _busy = true);
+    try {
+      final email = await SyncService.instance.googleConnect();
+      if (mounted) {
+        setState(() {
+          _googleEmail = email;
+          if (email != null) _provider = SyncProvider.googleDrive;
+        });
+      }
+      _snack(email != null
+          ? 'تم الاتصال: $email'
+          : 'تعذّر تسجيل الدخول — تأكّد من إعداد Google (انظر الملاحظة بالأسفل)');
+    } catch (e) {
+      _snack('فشل تسجيل الدخول: $e');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _googleDisconnect() async {
+    await SyncService.instance.googleDisconnect();
+    if (mounted) setState(() => _googleEmail = null);
   }
 
   @override
@@ -68,20 +97,28 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
 
   Future<bool> _saveSettings() async {
     final s = SyncService.instance;
-    if (_url.text.trim().isEmpty || _user.text.trim().isEmpty) {
-      _snack('أدخل رابط الخادم واسم المستخدم');
-      return false;
-    }
     if (_phrase.text.trim().isEmpty && !await s.hasPassphrase()) {
       _snack('أدخل عبارة مرور التشفير (نفسها على كل الأجهزة)');
       return false;
     }
-    await s.setProvider(SyncProvider.webdav);
-    await s.setWebdavConfig(
-      url: _url.text,
-      user: _user.text,
-      password: _pass.text,
-    );
+    if (_provider == SyncProvider.webdav) {
+      if (_url.text.trim().isEmpty || _user.text.trim().isEmpty) {
+        _snack('أدخل رابط الخادم واسم المستخدم');
+        return false;
+      }
+      await s.setProvider(SyncProvider.webdav);
+      await s.setWebdavConfig(
+        url: _url.text,
+        user: _user.text,
+        password: _pass.text,
+      );
+    } else if (_provider == SyncProvider.googleDrive) {
+      if (_googleEmail == null) {
+        _snack('سجّل الدخول بحساب Google أولًا');
+        return false;
+      }
+      await s.setProvider(SyncProvider.googleDrive);
+    }
     if (_phrase.text.trim().isNotEmpty) {
       await s.setPassphrase(_phrase.text.trim());
     }
@@ -148,14 +185,8 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                               label: Text('Google Drive')),
                         ],
                         selected: {_provider},
-                        onSelectionChanged: (sel) {
-                          final v = sel.first;
-                          if (v == SyncProvider.googleDrive) {
-                            _snack('مزامنة Google Drive قيد الإعداد — متاحة قريبًا');
-                            return;
-                          }
-                          setState(() => _provider = v);
-                        },
+                        onSelectionChanged: (sel) =>
+                            setState(() => _provider = sel.first),
                       ),
                     ],
                   ),
@@ -201,6 +232,44 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                             prefixIcon: Icon(Icons.lock_outline),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+
+                // إعداد Google Drive.
+                if (_provider == SyncProvider.googleDrive)
+                  AppCard(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('حساب Google',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16)),
+                        const SizedBox(height: 4),
+                        Text(
+                            'تُحفظ النسخة في مجلّد التطبيق المخفي بحسابك (لا تظهر بين ملفاتك).',
+                            style: Theme.of(context).textTheme.bodySmall),
+                        const SizedBox(height: 12),
+                        if (_googleEmail != null)
+                          ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: const Icon(Icons.account_circle,
+                                color: Colors.green),
+                            title: Text(_googleEmail!),
+                            subtitle: const Text('متّصل'),
+                            trailing: TextButton.icon(
+                              onPressed: _busy ? null : _googleDisconnect,
+                              icon: const Icon(Icons.logout),
+                              label: const Text('خروج'),
+                            ),
+                          )
+                        else
+                          FilledButton.tonalIcon(
+                            onPressed: _busy ? null : _googleConnect,
+                            icon: const Icon(Icons.login),
+                            label: const Text('تسجيل الدخول بحساب Google'),
+                          ),
                       ],
                     ),
                   ),
