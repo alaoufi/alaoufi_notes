@@ -48,18 +48,26 @@ class RichTextController {
       final start =
           offset <= 0 ? 0 : (text.lastIndexOf('\n', offset - 1) + 1);
       var end = text.indexOf('\n', offset);
-      if (end < 0) end = text.length;
-      if (end <= start) return; // سطر فارغ
+      if (end < 0) end = text.length - 1; // المستند ينتهي دائمًا بـ '\n'
+      if (end < start) return;
       final line = text.substring(start, end);
       final dir = _detectDir(line);
       if (dir == null) return; // محايد (رموز/أرقام) ⇒ لا تغيير
-      final style = quill.document.collectStyle(start, end - start);
-      final current = style.attributes['direction']?.value;
+      // سمات الكتلة (الاتجاه/المحاذاة) مخزّنة على '\n' المنهي للسطر.
+      final current =
+          quill.document.collectStyle(end, 1).attributes['direction']?.value;
       if (current == dir) return; // مضبوط بالفعل
       _settingDir = true;
       final saved = quill.selection;
-      quill.formatText(
-          start, end - start, dir == 'rtl' ? Attribute.rtl : _ltrDir);
+      // نشمل '\n' في المدى كي تُضبط سمة الكتلة على هذا السطر تحديدًا.
+      final len = end - start + 1;
+      if (dir == 'rtl') {
+        quill.formatText(start, len, Attribute.rtl);
+        quill.formatText(start, len, Attribute.rightAlignment);
+      } else {
+        quill.formatText(start, len, _ltrDir);
+        quill.formatText(start, len, Attribute.leftAlignment);
+      }
       quill.updateSelection(saved, ChangeSource.local);
     } catch (_) {
       // تجاهل أي خطأ في الكشف حتى لا يتعطّل التحرير.
