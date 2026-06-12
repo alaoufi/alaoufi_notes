@@ -11,7 +11,9 @@ import '../home/notes_provider.dart';
 /// مزامنة حقيقية ثنائية الاتجاه بدمج «آخر تعديل يفوز» لكل ملاحظة، وكل ما يُرفع
 /// **مشفّر طرفيًّا** بعبارة مرور يحدّدها المستخدم.
 class CloudSyncScreen extends StatefulWidget {
-  const CloudSyncScreen({super.key});
+  /// [embedded] = يُعرض داخل تبويب (بلا Scaffold/شريط علوي خاص).
+  final bool embedded;
+  const CloudSyncScreen({super.key, this.embedded = false});
 
   @override
   State<CloudSyncScreen> createState() => _CloudSyncScreenState();
@@ -152,11 +154,18 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final body = !_loaded
+        ? const Center(child: CircularProgressIndicator())
+        : _content(context, scheme);
+    if (widget.embedded) return body;
     return Scaffold(
       appBar: gradientAppBar(context, 'المزامنة السحابية'),
-      body: !_loaded
-          ? const Center(child: CircularProgressIndicator())
-          : ListView(
+      body: body,
+    );
+  }
+
+  Widget _content(BuildContext context, ColorScheme scheme) {
+    return ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
                 // اختيار المزوّد.
@@ -369,7 +378,6 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                 ),
                 const SizedBox(height: 24),
               ],
-            ),
-    );
+            );
   }
 }

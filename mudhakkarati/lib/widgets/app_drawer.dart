@@ -15,7 +15,6 @@ import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
 import '../features/security/security_settings_screen.dart';
 import '../features/settings/settings_screen.dart';
-import '../features/sync/cloud_sync_screen.dart';
 import '../features/tags/tags_screen.dart';
 import '../features/trash/archive_screen.dart';
 import '../features/trash/trash_screen.dart';
@@ -136,8 +135,6 @@ class AppDrawer extends StatelessWidget {
                   () => go(const TrashScreen())),
               _tile(context, Icons.backup_outlined, s.t('backup'),
                   () => go(const BackupScreen())),
-              _tile(context, Icons.cloud_sync_outlined, 'المزامنة السحابية',
-                  () => go(const CloudSyncScreen())),
             ]),
             const Divider(),
             _tile(context, Icons.settings_outlined, s.t('settings'),

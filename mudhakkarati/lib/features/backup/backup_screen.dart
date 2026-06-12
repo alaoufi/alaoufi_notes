@@ -12,6 +12,7 @@ import '../../services/easynotes_import.dart';
 import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
+import '../sync/cloud_sync_screen.dart';
 
 class BackupScreen extends StatefulWidget {
   const BackupScreen({super.key});
@@ -458,12 +459,22 @@ class _BackupScreenState extends State<BackupScreen> {
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
-    return Scaffold(
-      appBar: gradientAppBar(context, s.t('backup')),
-      body: Stack(
-        children: [
-          ListView(
-            padding: const EdgeInsets.all(16),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: gradientAppBar(
+          context,
+          s.t('backup'),
+          bottom: const TabBar(tabs: [
+            Tab(icon: Icon(Icons.save_outlined), text: 'نسخ احتياطي'),
+            Tab(icon: Icon(Icons.cloud_sync), text: 'مزامنة سحابية'),
+          ]),
+        ),
+        body: TabBarView(children: [
+          Stack(
+            children: [
+              ListView(
+                padding: const EdgeInsets.all(16),
             children: [
               _statusCard(context),
               const SizedBox(height: 8),
@@ -522,12 +533,15 @@ class _BackupScreenState extends State<BackupScreen> {
               ),
             ],
           ),
-          if (_busy)
-            Container(
-              color: Colors.black26,
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-        ],
+              if (_busy)
+                Container(
+                  color: Colors.black26,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+            ],
+          ),
+          const CloudSyncScreen(embedded: true),
+        ]),
       ),
     );
   }
