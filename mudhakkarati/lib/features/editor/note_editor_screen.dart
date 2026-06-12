@@ -11,6 +11,7 @@ import '../../data/models/checklist_item.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../data/models/password_entry.dart';
+import '../../services/pdf_export_service.dart';
 import '../../services/secure_screen.dart';
 import '../../services/vault_service.dart';
 import 'password_form.dart';
@@ -244,6 +245,22 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     await _save(force: true);
   }
 
+  /// تصدير الملاحظة (النص الغني) إلى PDF مع الحفاظ على التنسيق.
+  Future<void> _exportPdf() async {
+    final messenger = ScaffoldMessenger.of(context);
+    // احفظ آخر تعديل أولًا كي يُصدَّر المحتوى المحدّث.
+    await _save(force: true);
+    final exportNote = _note.copyWith(content: _richContent);
+    messenger.showSnackBar(const SnackBar(
+        content: Text('جارٍ تجهيز ملف PDF…'),
+        duration: Duration(seconds: 1)));
+    try {
+      await PdfExportService.exportNote(exportNote);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('تعذّر التصدير: $e')));
+    }
+  }
+
   Future<void> _editDrawing() async {
     await _ensureSaved();
     if (!mounted) return;
@@ -424,7 +441,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                       bottom: MediaQuery.of(context).viewInsets.bottom > 0
                           ? MediaQuery.of(context).viewInsets.bottom
                           : 6),
-                  child: RichTextToolbar(controller: _richCtrl!),
+                  child: RichTextToolbar(
+                    controller: _richCtrl!,
+                    onExportPdf: _exportPdf,
+                  ),
                 ),
             ],
           ),

@@ -173,104 +173,122 @@ class RichTextEditorBody extends StatelessWidget {
   }
 }
 
-/// شريط أدوات التنسيق — يُوضع مثبّتًا أسفل الشاشة (يبقى ظاهرًا أثناء التحرير).
+/// شريط أدوات التنسيق — صفّ واحد يُمرَّر أفقيًا بنعومة (يبقى ظاهرًا أثناء التحرير).
 class RichTextToolbar extends StatelessWidget {
   final RichTextController controller;
-  const RichTextToolbar({super.key, required this.controller});
+
+  /// عند تمريره يظهر زرّ «PDF» بارز في بداية الشريط لتصدير الملاحظة.
+  final VoidCallback? onExportPdf;
+  const RichTextToolbar(
+      {super.key, required this.controller, this.onExportPdf});
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
+    final scheme = Theme.of(context).colorScheme;
+    final q = controller.quill;
+
     // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
     Widget fmtBtn(IconData icon, String tip, Attribute attr) => IconButton(
           icon: Icon(icon, size: 22),
           tooltip: tip,
           visualDensity: VisualDensity.compact,
-          onPressed: () => _smartToggleInline(controller.quill, attr),
+          onPressed: () => _smartToggleInline(q, attr),
+        );
+
+    Widget sep() => const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 2),
+          child: SizedBox(
+              height: 26, child: VerticalDivider(width: 1, thickness: 1)),
         );
 
     return Material(
       elevation: 8,
-      color: Theme.of(context).colorScheme.surface,
+      color: scheme.surface,
       child: SafeArea(
         top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // الصف الأول: الخط + الحجم + (غامق/مائل/تسطير/شطب) متجاورة.
-            SizedBox(
-              height: 50,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  QuillToolbarFontFamilyButton(
-                    controller: controller.quill,
-                    options: const QuillToolbarFontFamilyButtonOptions(
-                        items: _fontFamilies),
+        // صفّ واحد قابل للتمرير الأفقي بنعومة (يمين/يسار).
+        child: SizedBox(
+          height: 54,
+          child: ScrollConfiguration(
+            // تمرير سلس باللمس + بالماوس/اللوحة.
+            behavior: const _SmoothToolbarScrollBehavior(),
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              children: [
+                // تصدير PDF — زرّ واضح بارز في بداية الأدوات.
+                if (onExportPdf != null) ...[
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 9, horizontal: 2),
+                    child: FilledButton.tonalIcon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                      onPressed: onExportPdf,
+                      icon: const Icon(Icons.picture_as_pdf, size: 18),
+                      label: const Text('PDF'),
+                    ),
                   ),
-                  QuillToolbarFontSizeButton(
-                    controller: controller.quill,
-                    options: const QuillToolbarFontSizeButtonOptions(
-                        items: _fontSizes),
-                  ),
-                  const SizedBox(width: 6),
-                  fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
-                  fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
-                  fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
-                  fmtBtn(Icons.format_strikethrough, 'شطب',
-                      Attribute.strikeThrough),
+                  sep(),
                 ],
-              ),
+                // الخط + الحجم.
+                QuillToolbarFontFamilyButton(
+                  controller: q,
+                  options: const QuillToolbarFontFamilyButtonOptions(
+                      items: _fontFamilies),
+                ),
+                QuillToolbarFontSizeButton(
+                  controller: q,
+                  options:
+                      const QuillToolbarFontSizeButtonOptions(items: _fontSizes),
+                ),
+                // غامق/مائل/تسطير/شطب (تنسيق ذكي للكلمة كاملة).
+                fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
+                fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
+                fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
+                fmtBtn(Icons.format_strikethrough, 'شطب',
+                    Attribute.strikeThrough),
+                sep(),
+                // الألوان (نص + خلفية).
+                QuillToolbarColorButton(controller: q, isBackground: false),
+                QuillToolbarColorButton(controller: q, isBackground: true),
+                sep(),
+                // العناوين + القوائم + الاقتباس.
+                QuillToolbarSelectHeaderStyleDropdownButton(controller: q),
+                QuillToolbarToggleStyleButton(
+                    controller: q, attribute: Attribute.ul),
+                QuillToolbarToggleStyleButton(
+                    controller: q, attribute: Attribute.ol),
+                QuillToolbarToggleCheckListButton(controller: q),
+                QuillToolbarToggleStyleButton(
+                    controller: q, attribute: Attribute.blockQuote),
+                sep(),
+                // المحاذاة.
+                QuillToolbarSelectAlignmentButtons(controller: q),
+                sep(),
+                // مسح التنسيق + تراجع/إعادة.
+                QuillToolbarClearFormatButton(controller: q),
+                QuillToolbarHistoryButton(controller: q, isUndo: true),
+                QuillToolbarHistoryButton(controller: q, isUndo: false),
+                // إظهار/إخفاء قائمة النسخ واللصق.
+                IconButton(
+                  icon: Icon(hide
+                      ? Icons.content_paste_off_outlined
+                      : Icons.content_paste_outlined),
+                  tooltip: hide
+                      ? 'إظهار قائمة النسخ/اللصق'
+                      : 'إخفاء قائمة النسخ/اللصق',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => settings.setHideSelectionMenu(!hide),
+                ),
+              ],
             ),
-            const Divider(height: 1),
-            // الصف الثاني: بقية الأدوات (لون/قوائم/محاذاة/تراجع...).
-            QuillSimpleToolbar(
-              controller: controller.quill,
-              config: QuillSimpleToolbarConfig(
-                multiRowsDisplay: false,
-                showFontFamily: false,
-                showFontSize: false,
-                showBoldButton: false,
-                showItalicButton: false,
-                showUnderLineButton: false,
-                showStrikeThrough: false,
-                customButtons: [
-                  QuillToolbarCustomButtonOptions(
-                    icon: Icon(hide
-                        ? Icons.content_paste_off_outlined
-                        : Icons.content_paste_outlined),
-                    tooltip: hide
-                        ? 'إظهار قائمة النسخ/اللصق'
-                        : 'إخفاء قائمة النسخ/اللصق',
-                    onPressed: () => settings.setHideSelectionMenu(!hide),
-                  ),
-                ],
-                showColorButton: true,
-                showBackgroundColorButton: true,
-                showLineHeightButton: true,
-                showClearFormat: true,
-                showListBullets: true,
-                showListNumbers: true,
-                showListCheck: true,
-                showQuote: true,
-                showSmallButton: false,
-                showInlineCode: false,
-                showCodeBlock: false,
-                showIndent: false,
-                showLink: false,
-                showSearchButton: false,
-                showSubscript: false,
-                showSuperscript: false,
-                showHeaderStyle: true,
-                showAlignmentButtons: true,
-                showDirection: false,
-                showDividers: true,
-                showUndo: true,
-                showRedo: true,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -331,6 +349,19 @@ class RichTextToolbar extends StatelessWidget {
     '64': '64',
     'مسح': '0',
   };
+}
+
+/// سلوك تمرير يسمح بالسحب الأفقي للشريط باللمس والماوس واللوحة (تمرير ناعم).
+class _SmoothToolbarScrollBehavior extends MaterialScrollBehavior {
+  const _SmoothToolbarScrollBehavior();
+
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      };
 }
 
 /// يبدّل سمة تنسيق مضمّنة «بذكاء»:
