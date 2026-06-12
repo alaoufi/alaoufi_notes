@@ -183,35 +183,59 @@ class RichTextToolbar extends StatelessWidget {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
     // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
-    // نحسب حالة التفعيل وقت الضغط فقط (تجنّبًا لأي استثناء أثناء البناء).
-    QuillToolbarCustomButtonOptions smart(
-        IconData icon, String tip, Attribute attr) {
-      return QuillToolbarCustomButtonOptions(
-        icon: Icon(icon),
-        tooltip: tip,
-        onPressed: () => _smartToggleInline(controller.quill, attr),
-      );
-    }
+    Widget fmtBtn(IconData icon, String tip, Attribute attr) => IconButton(
+          icon: Icon(icon, size: 22),
+          tooltip: tip,
+          visualDensity: VisualDensity.compact,
+          onPressed: () => _smartToggleInline(controller.quill, attr),
+        );
 
     return Material(
       elevation: 8,
       color: Theme.of(context).colorScheme.surface,
       child: SafeArea(
         top: false,
-        child: QuillSimpleToolbar(
-          controller: controller.quill,
-          config: QuillSimpleToolbarConfig(
-                // صفّ واحد مدمج قابل للسحب الأفقي بسلاسة — يوفّر مساحة الصفحة.
-                multiRowsDisplay: false,
-                showFontFamily: true,
-                showFontSize: true,
-                // أزرار تنسيق مخصّصة (ذكية) + زرّ إخفاء قائمة النسخ/اللصق.
-                customButtons: [
-                  smart(Icons.format_bold, 'غامق', Attribute.bold),
-                  smart(Icons.format_italic, 'مائل', Attribute.italic),
-                  smart(Icons.format_underline, 'تسطير', Attribute.underline),
-                  smart(Icons.format_strikethrough, 'شطب',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // الصف الأول: الخط + الحجم + (غامق/مائل/تسطير/شطب) متجاورة.
+            SizedBox(
+              height: 50,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: [
+                  QuillToolbarFontFamilyButton(
+                    controller: controller.quill,
+                    options: const QuillToolbarFontFamilyButtonOptions(
+                        items: _fontFamilies),
+                  ),
+                  QuillToolbarFontSizeButton(
+                    controller: controller.quill,
+                    options: const QuillToolbarFontSizeButtonOptions(
+                        items: _fontSizes),
+                  ),
+                  const SizedBox(width: 6),
+                  fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
+                  fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
+                  fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
+                  fmtBtn(Icons.format_strikethrough, 'شطب',
                       Attribute.strikeThrough),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            // الصف الثاني: بقية الأدوات (لون/قوائم/محاذاة/تراجع...).
+            QuillSimpleToolbar(
+              controller: controller.quill,
+              config: QuillSimpleToolbarConfig(
+                multiRowsDisplay: false,
+                showFontFamily: false,
+                showFontSize: false,
+                showBoldButton: false,
+                showItalicButton: false,
+                showUnderLineButton: false,
+                showStrikeThrough: false,
+                customButtons: [
                   QuillToolbarCustomButtonOptions(
                     icon: Icon(hide
                         ? Icons.content_paste_off_outlined
@@ -222,70 +246,6 @@ class RichTextToolbar extends StatelessWidget {
                     onPressed: () => settings.setHideSelectionMenu(!hide),
                   ),
                 ],
-                buttonOptions: const QuillSimpleToolbarButtonOptions(
-                  fontFamily: QuillToolbarFontFamilyButtonOptions(
-                items: {
-                  'Cairo': 'Cairo',
-                  'Tajawal': 'Tajawal',
-                  'Almarai': 'Almarai',
-                  'IBM Plex': 'IBM Plex Sans Arabic',
-                  'Readex': 'Readex Pro',
-                  'Mada': 'Mada',
-                  'Changa': 'Changa',
-                  'Vazirmatn': 'Vazirmatn',
-                  'المصري': 'El Messiri',
-                  'مرکزی': 'Markazi Text',
-                  'ليمونادة': 'Lemonada',
-                  'هرمتان': 'Harmattan',
-                  'كوفي': 'Reem Kufi',
-                  'كُفام': 'Kufam',
-                  'مرحى': 'Marhey',
-                  'نسخ': 'Noto Naskh Arabic',
-                  'أميري': 'Amiri',
-                  'شهرزاد': 'Scheherazade New',
-                  'رقعة': 'Aref Ruqaa',
-                  'لاله‌زار': 'Lalezar',
-                  'ركّاس': 'Rakkas',
-                  'جمهورية': 'Jomhuria',
-                  'كلزار': 'Gulzar',
-                  'قاهري': 'Qahiri',
-                  'نوتو كوفي': 'Noto Kufi Arabic',
-                  'نوتو سانس': 'Noto Sans Arabic',
-                  'روبيك': 'Rubik',
-                  'بالو': 'Baloo Bhaijaan 2',
-                  'لطيف': 'Lateef',
-                  'ميرزا': 'Mirza',
-                  'كتيبة': 'Katibeh',
-                  'القلمي': 'Alkalami',
-                  'رقعة حبر': 'Aref Ruqaa Ink',
-                  'نسخ قرآني': 'Amiri Quran',
-                  'نستعليق': 'Noto Nastaliq Urdu',
-                  'مسح': 'Clear',
-                },
-              ),
-              fontSize: const QuillToolbarFontSizeButtonOptions(
-                items: {
-                  '10': '10',
-                  '12': '12',
-                  '14': '14',
-                  '16': '16',
-                  '18': '18',
-                  '20': '20',
-                  '24': '24',
-                  '28': '28',
-                  '32': '32',
-                  '40': '40',
-                  '48': '48',
-                  '64': '64',
-                  'مسح': '0',
-                },
-              ),
-            ),
-                // الغامق/المائل/التسطير/الشطب صارت أزرارًا مخصّصة ذكية أعلاه.
-                showBoldButton: false,
-                showItalicButton: false,
-                showUnderLineButton: false,
-                showStrikeThrough: false,
                 showColorButton: true,
                 showBackgroundColorButton: true,
                 showLineHeightButton: true,
@@ -309,10 +269,68 @@ class RichTextToolbar extends StatelessWidget {
                 showUndo: true,
                 showRedo: true,
               ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  // خرائط الخطوط والأحجام (تُستخدم في أزرار الصف الأول).
+  static const Map<String, String> _fontFamilies = {
+    'Cairo': 'Cairo',
+    'Tajawal': 'Tajawal',
+    'Almarai': 'Almarai',
+    'IBM Plex': 'IBM Plex Sans Arabic',
+    'Readex': 'Readex Pro',
+    'Mada': 'Mada',
+    'Changa': 'Changa',
+    'Vazirmatn': 'Vazirmatn',
+    'المصري': 'El Messiri',
+    'مرکزی': 'Markazi Text',
+    'ليمونادة': 'Lemonada',
+    'هرمتان': 'Harmattan',
+    'كوفي': 'Reem Kufi',
+    'كُفام': 'Kufam',
+    'مرحى': 'Marhey',
+    'نسخ': 'Noto Naskh Arabic',
+    'أميري': 'Amiri',
+    'شهرزاد': 'Scheherazade New',
+    'رقعة': 'Aref Ruqaa',
+    'لاله‌زار': 'Lalezar',
+    'ركّاس': 'Rakkas',
+    'جمهورية': 'Jomhuria',
+    'كلزار': 'Gulzar',
+    'قاهري': 'Qahiri',
+    'نوتو كوفي': 'Noto Kufi Arabic',
+    'نوتو سانس': 'Noto Sans Arabic',
+    'روبيك': 'Rubik',
+    'بالو': 'Baloo Bhaijaan 2',
+    'لطيف': 'Lateef',
+    'ميرزا': 'Mirza',
+    'كتيبة': 'Katibeh',
+    'القلمي': 'Alkalami',
+    'رقعة حبر': 'Aref Ruqaa Ink',
+    'نسخ قرآني': 'Amiri Quran',
+    'نستعليق': 'Noto Nastaliq Urdu',
+    'مسح': 'Clear',
+  };
+
+  static const Map<String, String> _fontSizes = {
+    '10': '10',
+    '12': '12',
+    '14': '14',
+    '16': '16',
+    '18': '18',
+    '20': '20',
+    '24': '24',
+    '28': '28',
+    '32': '32',
+    '40': '40',
+    '48': '48',
+    '64': '64',
+    'مسح': '0',
+  };
 }
 
 /// يبدّل سمة تنسيق مضمّنة «بذكاء»:
