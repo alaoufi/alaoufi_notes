@@ -21,6 +21,9 @@ class RichTextController {
     quill.addListener(_handle);
     // اتجاه تلقائي لكل سطر حسب لغته (عربي = يمين، إنجليزي = يسار).
     quill.addListener(_autoDirection);
+    // المحرّر اتجاهه الافتراضي LTR (انظر RichTextEditorBody)، لذا نُعلّم الأسطر
+    // العربية الموجودة مسبقًا بـ rtl كي تظهر صحيحة فور الفتح (بلا حفظ/تغيير وقت).
+    _normalizeAllDirections();
   }
 
   late final QuillController quill;
@@ -30,17 +33,15 @@ class RichTextController {
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
 
-  // اتجاه السطر إلى اليسار (قيمة غير 'rtl' ⇒ تُجبر LTR في flutter_quill).
-  static final Attribute _ltrDir =
-      Attribute('direction', AttributeScope.block, 'ltr');
   bool _settingDir = false;
+  bool _initializing = false; // أثناء التطبيع الأوّلي (لا نحفظ/لا نغيّر updated_at)
 
   /// يضبط اتجاه السطر الحالي تلقائيًّا حسب أول حرف قويّ فيه (عربي/لاتيني).
   ///
-  /// نستخدم formatSelection/getSelectionStyle (نفس آلية زرّ الاتجاه في الشريط)
-  /// فتُطبَّق سمة الكتلة على السطر الحالي بموثوقية دون حساب مدى يدويًّا.
+  /// المحرّر افتراضيًّا LTR؛ فالأسطر اللاتينية تبقى يسارًا بلا أي سمة، والعربية
+  /// نَسِمُها بـ rtl لتنتقل يمينًا. نستخدم formatSelection (آلية زرّ الاتجاه).
   void _autoDirection() {
-    if (_settingDir) return;
+    if (_settingDir || _initializing) return;
     final sel = quill.selection;
     if (!sel.isValid || !sel.isCollapsed) return;
     try {
@@ -54,21 +55,44 @@ class RichTextController {
       if (end <= start) return; // سطر فارغ
       final dir = _detectDir(text.substring(start, end));
       if (dir == null) return; // محايد (رموز/أرقام) ⇒ لا تغيير
+      // null (بلا سمة) يعني الافتراضي LTR.
       final current =
-          quill.getSelectionStyle().attributes['direction']?.value;
+          (quill.getSelectionStyle().attributes['direction']?.value) ?? 'ltr';
       if (current == dir) return; // مضبوط بالفعل
       _settingDir = true;
       if (dir == 'rtl') {
         quill.formatSelection(Attribute.rtl);
         quill.formatSelection(Attribute.rightAlignment);
       } else {
-        quill.formatSelection(_ltrDir);
+        // إزالة سمة الاتجاه ⇒ يعود للافتراضي LTR (يسار).
+        quill.formatSelection(Attribute.clone(Attribute.rtl, null));
         quill.formatSelection(Attribute.leftAlignment);
       }
     } catch (_) {
       // تجاهل أي خطأ حتى لا يتعطّل التحرير.
     } finally {
       _settingDir = false;
+    }
+  }
+
+  /// تطبيع اتجاه كل الأسطر عند الفتح: نَسِم الأسطر العربية بـ rtl. لا نحفظ
+  /// (نتجاوز _handle) فلا يتغيّر وقت التعديل ولا تحدث مزامنة لا داعي لها.
+  void _normalizeAllDirections() {
+    _initializing = true;
+    try {
+      final text = quill.document.toPlainText();
+      var pos = 0;
+      for (final line in text.split('\n')) {
+        final len = line.length;
+        if (len > 0 && _detectDir(line) == 'rtl') {
+          quill.formatText(pos, len + 1, Attribute.rtl);
+          quill.formatText(pos, len + 1, Attribute.rightAlignment);
+        }
+        pos += len + 1;
+      }
+    } catch (_) {
+    } finally {
+      _initializing = false;
     }
   }
 
@@ -105,6 +129,7 @@ class RichTextController {
   }
 
   void _handle() {
+    if (_initializing) return; // تطبيع أوّلي ⇒ لا نحفظ
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
       _onChanged(jsonEncode(quill.document.toDelta().toJson()));
@@ -230,10 +255,13 @@ class RichTextEditorBody extends StatelessWidget {
         },
       ),
     );
-    if (expand) return editor;
+    // الاتجاه الافتراضي للمحرّر LTR: الأسطر اللاتينية تبقى يسارًا دون أي سمة،
+    // والأسطر العربية تُوسَم بـ rtl تلقائيًّا فتنتقل يمينًا (انظر _autoDirection).
+    final body = Directionality(textDirection: TextDirection.ltr, child: editor);
+    if (expand) return body;
     return Container(
       constraints: const BoxConstraints(minHeight: 240),
-      child: editor,
+      child: body,
     );
   }
 }
@@ -545,13 +573,16 @@ class _RichTextViewerState extends State<RichTextViewer> {
 
   @override
   Widget build(BuildContext context) {
-    return QuillEditor.basic(
-      controller: _controller,
-      config: const QuillEditorConfig(
-        showCursor: false,
-        expands: false,
-        padding: EdgeInsets.zero,
-        autoFocus: false,
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: QuillEditor.basic(
+        controller: _controller,
+        config: const QuillEditorConfig(
+          showCursor: false,
+          expands: false,
+          padding: EdgeInsets.zero,
+          autoFocus: false,
+        ),
       ),
     );
   }
