@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
@@ -197,6 +198,14 @@ class RichTextToolbar extends StatelessWidget {
           onPressed: () => _smartToggleInline(q, attr),
         );
 
+    // زرّ محاذاة: يطبّق محاذاة السطر الحالي (يمين/وسط/يسار/ضبط).
+    Widget alignBtn(IconData icon, String tip, Attribute attr) => IconButton(
+          icon: Icon(icon, size: 22),
+          tooltip: tip,
+          visualDensity: VisualDensity.compact,
+          onPressed: () => q.formatSelection(attr),
+        );
+
     Widget sep() => const Padding(
           padding: EdgeInsets.symmetric(horizontal: 2),
           child: SizedBox(
@@ -268,8 +277,15 @@ class RichTextToolbar extends StatelessWidget {
                 QuillToolbarToggleStyleButton(
                     controller: q, attribute: Attribute.blockQuote),
                 sep(),
-                // المحاذاة.
-                QuillToolbarSelectAlignmentButtons(controller: q),
+                // المحاذاة (يمين/وسط/يسار/ضبط).
+                alignBtn(Icons.format_align_right, 'محاذاة لليمين',
+                    Attribute.rightAlignment),
+                alignBtn(Icons.format_align_center, 'توسيط',
+                    Attribute.centerAlignment),
+                alignBtn(Icons.format_align_left, 'محاذاة لليسار',
+                    Attribute.leftAlignment),
+                alignBtn(Icons.format_align_justify, 'ضبط',
+                    Attribute.justifyAlignment),
                 sep(),
                 // مسح التنسيق + تراجع/إعادة.
                 QuillToolbarClearFormatButton(controller: q),
