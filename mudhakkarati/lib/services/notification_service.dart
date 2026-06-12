@@ -85,7 +85,8 @@ class NotificationService {
     'forest',
     'birds',
     'water',
-    'rain'
+    'rain',
+    'ocean'
   ];
 
   /// النغمة المختارة حاليًا (افتراضي alarm) — تُضبط من الإعدادات.

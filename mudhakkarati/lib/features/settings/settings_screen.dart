@@ -583,6 +583,8 @@ class SettingsScreen extends StatelessWidget {
           value: 'water', icon: Icons.water_drop, label: 'ماء 💧'),
       _toneTile(context, st,
           value: 'rain', icon: Icons.grain, label: 'مطر 🌧️'),
+      _toneTile(context, st,
+          value: 'ocean', icon: Icons.waves, label: 'محيط 🌊'),
       const Divider(height: 1),
       _miniHeader(context, 'من جهازك'),
       ListTile(
