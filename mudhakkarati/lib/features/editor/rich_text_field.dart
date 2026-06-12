@@ -19,6 +19,8 @@ class RichTextController {
       selection: const TextSelection.collapsed(offset: 0),
     );
     quill.addListener(_handle);
+    // اتجاه تلقائي لكل سطر حسب لغته (عربي = يمين، إنجليزي = يسار).
+    quill.addListener(_autoDirection);
   }
 
   late final QuillController quill;
@@ -27,6 +29,63 @@ class RichTextController {
   final ScrollController scroll = ScrollController();
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
+
+  // اتجاه السطر إلى اليسار (قيمة غير 'rtl' ⇒ تُجبر LTR في flutter_quill).
+  static final Attribute _ltrDir =
+      Attribute('direction', AttributeScope.block, 'ltr');
+  bool _settingDir = false;
+
+  /// يضبط اتجاه السطر الحالي تلقائيًّا حسب أول حرف قويّ فيه (عربي/لاتيني).
+  void _autoDirection() {
+    if (_settingDir) return;
+    final sel = quill.selection;
+    if (!sel.isValid || !sel.isCollapsed) return;
+    final docLen = quill.document.length;
+    final offset = sel.baseOffset.clamp(0, docLen);
+    try {
+      final text = quill.document.toPlainText();
+      if (text.isEmpty) return;
+      final start =
+          offset <= 0 ? 0 : (text.lastIndexOf('\n', offset - 1) + 1);
+      var end = text.indexOf('\n', offset);
+      if (end < 0) end = text.length;
+      if (end <= start) return; // سطر فارغ
+      final line = text.substring(start, end);
+      final dir = _detectDir(line);
+      if (dir == null) return; // محايد (رموز/أرقام) ⇒ لا تغيير
+      final style = quill.document.collectStyle(start, end - start);
+      final current = style.attributes['direction']?.value;
+      if (current == dir) return; // مضبوط بالفعل
+      _settingDir = true;
+      final saved = quill.selection;
+      quill.formatText(
+          start, end - start, dir == 'rtl' ? Attribute.rtl : _ltrDir);
+      quill.updateSelection(saved, ChangeSource.local);
+    } catch (_) {
+      // تجاهل أي خطأ في الكشف حتى لا يتعطّل التحرير.
+    } finally {
+      _settingDir = false;
+    }
+  }
+
+  /// يكشف اتجاه السطر من أول حرف قويّ: 'rtl' عربي، 'ltr' لاتيني، null محايد.
+  static String? _detectDir(String s) {
+    for (final r in s.runes) {
+      // العربية/العبرية وأشكالها.
+      if ((r >= 0x0590 && r <= 0x08FF) ||
+          (r >= 0xFB1D && r <= 0xFDFF) ||
+          (r >= 0xFE70 && r <= 0xFEFF)) {
+        return 'rtl';
+      }
+      // اللاتينية الأساسية والممتدة.
+      if ((r >= 0x41 && r <= 0x5A) ||
+          (r >= 0x61 && r <= 0x7A) ||
+          (r >= 0xC0 && r <= 0x24F)) {
+        return 'ltr';
+      }
+    }
+    return null;
+  }
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -51,6 +110,7 @@ class RichTextController {
   void dispose() {
     _debounce?.cancel();
     quill.removeListener(_handle);
+    quill.removeListener(_autoDirection);
     quill.dispose();
     focus.dispose();
     scroll.dispose();
