@@ -6,6 +6,7 @@ import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/note_gradient.dart';
 import '../../data/models/enums.dart';
+import '../../services/ringtone_picker.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/paper_background.dart';
 import '../backup/backup_screen.dart';
@@ -521,17 +522,37 @@ class SettingsScreen extends StatelessWidget {
         ListTile(
           leading: const Icon(Icons.notifications_active_outlined),
           title: const Text('نغمة التنبيه'),
+          subtitle: st.alarmTone == 'custom'
+              ? Text('من الجهاز: ${st.customToneTitle ?? 'نغمة مخصّصة'}',
+                  maxLines: 1, overflow: TextOverflow.ellipsis)
+              : null,
           trailing: DropdownButton<String>(
             value: st.alarmTone,
             underline: const SizedBox.shrink(),
-            items: const [
-              DropdownMenuItem(value: 'alarm', child: Text('إنذار')),
-              DropdownMenuItem(value: 'chime', child: Text('لطيفة')),
-              DropdownMenuItem(value: 'bell', child: Text('جرس')),
-              DropdownMenuItem(value: 'forest', child: Text('غابة 🌳')),
+            items: [
+              const DropdownMenuItem(value: 'alarm', child: Text('إنذار')),
+              const DropdownMenuItem(value: 'chime', child: Text('لطيفة')),
+              const DropdownMenuItem(value: 'bell', child: Text('جرس')),
+              const DropdownMenuItem(value: 'forest', child: Text('غابة 🌳')),
+              if (st.alarmTone == 'custom')
+                DropdownMenuItem(
+                    value: 'custom',
+                    child: Text(st.customToneTitle ?? 'مخصّصة 🎵',
+                        overflow: TextOverflow.ellipsis)),
+              const DropdownMenuItem(
+                  value: 'pick', child: Text('من الجهاز… 📱')),
             ],
-            onChanged: (v) {
-              if (v != null) st.setAlarmTone(v);
+            onChanged: (v) async {
+              if (v == null) return;
+              if (v == 'pick') {
+                final uri = await RingtonePicker.pick(current: st.customToneUri);
+                if (uri != null) {
+                  final title = await RingtonePicker.title(uri);
+                  await st.setCustomTone(uri, title);
+                }
+              } else {
+                await st.setAlarmTone(v);
+              }
             },
           ),
         ),

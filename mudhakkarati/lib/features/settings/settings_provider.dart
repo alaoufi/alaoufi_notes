@@ -19,6 +19,9 @@ class SettingsProvider extends ChangeNotifier {
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar');
   String _alarmTone = 'alarm';
+  String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
+  String? _customToneTitle; // اسم النغمة المخصّصة للعرض
+  int _customToneSeq = 0; // معرّف متزايد لقناة النغمة المخصّصة
 
   // ---- الافتراضي للملاحظات الجديدة ----
   int? _defaultNoteColor; // null = اللون الافتراضي للسمة
@@ -43,6 +46,8 @@ class SettingsProvider extends ChangeNotifier {
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
+  String? get customToneUri => _customToneUri;
+  String? get customToneTitle => _customToneTitle;
 
   int? get defaultNoteColor => _defaultNoteColor;
   String? get defaultGradient => _defaultGradient;
@@ -104,6 +109,9 @@ class SettingsProvider extends ChangeNotifier {
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
   static const _kTone = 'alarm_tone';
+  static const _kCustomToneUri = 'custom_tone_uri';
+  static const _kCustomToneTitle = 'custom_tone_title';
+  static const _kCustomToneSeq = 'custom_tone_seq';
   static const _kDefColor = 'def_note_color';
   static const _kDefGradient = 'def_gradient';
   static const _kDefBgStyle = 'def_bg_style';
@@ -136,7 +144,14 @@ class SettingsProvider extends ChangeNotifier {
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
+    _customToneUri = prefs.getString(_kCustomToneUri);
+    _customToneTitle = prefs.getString(_kCustomToneTitle);
+    _customToneSeq = prefs.getInt(_kCustomToneSeq) ?? 0;
     NotificationService.instance.tone = _alarmTone;
+    if (_alarmTone == 'custom' && _customToneUri != null) {
+      await NotificationService.instance
+          .setCustomTone(_customToneUri, seq: _customToneSeq);
+    }
 
     _defaultNoteColor =
         prefs.containsKey(_kDefColor) ? prefs.getInt(_kDefColor) : null;
@@ -246,6 +261,25 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_kTone, tone);
+  }
+
+  /// يضبط نغمة مخصّصة مختارة من نغمات الجهاز ([uri] رابطها، [title] اسمها).
+  Future<void> setCustomTone(String uri, String? title) async {
+    _customToneSeq++; // معرّف قناة جديد عند كل تغيير (قنوات أندرويد ثابتة الصوت)
+    _customToneUri = uri;
+    _customToneTitle = title;
+    _alarmTone = 'custom';
+    await NotificationService.instance.setCustomTone(uri, seq: _customToneSeq);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kTone, 'custom');
+    await prefs.setString(_kCustomToneUri, uri);
+    await prefs.setInt(_kCustomToneSeq, _customToneSeq);
+    if (title != null) {
+      await prefs.setString(_kCustomToneTitle, title);
+    } else {
+      await prefs.remove(_kCustomToneTitle);
+    }
   }
 
   Future<void> setThemeMode(ThemeMode mode) async {
