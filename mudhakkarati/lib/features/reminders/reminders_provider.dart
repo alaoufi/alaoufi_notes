@@ -102,6 +102,44 @@ class RemindersProvider extends ChangeNotifier {
     await refresh();
   }
 
+  /// تنبيه أسبوعي على **أيام محدّدة**: يُنشئ تذكيرًا أسبوعيًّا لكل يوم مختار
+  /// عند أقرب وقوع له بالوقت المطلوب. [weekdays] بقيم DateTime.weekday (1..7).
+  Future<void> setStandaloneWeekly(
+    String title,
+    TimeOfDay tod,
+    Set<int> weekdays, {
+    Reminder? existing,
+  }) async {
+    if (existing != null) {
+      await NotificationService.instance.cancel(existing.notificationId);
+      await _repo.delete(existing.id!);
+    }
+    final name = title.trim().isEmpty ? 'تنبيه' : title.trim();
+    for (final wd in weekdays) {
+      final when = _nextWeekday(wd, tod);
+      final reminder = Reminder(
+        title: name,
+        time: when,
+        repeat: ReminderRepeat.weekly,
+        notificationId: _generateId(),
+      );
+      final id = await _repo.insert(reminder);
+      await NotificationService.instance
+          .schedule(reminder.copyWith(id: id), name, '');
+    }
+    await refresh();
+  }
+
+  /// أقرب تاريخ مستقبلي ليومٍ من الأسبوع [weekday] عند الوقت [tod].
+  DateTime _nextWeekday(int weekday, TimeOfDay tod) {
+    final now = DateTime.now();
+    var d = DateTime(now.year, now.month, now.day, tod.hour, tod.minute);
+    while (d.weekday != weekday || !d.isAfter(now)) {
+      d = DateTime(d.year, d.month, d.day + 1, tod.hour, tod.minute);
+    }
+    return d;
+  }
+
   Future<void> removeReminder(Reminder reminder) async {
     await NotificationService.instance.cancel(reminder.notificationId);
     await _repo.delete(reminder.id!);
