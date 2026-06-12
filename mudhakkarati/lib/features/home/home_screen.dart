@@ -9,7 +9,6 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
-import '../favorites/favorites_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
@@ -304,18 +303,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-              // خدمات سريعة في المساحة المتوفّرة (بدل اسم التطبيق).
-              IconButton(
-                tooltip: s.t('favorites'),
-                icon: const Icon(Icons.star_border),
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => const FavoritesScreen())),
-              ),
-              IconButton(
-                tooltip: 'معلومات',
-                icon: const Icon(Icons.menu_book_outlined),
-                onPressed: _openInfo,
-              ),
+              // الاسم نُقل للقائمة الجانبية و«حول التطبيق»؛ نُبقي الشريط غير مزدحم
+              // كي تبقى أيقونة القائمة (☰) ظاهرة. (المفضّلة/المعلومات في القائمة الجانبية.)
               const Spacer(),
               IconButton(
                 tooltip: s.t('calendar'),
