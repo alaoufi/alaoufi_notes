@@ -528,6 +528,7 @@ class SettingsScreen extends StatelessWidget {
               DropdownMenuItem(value: 'alarm', child: Text('إنذار')),
               DropdownMenuItem(value: 'chime', child: Text('لطيفة')),
               DropdownMenuItem(value: 'bell', child: Text('جرس')),
+              DropdownMenuItem(value: 'forest', child: Text('غابة 🌳')),
             ],
             onChanged: (v) {
               if (v != null) st.setAlarmTone(v);
