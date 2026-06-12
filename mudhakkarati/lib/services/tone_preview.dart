@@ -9,8 +9,9 @@ class TonePreview {
   static Future<void> play(String tone) async {
     try {
       await _player.stop();
-      await _player.play(AssetSource('sounds/$tone.wav'),
-          volume: 1.0, mode: PlayerMode.lowLatency);
+      // وضع mediaPlayer (الافتراضي) يشغّل ملفات بطول عدة ثوانٍ بموثوقية.
+      await _player.setReleaseMode(ReleaseMode.stop);
+      await _player.play(AssetSource('sounds/$tone.wav'), volume: 1.0);
     } catch (_) {
       // تجاهل أي خطأ تشغيل (لا يجب أن يُعطّل الواجهة).
     }

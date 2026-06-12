@@ -1,9 +1,10 @@
 import 'enums.dart';
 
-/// تذكير مرتبط بملاحظة. يُجدول كإشعار محلي.
+/// تذكير — قد يكون مرتبطًا بملاحظة ([noteId]) أو مستقلًّا بعنوان حرّ ([title]).
 class Reminder {
   final int? id;
-  final int noteId;
+  final int? noteId; // null ⇒ تنبيه مستقلّ غير مرتبط بملاحظة
+  final String? title; // عنوان التنبيه المستقلّ
   final DateTime time;
   final ReminderRepeat repeat;
   final bool isActive;
@@ -13,17 +14,22 @@ class Reminder {
 
   const Reminder({
     this.id,
-    required this.noteId,
+    this.noteId,
+    this.title,
     required this.time,
     this.repeat = ReminderRepeat.once,
     this.isActive = true,
     required this.notificationId,
   });
 
+  /// تنبيه مستقلّ (غير مرتبط بملاحظة).
+  bool get isStandalone => noteId == null;
+
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
       'note_id': noteId,
+      'title': title,
       'time': time.millisecondsSinceEpoch,
       'repeat': repeat.dbValue,
       'is_active': isActive ? 1 : 0,
@@ -34,7 +40,8 @@ class Reminder {
   factory Reminder.fromMap(Map<String, dynamic> map) {
     return Reminder(
       id: map['id'] as int?,
-      noteId: map['note_id'] as int,
+      noteId: map['note_id'] as int?,
+      title: map['title'] as String?,
       time: DateTime.fromMillisecondsSinceEpoch(map['time'] as int),
       repeat: ReminderRepeatX.fromDb(map['repeat'] as String?),
       isActive: (map['is_active'] as int? ?? 1) == 1,
@@ -45,6 +52,7 @@ class Reminder {
   Reminder copyWith({
     int? id,
     int? noteId,
+    String? title,
     DateTime? time,
     ReminderRepeat? repeat,
     bool? isActive,
@@ -53,6 +61,7 @@ class Reminder {
     return Reminder(
       id: id ?? this.id,
       noteId: noteId ?? this.noteId,
+      title: title ?? this.title,
       time: time ?? this.time,
       repeat: repeat ?? this.repeat,
       isActive: isActive ?? this.isActive,
