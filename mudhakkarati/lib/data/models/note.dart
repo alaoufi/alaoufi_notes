@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 import 'enums.dart';
 
 /// نموذج الملاحظة الأساسي.
@@ -6,6 +8,9 @@ import 'enums.dart';
 /// المرفقات تُخزَّن كمسارات ملفات داخل مجلد التطبيق الخاص.
 class Note {
   final int? id;
+
+  /// معرّف عالمي ثابت عبر الأجهزة (للمزامنة السحابية والدمج «آخر تعديل يفوز»).
+  final String uuid;
   final String title;
   final String content;
   final NoteType type;
@@ -57,6 +62,7 @@ class Note {
 
   const Note({
     this.id,
+    this.uuid = '',
     this.title = '',
     this.content = '',
     this.type = NoteType.text,
@@ -86,6 +92,7 @@ class Note {
   factory Note.create({NoteType type = NoteType.text, int? categoryId}) {
     final now = DateTime.now();
     return Note(
+      uuid: const Uuid().v4(),
       type: type,
       categoryId: categoryId,
       createdAt: now,
@@ -104,6 +111,7 @@ class Note {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
+      'uuid': uuid.isEmpty ? const Uuid().v4() : uuid,
       'title': title,
       'content': content,
       'type': type.dbValue,
@@ -133,6 +141,7 @@ class Note {
   factory Note.fromMap(Map<String, dynamic> map, {List<String> tags = const []}) {
     return Note(
       id: map['id'] as int?,
+      uuid: (map['uuid'] as String?) ?? '',
       title: (map['title'] as String?) ?? '',
       content: (map['content'] as String?) ?? '',
       type: NoteTypeX.fromDb(map['type'] as String?),
@@ -165,6 +174,7 @@ class Note {
 
   Note copyWith({
     int? id,
+    String? uuid,
     String? title,
     String? content,
     NoteType? type,
@@ -196,6 +206,7 @@ class Note {
   }) {
     return Note(
       id: id ?? this.id,
+      uuid: uuid ?? this.uuid,
       title: title ?? this.title,
       content: content ?? this.content,
       type: type ?? this.type,

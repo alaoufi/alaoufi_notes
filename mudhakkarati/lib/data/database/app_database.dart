@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 8;
+  static const _dbVersion = 9;
 
   Database? _db;
   Future<Database>? _opening;
@@ -182,6 +182,7 @@ class AppDatabase {
     await db.execute('''
       CREATE TABLE notes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uuid TEXT,
         title TEXT NOT NULL DEFAULT '',
         content TEXT NOT NULL DEFAULT '',
         type TEXT NOT NULL DEFAULT 'text',
@@ -252,6 +253,7 @@ class AppDatabase {
 
     await _createInfoTable(db);
 
+    await db.execute('CREATE INDEX idx_notes_uuid ON notes (uuid)');
     await db.execute('CREATE INDEX idx_notes_category ON notes (category_id)');
     await db.execute('CREATE INDEX idx_notes_flags ON notes (is_deleted, is_archived)');
     await db.execute('CREATE INDEX idx_checklist_note ON checklist_items (note_id)');
@@ -312,6 +314,16 @@ class AppDatabase {
       await db.execute(
           'CREATE INDEX idx_reminders_note ON reminders (note_id)');
       await db.execute('PRAGMA foreign_keys=on');
+    }
+    if (oldVersion < 9) {
+      // معرّف عالمي ثابت لكل ملاحظة (للمزامنة السحابية). نملأ الملاحظات الحالية
+      // بمعرّفات فريدة (hex عشوائي 32 خانة) ثابتة لا تتغيّر بعدها.
+      await db.execute('ALTER TABLE notes ADD COLUMN uuid TEXT');
+      await db.execute(
+          "UPDATE notes SET uuid = lower(hex(randomblob(16))) "
+          "WHERE uuid IS NULL OR uuid = ''");
+      await db.execute(
+          'CREATE INDEX IF NOT EXISTS idx_notes_uuid ON notes (uuid)');
     }
   }
 

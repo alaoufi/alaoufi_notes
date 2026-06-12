@@ -228,23 +228,6 @@ class RichTextToolbar extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 6),
               children: [
-                // تصدير PDF — زرّ واضح بارز في بداية الأدوات.
-                if (onExportPdf != null) ...[
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 9, horizontal: 2),
-                    child: FilledButton.tonalIcon(
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      onPressed: onExportPdf,
-                      icon: const Icon(Icons.picture_as_pdf, size: 18),
-                      label: const Text('PDF'),
-                    ),
-                  ),
-                  sep(),
-                ],
                 // الخط + الحجم.
                 QuillToolbarFontFamilyButton(
                   controller: q,
@@ -302,6 +285,14 @@ class RichTextToolbar extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: () => settings.setHideSelectionMenu(!hide),
                 ),
+                // تصدير PDF — أيقونة في آخر الصفّ (استخدامها قليل).
+                if (onExportPdf != null)
+                  IconButton(
+                    icon: const Icon(Icons.picture_as_pdf, size: 22),
+                    tooltip: 'تصدير PDF',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onExportPdf,
+                  ),
               ],
             ),
           ),
