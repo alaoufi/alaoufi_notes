@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
+import '../../data/models/reminder.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import 'reminders_provider.dart';
@@ -11,6 +12,16 @@ import 'standalone_reminder_dialog.dart';
 
 class RemindersScreen extends StatelessWidget {
   const RemindersScreen({super.key});
+
+  static const _weekdayAr = {
+    1: 'الإثنين',
+    2: 'الثلاثاء',
+    3: 'الأربعاء',
+    4: 'الخميس',
+    5: 'الجمعة',
+    6: 'السبت',
+    7: 'الأحد',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +44,7 @@ class RemindersScreen extends StatelessWidget {
           : ListView(
               padding: const EdgeInsets.fromLTRB(0, 8, 0, 90),
               children: [
+                _nextBanner(context, provider.items),
                 if (standalone.isNotEmpty) ...[
                   _header(context, '⏰ تنبيهات مستقلّة'),
                   for (final v in standalone) _tile(context, s, provider, v),
@@ -46,8 +58,45 @@ class RemindersScreen extends StatelessWidget {
     );
   }
 
+  /// لافتة «المنبّه التالي بعد…» لأقرب منبّه مُفعَّل.
+  Widget _nextBanner(BuildContext context, List<ReminderView> items) {
+    final active = items.where((v) => v.reminder.isActive);
+    if (active.isEmpty) return const SizedBox.shrink();
+    DateTime? soonest;
+    for (final v in active) {
+      final n = _nextFire(v.reminder);
+      if (soonest == null || n.isBefore(soonest)) soonest = n;
+    }
+    if (soonest == null) return const SizedBox.shrink();
+    final diff = soonest.difference(DateTime.now());
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [
+          scheme.primaryContainer,
+          scheme.primaryContainer.withOpacity(0.6),
+        ]),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.alarm_on, color: scheme.onPrimaryContainer),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text('المنبّه التالي ${_countdown(diff)}',
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: scheme.onPrimaryContainer)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _header(BuildContext context, String text) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
         child: Text(text,
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                 color: Theme.of(context).colorScheme.primary,
@@ -58,44 +107,106 @@ class RemindersScreen extends StatelessWidget {
       ReminderView v) {
     final r = v.reminder;
     final note = v.note;
-    final title = r.isStandalone
+    final on = r.isActive;
+    final scheme = Theme.of(context).colorScheme;
+    final timeStr = DateFormat('h:mm a', 'ar').format(r.time);
+    final label = r.isStandalone
         ? (r.title?.isNotEmpty == true ? r.title! : 'تنبيه')
         : (note?.title.isNotEmpty == true
             ? note!.title
             : (note?.content ?? 'ملاحظة'));
+    // وصف التكرار (مع اليوم عند الأسبوعي).
+    final repeatInfo = r.repeat == ReminderRepeat.weekly
+        ? '${_repeatLabel(s, r.repeat)} • ${_weekdayAr[r.time.weekday]}'
+        : _repeatLabel(s, r.repeat);
+
     return AppCard(
-      child: ListTile(
-        leading: GradientIcon(_repeatIcon(r.repeat),
-            color: r.isStandalone
-                ? Theme.of(context).colorScheme.tertiaryContainer
-                : null),
-        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(
-          '${DateFormat('yyyy/MM/dd – HH:mm').format(r.time)}  •  ${_repeatLabel(s, r.repeat)}',
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: () => provider.removeReminder(r),
-        ),
-        onTap: r.isStandalone
-            ? () => showStandaloneReminderDialog(context, existing: r)
-            : () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => NoteEditorScreen(noteId: note!.id),
-                  ),
+      onTap: r.isStandalone
+          ? () => showStandaloneReminderDialog(context, existing: r)
+          : () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => NoteEditorScreen(noteId: note!.id),
                 ),
+              ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 6, 8),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    timeStr,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: on ? null : scheme.outline,
+                        ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$label  •  $repeatInfo',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: on
+                            ? Theme.of(context).hintColor
+                            : scheme.outline),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              tooltip: 'حذف',
+              icon: Icon(Icons.delete_outline, color: scheme.outline),
+              onPressed: () => provider.removeReminder(r),
+            ),
+            Switch(
+              value: on,
+              onChanged: (val) => provider.setActive(v, val),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  IconData _repeatIcon(ReminderRepeat r) => switch (r) {
-        ReminderRepeat.once => Icons.alarm,
-        ReminderRepeat.daily => Icons.today,
-        ReminderRepeat.weekly => Icons.view_week,
-        ReminderRepeat.monthly => Icons.calendar_month,
-        ReminderRepeat.yearly => Icons.event_repeat,
-      };
+  // ===== مساعدات =====
+
+  DateTime _nextFire(Reminder r) {
+    final now = DateTime.now();
+    final t = r.time;
+    switch (r.repeat) {
+      case ReminderRepeat.once:
+        return t;
+      case ReminderRepeat.daily:
+        var d = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+        if (!d.isAfter(now)) d = d.add(const Duration(days: 1));
+        return d;
+      case ReminderRepeat.weekly:
+        var d = DateTime(now.year, now.month, now.day, t.hour, t.minute);
+        while (d.weekday != t.weekday || !d.isAfter(now)) {
+          d = DateTime(d.year, d.month, d.day + 1, t.hour, t.minute);
+        }
+        return d;
+      case ReminderRepeat.monthly:
+      case ReminderRepeat.yearly:
+        return t.isAfter(now) ? t : t;
+    }
+  }
+
+  String _countdown(Duration d) {
+    if (d.isNegative) return 'الآن';
+    final days = d.inDays;
+    final hours = d.inHours % 24;
+    final mins = d.inMinutes % 60;
+    if (days > 0) return 'بعد $days يوم و$hours ساعة';
+    if (hours > 0) return 'بعد $hours ساعة و$mins دقيقة';
+    if (mins > 0) return 'بعد $mins دقيقة';
+    return 'خلال ثوانٍ';
+  }
 
   String _repeatLabel(S s, ReminderRepeat r) => switch (r) {
         ReminderRepeat.once => s.t('repeat_once'),
