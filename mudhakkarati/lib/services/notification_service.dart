@@ -154,9 +154,8 @@ class NotificationService {
         vibrationPattern: Int64List.fromList([0, 600, 300, 600, 300, 600]),
         // FLAG_INSISTENT: يُكرّر الصوت حتى يوقفه المستخدم.
         additionalFlags: Int32List.fromList([4]),
+        // بلا غفوة — زرّ إيقاف فقط.
         actions: const [
-          AndroidNotificationAction(_snoozeAction, 'غفوة',
-              showsUserInterface: false, cancelNotification: true),
           AndroidNotificationAction(_dismissAction, 'إيقاف',
               showsUserInterface: false, cancelNotification: true),
         ],
