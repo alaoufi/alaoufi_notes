@@ -12,6 +12,7 @@ import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
 import '../features/settings/settings_provider.dart';
+import '../services/pdf_export_service.dart';
 import 'color_picker_sheet.dart';
 
 /// شيت إجراءات الملاحظة (عند الضغط المطوّل أو من المحرر).
@@ -132,6 +133,19 @@ Future<void> showNoteActions(BuildContext context, Note note,
             tile(Icons.share, s.t('share'), () async {
               Navigator.pop(context);
               await SharePlus.instance.share(ShareParams(text: _asText(note)));
+            }),
+            tile(Icons.picture_as_pdf_outlined, 'تصدير PDF', () async {
+              Navigator.pop(context);
+              final messenger = ScaffoldMessenger.of(context);
+              messenger.showSnackBar(const SnackBar(
+                  content: Text('جارٍ تجهيز ملف PDF…'),
+                  duration: Duration(seconds: 1)));
+              try {
+                await PdfExportService.exportNote(note);
+              } catch (e) {
+                messenger.showSnackBar(
+                    SnackBar(content: Text('تعذّر التصدير: $e')));
+              }
             }),
             tile(
               note.isArchived ? Icons.unarchive_outlined : Icons.archive_outlined,

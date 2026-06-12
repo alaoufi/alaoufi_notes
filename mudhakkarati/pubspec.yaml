@@ -29,6 +29,7 @@ dependencies:
   flutter_timezone: ^5.1.0
 
   # Media: images, audio, files, pdf
+  pdf: ^3.11.1
   image_picker: ^1.1.2
   record: ^7.0.0
   audioplayers: ^6.0.0
