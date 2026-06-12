@@ -140,6 +140,23 @@ class RemindersProvider extends ChangeNotifier {
     return d;
   }
 
+  /// تفعيل/إيقاف منبّه دون حذفه (يجدول الإشعار أو يلغيه).
+  Future<void> setActive(ReminderView v, bool active) async {
+    final r = v.reminder;
+    if (active) {
+      final title = r.isStandalone
+          ? (r.title ?? 'تنبيه')
+          : (v.note?.title.isNotEmpty == true ? v.note!.title : 'تذكير');
+      final body = r.isStandalone ? '' : (v.note?.content ?? '');
+      await NotificationService.instance
+          .schedule(r.copyWith(isActive: true), title, body);
+    } else {
+      await NotificationService.instance.cancel(r.notificationId);
+    }
+    await _repo.update(r.copyWith(isActive: active));
+    await refresh();
+  }
+
   Future<void> removeReminder(Reminder reminder) async {
     await NotificationService.instance.cancel(reminder.notificationId);
     await _repo.delete(reminder.id!);
