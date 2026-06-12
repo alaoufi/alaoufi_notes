@@ -7,10 +7,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/note_gradient.dart';
 import '../../data/models/enums.dart';
 import '../../services/ringtone_picker.dart';
+import '../../services/tone_preview.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/paper_background.dart';
 import '../backup/backup_screen.dart';
 import '../categories/manage_categories_screen.dart';
+import '../reminders/reminders_screen.dart';
 import '../security/security_settings_screen.dart';
 import '../trash/archive_screen.dart';
 import '../trash/trash_screen.dart';
@@ -537,7 +539,7 @@ class SettingsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold)),
       );
 
-  /// عنصر نغمة قابل للاختيار (أيقونة + اسم + علامة تحديد).
+  /// عنصر نغمة قابل للاختيار (أيقونة + اسم + زرّ سماع + علامة تحديد).
   Widget _toneTile(BuildContext context, SettingsProvider st,
       {required String value, required IconData icon, required String label}) {
     final selected = st.alarmTone == value;
@@ -548,9 +550,19 @@ class SettingsScreen extends StatelessWidget {
       title: Text(label,
           style: TextStyle(
               fontWeight: selected ? FontWeight.bold : FontWeight.normal)),
-      trailing: selected
-          ? Icon(Icons.check_circle, color: scheme.primary)
-          : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: 'سماع',
+            icon: Icon(Icons.play_circle_outline, color: scheme.primary),
+            onPressed: () => TonePreview.play(value),
+          ),
+          selected
+              ? Icon(Icons.check_circle, color: scheme.primary)
+              : const Icon(Icons.radio_button_unchecked, color: Colors.grey),
+        ],
+      ),
       onTap: () => st.setAlarmTone(value),
     );
   }
@@ -566,6 +578,16 @@ class SettingsScreen extends StatelessWidget {
 
     final scheme = Theme.of(context).colorScheme;
     return [
+      // قائمة كل التذكيرات.
+      ListTile(
+        leading: const Icon(Icons.list_alt_outlined),
+        title: const Text('كل التذكيرات'),
+        subtitle: const Text('عرض وإدارة كل تنبيهاتك'),
+        trailing: const Icon(Icons.chevron_left),
+        onTap: () => Navigator.push(context,
+            MaterialPageRoute(builder: (_) => const RemindersScreen())),
+      ),
+      const Divider(height: 1),
       _miniHeader(context, 'نغمات كلاسيكية'),
       _toneTile(context, st,
           value: 'alarm', icon: Icons.notifications_active, label: 'إنذار'),

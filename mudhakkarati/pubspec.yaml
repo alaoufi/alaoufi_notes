@@ -76,6 +76,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # نغمات التنبيه (لمعاينتها داخل التطبيق قبل الاختيار).
+  assets:
+    - assets/sounds/
+
   # خطوط عربية مضمّنة في التطبيق (ثابتة الوزن — تعمل دون اتصال وعلى Impeller).
   fonts:
     - family: Cairo

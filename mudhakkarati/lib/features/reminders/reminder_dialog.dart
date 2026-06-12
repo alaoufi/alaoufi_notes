@@ -5,6 +5,7 @@ import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../services/ringtone_picker.dart';
+import '../../services/tone_preview.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
@@ -113,7 +114,15 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                 // النغمة بجانب إنشاء التنبيه مباشرة.
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.music_note_outlined),
+                  leading: IconButton(
+                    tooltip: 'سماع',
+                    icon: const Icon(Icons.play_circle_outline),
+                    onPressed: () {
+                      if (settings.alarmTone != 'custom') {
+                        TonePreview.play(settings.alarmTone);
+                      }
+                    },
+                  ),
                   title: const Text('النغمة'),
                   subtitle: Text(settings.alarmTone == 'custom'
                       ? (settings.customToneTitle ?? 'نغمة مخصّصة')
