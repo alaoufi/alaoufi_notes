@@ -303,13 +303,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
-              Expanded(
-                child: Text(s.t('app_name'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold)),
-              ),
+              // الاسم نُقل إلى القائمة الجانبية و«حول التطبيق» لتوفير المساحة للخدمات.
+              const Spacer(),
               IconButton(
                 tooltip: s.t('calendar'),
                 icon: const Icon(Icons.calendar_month_outlined),
