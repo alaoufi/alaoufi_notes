@@ -9,6 +9,7 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../calendar/calendar_screen.dart';
+import '../reminders/reminders_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
 import '../search/advanced_filter.dart';
@@ -314,6 +315,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: const Icon(Icons.calendar_month_outlined),
                 onPressed: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const CalendarScreen())),
+              ),
+              IconButton(
+                tooltip: 'التنبيهات',
+                icon: const Icon(Icons.alarm),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RemindersScreen())),
               ),
               IconButton(
                 tooltip: s.t('layout'),
