@@ -1,4 +1,5 @@
 import 'package:sqflite_sqlcipher/sqflite.dart';
+import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
 import '../models/checklist_item.dart';
@@ -245,12 +246,23 @@ class NoteRepository {
 
   Future<void> setColor(int id, int? color) async {
     final db = await _db;
-    await db.update('notes', {'color': color}, where: 'id = ?', whereArgs: [id]);
+    await db.update(
+        'notes',
+        {'color': color, 'updated_at': DateTime.now().millisecondsSinceEpoch},
+        where: 'id = ?',
+        whereArgs: [id]);
   }
 
   Future<void> setLocked(int id, bool locked) async {
     final db = await _db;
-    await db.update('notes', {'is_locked': locked ? 1 : 0}, where: 'id = ?', whereArgs: [id]);
+    await db.update(
+        'notes',
+        {
+          'is_locked': locked ? 1 : 0,
+          'updated_at': DateTime.now().millisecondsSinceEpoch
+        },
+        where: 'id = ?',
+        whereArgs: [id]);
   }
 
   // ---------------------------------------------------------------------------
@@ -259,9 +271,11 @@ class NoteRepository {
 
   Future<void> moveToTrash(int id) async {
     final db = await _db;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    // نُحدّث updated_at أيضًا كي ينتشر الحذف عبر المزامنة (آخر تعديل يفوز).
     await db.update(
       'notes',
-      {'is_deleted': 1, 'deleted_at': DateTime.now().millisecondsSinceEpoch},
+      {'is_deleted': 1, 'deleted_at': now, 'updated_at': now},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -310,6 +324,7 @@ class NoteRepository {
     final now = DateTime.now();
     final copy = note.copyWith(
       id: null,
+      uuid: const Uuid().v4(), // نسخة مستقلّة ⇒ معرّف مزامنة جديد.
       title: note.title.isEmpty ? note.title : '${note.title} (نسخة)',
       isPinned: false,
       createdAt: now,
