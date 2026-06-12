@@ -7,7 +7,7 @@ import '../../data/repositories/info_repository.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/rich_text_field.dart';
 
-/// شاشة إضافة/تعديل عنصر في قاعدة المعلومات العامة.
+/// شاشة إضافة/تعديل عنصر في قاعدة المعلومات العامة — تصميم بطاقات عصري.
 class InfoEditScreen extends StatefulWidget {
   final InfoEntry? entry;
   final String? initialMain;
@@ -65,33 +65,42 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
       return;
     }
     setState(() => _saving = true);
-    // التفصيل: نخزّن Delta إن كان فيه نص، وإلا فارغًا.
-    final detailJson =
-        jsonEncode(_detail.quill.document.toDelta().toJson());
-    final detail = richToPlainText(detailJson).isEmpty ? '' : detailJson;
+    try {
+      // التفصيل: نخزّن Delta إن كان فيه نص، وإلا فارغًا.
+      final detailJson = jsonEncode(_detail.quill.document.toDelta().toJson());
+      final detail = richToPlainText(detailJson).isEmpty ? '' : detailJson;
 
-    final base = (widget.entry ?? InfoEntry(createdAt: DateTime.now()));
-    final entry = base.copyWith(
-      mainSpecialty: _main.text.trim(),
-      subSpecialty: _sub.text.trim(),
-      topic: _topic.text.trim(),
-      brief: _brief.text.trim(),
-      detail: detail,
-      notes: _notes.text.trim(),
-      source: _source.text.trim(),
-    );
-    if (entry.id == null) {
-      await _repo.insert(entry);
-    } else {
-      await _repo.update(entry);
+      final base = (widget.entry ?? InfoEntry(createdAt: DateTime.now()));
+      final entry = base.copyWith(
+        mainSpecialty: _main.text.trim(),
+        subSpecialty: _sub.text.trim(),
+        topic: _topic.text.trim(),
+        brief: _brief.text.trim(),
+        detail: detail,
+        notes: _notes.text.trim(),
+        source: _source.text.trim(),
+      );
+      if (entry.id == null) {
+        await _repo.insert(entry);
+      } else {
+        await _repo.update(entry);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('تم الحفظ ✓')));
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('تعذّر الحفظ: $e')));
     }
-    if (mounted) Navigator.pop(context, true);
   }
 
   Widget _field(TextEditingController c, String label, IconData icon,
       {int maxLines = 1}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
         controller: c,
         maxLines: maxLines,
@@ -107,24 +116,48 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
     );
   }
 
-  Widget _detailField(BuildContext context) {
+  /// بطاقة قسم عصرية (أيقونة متدرّجة + عنوان + حقول).
+  Widget _card(String title, IconData icon, List<Widget> children) {
+    final scheme = Theme.of(context).colorScheme;
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            GradientIcon(icon, size: 36),
+            const SizedBox(width: 10),
+            Text(title,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: scheme.primary)),
+          ]),
+          const SizedBox(height: 14),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _detailField() {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).inputDecorationTheme.fillColor,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: _showToolbar ? scheme.primary : Colors.transparent,
-          width: 1.5,
+          color: _showToolbar ? scheme.primary : scheme.outlineVariant,
+          width: _showToolbar ? 1.6 : 1,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            Icon(Icons.notes, size: 20, color: scheme.primary),
+            Icon(Icons.notes, size: 18, color: scheme.primary),
             const SizedBox(width: 8),
             Text('التفصيل',
                 style: Theme.of(context)
@@ -133,10 +166,12 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                     ?.copyWith(color: scheme.primary)),
             const Spacer(),
             Text('بأدوات تنسيق',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).hintColor)),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).hintColor)),
           ]),
-          const Divider(),
+          const Divider(height: 14),
           RichTextEditorBody(controller: _detail),
         ],
       ),
@@ -146,12 +181,20 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   @override
   Widget build(BuildContext context) {
     final editing = widget.entry != null;
+    final kb = MediaQuery.of(context).viewInsets.bottom;
     return Scaffold(
+      // مهم: يمنع تضاعف حساب ارتفاع الكيبورد مع شريط التنسيق (سبب التداخل).
+      resizeToAvoidBottomInset: false,
       appBar: gradientAppBar(
           context, editing ? 'تعديل معلومة' : 'إضافة معلومة', actions: [
         IconButton(
           onPressed: _saving ? null : _save,
-          icon: const Icon(Icons.check),
+          icon: _saving
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2))
+              : const Icon(Icons.check),
           tooltip: 'حفظ',
         ),
       ]),
@@ -161,30 +204,42 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 24),
                 children: [
-                  _field(_main, 'التخصص الرئيسي', Icons.account_tree_outlined),
-                  _field(_sub, 'التخصص الفرعي', Icons.subdirectory_arrow_left),
-                  _field(_topic, 'الموضوع', Icons.title),
-                  _field(_brief, 'المختصر', Icons.short_text, maxLines: 3),
-                  _detailField(context),
-                  _field(_notes, 'ملاحظات', Icons.sticky_note_2_outlined,
-                      maxLines: 4),
-                  _field(_source, 'المصدر', Icons.link),
-                  const SizedBox(height: 8),
-                  FilledButton.icon(
-                    onPressed: _saving ? null : _save,
-                    icon: const Icon(Icons.save),
-                    label: const Text('حفظ'),
+                  _card('التصنيف', Icons.account_tree_outlined, [
+                    _field(_main, 'التخصص الرئيسي',
+                        Icons.account_tree_outlined),
+                    _field(_sub, 'التخصص الفرعي',
+                        Icons.subdirectory_arrow_left),
+                  ]),
+                  _card('المحتوى', Icons.article_outlined, [
+                    _field(_topic, 'الموضوع', Icons.title),
+                    _field(_brief, 'المختصر', Icons.short_text, maxLines: 3),
+                    _detailField(),
+                  ]),
+                  _card('معلومات إضافية', Icons.more_horiz, [
+                    _field(_notes, 'ملاحظات', Icons.sticky_note_2_outlined,
+                        maxLines: 4),
+                    _field(_source, 'المصدر', Icons.link),
+                  ]),
+                  const SizedBox(height: 6),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: FilledButton.icon(
+                      onPressed: _saving ? null : _save,
+                      icon: const Icon(Icons.save),
+                      label: const Text('حفظ'),
+                      style: FilledButton.styleFrom(
+                          minimumSize: const Size.fromHeight(48)),
+                    ),
                   ),
                 ],
               ),
             ),
-            // شريط التنسيق يظهر فوق لوحة المفاتيح عند تحرير «التفصيل».
+            // شريط التنسيق فوق لوحة المفاتيح عند تحرير «التفصيل».
             if (_showToolbar)
               Padding(
-                padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom),
+                padding: EdgeInsets.only(bottom: kb),
                 child: RichTextToolbar(controller: _detail),
               ),
           ],
