@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -13,6 +14,15 @@ import 'webdav_backend.dart';
 
 /// مزوّد المزامنة المختار.
 enum SyncProvider { none, webdav, googleDrive }
+
+/// حالة شريط المزامنة الخفيف في الأعلى.
+enum SyncUi { idle, syncing, done, error }
+
+class SyncStatus {
+  final SyncUi state;
+  final String message;
+  const SyncStatus(this.state, [this.message = '']);
+}
 
 /// نتيجة عملية مزامنة.
 class SyncResult {
@@ -45,6 +55,10 @@ class SyncService {
   final _secure = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
+
+  /// حالة المزامنة لعرض شريط خفيف في الأعلى (بلا تعطيل العمل).
+  final ValueNotifier<SyncStatus> status =
+      ValueNotifier(const SyncStatus(SyncUi.idle));
 
   // ===================== الإعدادات =====================
   Future<SyncProvider> provider() async {

@@ -50,7 +50,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// مزامنة تلقائية مع تغذية راجعة مرئية (إن كانت مفعّلة ومُهيّأة).
+  /// مزامنة تلقائية في الخلفية مع شريط خفيف في الأعلى (لا تُعطّل العمل).
   Future<void> _autoSync() async {
     if (_syncing) return;
     // تجنّب التكرار السريع عند تعدّد أحداث الاستئناف خلال ثوانٍ.
@@ -61,34 +61,31 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     final svc = SyncService.instance;
     if (!await svc.autoSync()) return;
     if (!await svc.isConfigured()) return;
-    if (!mounted) return;
 
     _syncing = true;
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.showSnackBar(const SnackBar(
-      content: Text('جارٍ المزامنة السحابية…'),
-      duration: Duration(seconds: 2),
-    ));
+    svc.status.value =
+        const SyncStatus(SyncUi.syncing, 'جارٍ مزامنة ملاحظاتك…');
 
     final r = await svc.syncNow();
     _lastSyncDone = DateTime.now();
     _syncing = false;
-    if (!mounted) return;
 
-    if (r.ok) {
+    // حدّث القائمة بهدوء عند النجاح.
+    if (r.ok && mounted) {
       final notes = context.read<NotesProvider>();
       await notes.loadCategories();
       await notes.refresh();
-      if (!mounted) return;
     }
 
-    final m = ScaffoldMessenger.of(context);
-    m.hideCurrentSnackBar();
-    m.showSnackBar(SnackBar(
-      content: Text(r.ok ? 'تمت المزامنة ✓' : r.message),
-      backgroundColor: r.ok ? null : Theme.of(context).colorScheme.error,
-      duration: Duration(seconds: r.ok ? 2 : 4),
-    ));
+    svc.status.value = r.ok
+        ? const SyncStatus(SyncUi.done, 'تمت المزامنة')
+        : SyncStatus(SyncUi.error, r.message);
+    // إخفاء الشريط تلقائيًا بعد لحظة.
+    Future.delayed(Duration(seconds: r.ok ? 2 : 4), () {
+      if (svc.status.value.state != SyncUi.syncing) {
+        svc.status.value = const SyncStatus(SyncUi.idle);
+      }
+    });
   }
 
   @override

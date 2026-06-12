@@ -9,6 +9,7 @@ import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/note_card.dart';
 import '../../services/backup_service.dart';
+import '../../services/sync/sync_service.dart';
 import '../backup/backup_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../reminders/reminders_provider.dart';
@@ -291,6 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: _header(context, s, settings, provider)),
+              SliverToBoxAdapter(child: _syncBanner(context)),
               if (provider.loading)
                 const SliverFillRemaining(
                   hasScrollBody: false,
@@ -325,6 +327,70 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  /// شريط مزامنة خفيف في الأعلى (يظهر فقط أثناء/بعد المزامنة ثم يختفي).
+  Widget _syncBanner(BuildContext context) {
+    return ValueListenableBuilder<SyncStatus>(
+      valueListenable: SyncService.instance.status,
+      builder: (context, st, _) {
+        final scheme = Theme.of(context).colorScheme;
+        Widget child;
+        if (st.state == SyncUi.idle) {
+          child = const SizedBox(width: double.infinity);
+        } else {
+          late final Widget leading;
+          late final Color color;
+          switch (st.state) {
+            case SyncUi.syncing:
+              leading = const SizedBox(
+                  width: 15,
+                  height: 15,
+                  child: CircularProgressIndicator(strokeWidth: 2));
+              color = scheme.primary;
+              break;
+            case SyncUi.done:
+              leading =
+                  const Icon(Icons.cloud_done, size: 18, color: Colors.green);
+              color = Colors.green.shade700;
+              break;
+            case SyncUi.error:
+              leading = Icon(Icons.cloud_off, size: 18, color: scheme.error);
+              color = scheme.error;
+              break;
+            case SyncUi.idle:
+              leading = const SizedBox.shrink();
+              color = scheme.primary;
+              break;
+          }
+          child = Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                leading,
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    st.message,
+                    style: TextStyle(
+                        color: color,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOut,
+          child: child,
+        );
+      },
     );
   }
 
