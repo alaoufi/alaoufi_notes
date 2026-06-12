@@ -36,41 +36,37 @@ class RichTextController {
   bool _settingDir = false;
 
   /// يضبط اتجاه السطر الحالي تلقائيًّا حسب أول حرف قويّ فيه (عربي/لاتيني).
+  ///
+  /// نستخدم formatSelection/getSelectionStyle (نفس آلية زرّ الاتجاه في الشريط)
+  /// فتُطبَّق سمة الكتلة على السطر الحالي بموثوقية دون حساب مدى يدويًّا.
   void _autoDirection() {
     if (_settingDir) return;
     final sel = quill.selection;
     if (!sel.isValid || !sel.isCollapsed) return;
-    final docLen = quill.document.length;
-    final offset = sel.baseOffset.clamp(0, docLen);
     try {
       final text = quill.document.toPlainText();
       if (text.isEmpty) return;
+      final offset = sel.baseOffset.clamp(0, text.length);
       final start =
           offset <= 0 ? 0 : (text.lastIndexOf('\n', offset - 1) + 1);
       var end = text.indexOf('\n', offset);
-      if (end < 0) end = text.length - 1; // المستند ينتهي دائمًا بـ '\n'
-      if (end < start) return;
-      final line = text.substring(start, end);
-      final dir = _detectDir(line);
+      if (end < 0) end = text.length;
+      if (end <= start) return; // سطر فارغ
+      final dir = _detectDir(text.substring(start, end));
       if (dir == null) return; // محايد (رموز/أرقام) ⇒ لا تغيير
-      // سمات الكتلة (الاتجاه/المحاذاة) مخزّنة على '\n' المنهي للسطر.
       final current =
-          quill.document.collectStyle(end, 1).attributes['direction']?.value;
+          quill.getSelectionStyle().attributes['direction']?.value;
       if (current == dir) return; // مضبوط بالفعل
       _settingDir = true;
-      final saved = quill.selection;
-      // نشمل '\n' في المدى كي تُضبط سمة الكتلة على هذا السطر تحديدًا.
-      final len = end - start + 1;
       if (dir == 'rtl') {
-        quill.formatText(start, len, Attribute.rtl);
-        quill.formatText(start, len, Attribute.rightAlignment);
+        quill.formatSelection(Attribute.rtl);
+        quill.formatSelection(Attribute.rightAlignment);
       } else {
-        quill.formatText(start, len, _ltrDir);
-        quill.formatText(start, len, Attribute.leftAlignment);
+        quill.formatSelection(_ltrDir);
+        quill.formatSelection(Attribute.leftAlignment);
       }
-      quill.updateSelection(saved, ChangeSource.local);
     } catch (_) {
-      // تجاهل أي خطأ في الكشف حتى لا يتعطّل التحرير.
+      // تجاهل أي خطأ حتى لا يتعطّل التحرير.
     } finally {
       _settingDir = false;
     }
