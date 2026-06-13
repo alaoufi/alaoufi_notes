@@ -483,42 +483,18 @@ class _SmoothToolbarScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-/// يبدّل سمة تنسيق مضمّنة «بذكاء»:
-/// - مع تحديد نصّ: يطبّقها على التحديد (السلوك المعتاد).
-/// - مؤشر داخل كلمة بلا تحديد: يطبّقها على الكلمة كاملة (مثل Word) —
-///   كان الضغط سابقًا يضبط تنسيق الكتابة القادمة فقط فيبدو أن الزرّ لا يعمل.
-/// - مؤشر على حافة كلمة/سطر فارغ: يضبط تنسيق ما سيُكتب بعده.
+/// يبدّل سمة تنسيق مضمّنة على **النص المحدَّد فقط** (المعلَّم):
+/// - مع تحديد نصّ: يطبّق/يزيل السمة على التحديد فقط.
+/// - بلا تحديد: يضبط تنسيق ما سيُكتب بعد المؤشر (السلوك القياسي) — لا يتوسّع
+///   إلى الكلمة كاملة كما كان سابقًا، احترامًا لقاعدة «على المعلَّم فقط».
 void _smartToggleInline(QuillController c, Attribute attr) {
-  // حالة التفعيل الحالية (محسوبة بأمان وقت الضغط).
   bool isOn;
   try {
     isOn = c.getSelectionStyle().attributes.containsKey(attr.key);
   } catch (_) {
     isOn = false;
   }
-  final toggle = isOn ? Attribute.clone(attr, null) : attr;
-  final sel = c.selection;
-  if (sel.isValid && sel.isCollapsed) {
-    final text = c.document.toPlainText();
-    bool isWord(int i) =>
-        i >= 0 && i < text.length && text[i].trim().isNotEmpty;
-    final caret = sel.baseOffset;
-    // المؤشر ملاصق لكلمة من أي جهة (داخلها أو عند حافتها) ⇒ نسّق الكلمة كاملة.
-    if (isWord(caret - 1) || isWord(caret)) {
-      var start = caret, end = caret;
-      while (isWord(start - 1)) {
-        start--;
-      }
-      while (isWord(end)) {
-        end++;
-      }
-      if (end > start) {
-        c.formatText(start, end - start, toggle);
-        return;
-      }
-    }
-  }
-  c.formatSelection(toggle);
+  c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
