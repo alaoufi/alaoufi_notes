@@ -38,7 +38,7 @@ class MudhakkaratiApp extends StatelessWidget {
       // ملاحظة: FlutterQuillLocalizations.delegate ثابت (const) لذا تبقى القائمة const.
       // ضمان اتجاه RTL للعربية.
       builder: (context, child) {
-        final isRtl = settings.locale.languageCode == 'ar';
+        final isRtl = S.rtlLanguages.contains(settings.locale.languageCode);
         return Directionality(
           textDirection: isRtl ? TextDirection.rtl : TextDirection.ltr,
           child: child!,

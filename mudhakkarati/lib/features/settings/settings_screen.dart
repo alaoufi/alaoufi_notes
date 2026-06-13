@@ -291,10 +291,10 @@ class SettingsScreen extends StatelessWidget {
             value: st.locale.languageCode,
             underline: const SizedBox.shrink(),
             items: [
-              DropdownMenuItem(value: 'ar', child: Text(s.t('lang_ar'))),
-              DropdownMenuItem(value: 'en', child: Text(s.t('lang_en'))),
+              for (final e in S.languages.entries)
+                DropdownMenuItem(value: e.key, child: Text(e.value)),
             ],
-            onChanged: (v) => st.setLocale(Locale(v ?? 'ar')),
+            onChanged: (v) => st.setLocale(Locale(v ?? 'en')),
           ),
         ),
       ];

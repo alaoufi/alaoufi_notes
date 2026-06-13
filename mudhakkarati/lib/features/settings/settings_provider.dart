@@ -17,7 +17,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _hideSelectionMenu = false;
   InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
-  Locale _locale = const Locale('ar');
+  Locale _locale = const Locale('en');
   String _alarmTone = 'alarm';
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
@@ -144,7 +144,7 @@ class SettingsProvider extends ChangeNotifier {
     _infoPlacement = InfoPlacement.values
         .firstWhere((e) => e.name == ip, orElse: () => InfoPlacement.tab);
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
-    _locale = Locale(prefs.getString(_kLocale) ?? 'ar');
+    _locale = Locale(prefs.getString(_kLocale) ?? 'en');
     _alarmTone = prefs.getString(_kTone) ?? 'alarm';
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
     NotificationService.instance.snoozeMinutes = _snoozeMinutes;
