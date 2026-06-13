@@ -965,13 +965,26 @@ class _ChecklistTileState extends State<ChecklistTile> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Directionality(
       textDirection: _dir,
       child: Row(
         children: [
-          Checkbox(
-            value: widget.isDone,
-            onChanged: (v) => widget.onToggle(v ?? false),
+          // مربع اختيار مضمون التفعيل: لمس صريح (opaque) بمساحة كبيرة يتفعّل من
+          // أول ضغطة دائمًا حتى أثناء الكتابة (بدل مربع المكتبة الذي يفوّت بعض اللمسات).
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => widget.onToggle(!widget.isDone),
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Icon(
+                widget.isDone
+                    ? Icons.check_box
+                    : Icons.check_box_outline_blank,
+                size: 24,
+                color: widget.isDone ? scheme.primary : scheme.outline,
+              ),
+            ),
           ),
           Expanded(
             child: TextField(
