@@ -71,3 +71,5 @@ class AutoDirText extends StatelessWidget {
     );
   }
 }
+
+// إعادة تشغيل البناء للتحقق من توفّر خوادم CI
