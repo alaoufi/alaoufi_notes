@@ -218,6 +218,9 @@ class S {
     'stt_insert': 'إدراج',
     'stt_busy_help': 'المايك مشغول. أغلق المساعد الصوتيّ، أو استخدم مايك لوحة المفاتيح للكتابة بالصوت.',
     'user_guide': 'دليل الاستخدام',
+    'stt_perm_denied': 'تم رفض إذن الميكروفون. فعّله من إعدادات التطبيق.',
+    'stt_open_settings': 'فتح الإعدادات',
+    'stt_no_speech': 'لم يُلتقط أي كلام — حاول مجددًا.',
   };
 
   static const Map<String, String> _en = {
@@ -380,6 +383,9 @@ class S {
     'stt_insert': 'Insert',
     'stt_busy_help': 'Mic is busy. Close the voice assistant, or use the keyboard mic for voice typing.',
     'user_guide': 'User Guide',
+    'stt_perm_denied': 'Microphone permission denied. Enable it in app settings.',
+    'stt_open_settings': 'Open settings',
+    'stt_no_speech': 'No speech detected — try again.',
   };
 
   static const Map<String, String> _es = {
@@ -540,6 +546,9 @@ class S {
     'stt_insert': 'Insertar',
     'stt_busy_help': 'El micrófono está ocupado. Cierra el asistente de voz o usa el micrófono del teclado.',
     'user_guide': 'Guía de uso',
+    'stt_perm_denied': 'Permiso de micrófono denegado. Actívalo en los ajustes de la app.',
+    'stt_open_settings': 'Abrir ajustes',
+    'stt_no_speech': 'No se detectó voz — inténtalo de nuevo.',
   };
 
   static const Map<String, String> _de = {
@@ -700,6 +709,9 @@ class S {
     'stt_insert': 'Einfügen',
     'stt_busy_help': 'Mikrofon ist belegt. Schließe den Sprachassistenten oder nutze das Tastatur-Mikrofon.',
     'user_guide': 'Benutzerhandbuch',
+    'stt_perm_denied': 'Mikrofonberechtigung verweigert. Aktiviere sie in den App-Einstellungen.',
+    'stt_open_settings': 'Einstellungen öffnen',
+    'stt_no_speech': 'Keine Sprache erkannt – erneut versuchen.',
   };
 
   static const Map<String, String> _fil = {
@@ -860,6 +872,9 @@ class S {
     'stt_insert': 'Ipasok',
     'stt_busy_help': 'Busy ang mic. Isara ang voice assistant, o gamitin ang mic ng keyboard.',
     'user_guide': 'Gabay sa paggamit',
+    'stt_perm_denied': 'Tinanggihan ang pahintulot sa mikropono. I-enable sa app settings.',
+    'stt_open_settings': 'Buksan ang settings',
+    'stt_no_speech': 'Walang narinig na boses — subukan ulit.',
   };
 
   static const Map<String, String> _fr = {
@@ -1020,6 +1035,9 @@ class S {
     'stt_insert': 'Insérer',
     'stt_busy_help': 'Micro occupé. Fermez l’assistant vocal ou utilisez le micro du clavier.',
     'user_guide': 'Guide d’utilisation',
+    'stt_perm_denied': 'Autorisation du micro refusée. Activez-la dans les paramètres de l’app.',
+    'stt_open_settings': 'Ouvrir les paramètres',
+    'stt_no_speech': 'Aucune parole détectée — réessayez.',
   };
 
   static const Map<String, String> _id = {
@@ -1180,6 +1198,9 @@ class S {
     'stt_insert': 'Sisipkan',
     'stt_busy_help': 'Mikrofon sibuk. Tutup asisten suara, atau gunakan mikrofon keyboard.',
     'user_guide': 'Panduan pengguna',
+    'stt_perm_denied': 'Izin mikrofon ditolak. Aktifkan di pengaturan aplikasi.',
+    'stt_open_settings': 'Buka pengaturan',
+    'stt_no_speech': 'Tidak ada suara terdeteksi — coba lagi.',
   };
 
   static const Map<String, String> _it = {
@@ -1340,6 +1361,9 @@ class S {
     'stt_insert': 'Inserisci',
     'stt_busy_help': 'Microfono occupato. Chiudi l’assistente vocale o usa il microfono della tastiera.',
     'user_guide': 'Guida utente',
+    'stt_perm_denied': 'Autorizzazione microfono negata. Attivala nelle impostazioni dell’app.',
+    'stt_open_settings': 'Apri impostazioni',
+    'stt_no_speech': 'Nessun parlato rilevato — riprova.',
   };
 
   static const Map<String, String> _ms = {
@@ -1500,6 +1524,9 @@ class S {
     'stt_insert': 'Sisip',
     'stt_busy_help': 'Mikrofon sibuk. Tutup pembantu suara, atau guna mikrofon papan kekunci.',
     'user_guide': 'Panduan pengguna',
+    'stt_perm_denied': 'Kebenaran mikrofon ditolak. Aktifkan dalam tetapan apl.',
+    'stt_open_settings': 'Buka tetapan',
+    'stt_no_speech': 'Tiada suara dikesan — cuba lagi.',
   };
 
   static const Map<String, String> _hi = {
@@ -1660,6 +1687,9 @@ class S {
     'stt_insert': 'सम्मिलित करें',
     'stt_busy_help': 'माइक व्यस्त है। वॉइस असिस्टेंट बंद करें, या कीबोर्ड का माइक उपयोग करें।',
     'user_guide': 'उपयोग गाइड',
+    'stt_perm_denied': 'माइक्रोफ़ोन अनुमति अस्वीकृत। ऐप सेटिंग्स में सक्षम करें।',
+    'stt_open_settings': 'सेटिंग्स खोलें',
+    'stt_no_speech': 'कोई आवाज़ नहीं मिली — फिर कोशिश करें।',
   };
 
   static const Map<String, String> _bn = {
@@ -1820,6 +1850,9 @@ class S {
     'stt_insert': 'সন্নিবেশ',
     'stt_busy_help': 'মাইক ব্যস্ত। ভয়েস অ্যাসিস্ট্যান্ট বন্ধ করুন, বা কীবোর্ডের মাইক ব্যবহার করুন।',
     'user_guide': 'ব্যবহার নির্দেশিকা',
+    'stt_perm_denied': 'মাইক্রোফোন অনুমতি প্রত্যাখ্যাত। অ্যাপ সেটিংসে সক্রিয় করুন।',
+    'stt_open_settings': 'সেটিংস খুলুন',
+    'stt_no_speech': 'কোনো কথা শনাক্ত হয়নি — আবার চেষ্টা করুন।',
   };
 
   static const Map<String, String> _fa = {
@@ -1980,6 +2013,9 @@ class S {
     'stt_insert': 'درج',
     'stt_busy_help': 'میکروفون مشغول است. دستیار صوتی را ببندید یا از میکروفون صفحه‌کلید استفاده کنید.',
     'user_guide': 'راهنمای استفاده',
+    'stt_perm_denied': 'دسترسی میکروفون رد شد. آن را در تنظیمات برنامه فعال کنید.',
+    'stt_open_settings': 'باز کردن تنظیمات',
+    'stt_no_speech': 'گفتاری شنیده نشد — دوباره تلاش کنید.',
   };
 
   static const Map<String, String> _ru = {
@@ -2140,6 +2176,9 @@ class S {
     'stt_insert': 'Вставить',
     'stt_busy_help': 'Микрофон занят. Закройте голосовой помощник или используйте микрофон клавиатуры.',
     'user_guide': 'Руководство пользователя',
+    'stt_perm_denied': 'Доступ к микрофону запрещён. Включите его в настройках приложения.',
+    'stt_open_settings': 'Открыть настройки',
+    'stt_no_speech': 'Речь не распознана — попробуйте снова.',
   };
 }
 
