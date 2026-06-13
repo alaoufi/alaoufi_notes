@@ -111,6 +111,12 @@ class _DictationSheetState extends State<_DictationSheet> {
         // جلسة طويلة بمهلة صمت كبيرة كي لا تتوقّف بسرعة (بلا حلقة إعادة تشغيل).
         listenFor: const Duration(minutes: 5),
         pauseFor: const Duration(seconds: 10),
+        // مهمّ: تفعيل النتائج الجزئية (تظهر أثناء الكلام) ووضع الإملاء المتواصل.
+        listenOptions: SpeechListenOptions(
+          partialResults: true,
+          listenMode: ListenMode.dictation,
+          cancelOnError: false,
+        ),
       );
       if (mounted) setState(() => _listening = _stt.isListening);
     } catch (e) {
