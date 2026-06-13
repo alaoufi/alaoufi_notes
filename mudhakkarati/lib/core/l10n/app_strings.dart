@@ -211,6 +211,11 @@ class S {
     'cleanup': 'تنظيف المذكرات',
     'security_lock': 'الحماية والقفل',
     'advanced_search': 'بحث متقدّم',
+    'voice_typing': 'إملاء صوتي',
+    'stt_listening': 'جارٍ الاستماع…',
+    'stt_speak_now': 'تحدّث الآن',
+    'stt_unavailable': 'التعرّف الصوتي غير متاح على هذا الجهاز',
+    'stt_insert': 'إدراج',
   };
 
   static const Map<String, String> _en = {
@@ -366,6 +371,11 @@ class S {
     'cleanup': 'Clean up notes',
     'security_lock': 'Security & lock',
     'advanced_search': 'Advanced search',
+    'voice_typing': 'Voice typing',
+    'stt_listening': 'Listening…',
+    'stt_speak_now': 'Speak now',
+    'stt_unavailable': 'Speech recognition is unavailable on this device',
+    'stt_insert': 'Insert',
   };
 
   static const Map<String, String> _es = {
@@ -519,6 +529,11 @@ class S {
     'cleanup': 'Limpiar notas',
     'security_lock': 'Seguridad y bloqueo',
     'advanced_search': 'Búsqueda avanzada',
+    'voice_typing': 'Dictado por voz',
+    'stt_listening': 'Escuchando…',
+    'stt_speak_now': 'Habla ahora',
+    'stt_unavailable': 'El reconocimiento de voz no está disponible en este dispositivo',
+    'stt_insert': 'Insertar',
   };
 
   static const Map<String, String> _de = {
@@ -672,6 +687,11 @@ class S {
     'cleanup': 'Notizen aufräumen',
     'security_lock': 'Sicherheit & Sperre',
     'advanced_search': 'Erweiterte Suche',
+    'voice_typing': 'Spracheingabe',
+    'stt_listening': 'Hört zu…',
+    'stt_speak_now': 'Jetzt sprechen',
+    'stt_unavailable': 'Spracherkennung ist auf diesem Gerät nicht verfügbar',
+    'stt_insert': 'Einfügen',
   };
 
   static const Map<String, String> _fil = {
@@ -825,6 +845,11 @@ class S {
     'cleanup': 'Linisin ang mga tala',
     'security_lock': 'Seguridad at lock',
     'advanced_search': 'Advanced na paghahanap',
+    'voice_typing': 'Pagdidikta sa boses',
+    'stt_listening': 'Nakikinig…',
+    'stt_speak_now': 'Magsalita na',
+    'stt_unavailable': 'Hindi available ang speech recognition sa device na ito',
+    'stt_insert': 'Ipasok',
   };
 
   static const Map<String, String> _fr = {
@@ -978,6 +1003,11 @@ class S {
     'cleanup': 'Nettoyer les notes',
     'security_lock': 'Sécurité et verrouillage',
     'advanced_search': 'Recherche avancée',
+    'voice_typing': 'Dictée vocale',
+    'stt_listening': 'Écoute…',
+    'stt_speak_now': 'Parlez maintenant',
+    'stt_unavailable': 'La reconnaissance vocale n’est pas disponible sur cet appareil',
+    'stt_insert': 'Insérer',
   };
 
   static const Map<String, String> _id = {
@@ -1131,6 +1161,11 @@ class S {
     'cleanup': 'Bersihkan catatan',
     'security_lock': 'Keamanan & kunci',
     'advanced_search': 'Pencarian lanjutan',
+    'voice_typing': 'Pengetikan suara',
+    'stt_listening': 'Mendengarkan…',
+    'stt_speak_now': 'Bicara sekarang',
+    'stt_unavailable': 'Pengenalan suara tidak tersedia di perangkat ini',
+    'stt_insert': 'Sisipkan',
   };
 
   static const Map<String, String> _it = {
@@ -1284,6 +1319,11 @@ class S {
     'cleanup': 'Pulisci le note',
     'security_lock': 'Sicurezza e blocco',
     'advanced_search': 'Ricerca avanzata',
+    'voice_typing': 'Dettatura vocale',
+    'stt_listening': 'In ascolto…',
+    'stt_speak_now': 'Parla ora',
+    'stt_unavailable': 'Il riconoscimento vocale non è disponibile su questo dispositivo',
+    'stt_insert': 'Inserisci',
   };
 
   static const Map<String, String> _ms = {
@@ -1437,6 +1477,11 @@ class S {
     'cleanup': 'Bersihkan nota',
     'security_lock': 'Keselamatan & kunci',
     'advanced_search': 'Carian lanjutan',
+    'voice_typing': 'Taip suara',
+    'stt_listening': 'Mendengar…',
+    'stt_speak_now': 'Cakap sekarang',
+    'stt_unavailable': 'Pengecaman suara tidak tersedia pada peranti ini',
+    'stt_insert': 'Sisip',
   };
 
   static const Map<String, String> _hi = {
@@ -1590,6 +1635,11 @@ class S {
     'cleanup': 'नोट्स साफ़ करें',
     'security_lock': 'सुरक्षा और लॉक',
     'advanced_search': 'उन्नत खोज',
+    'voice_typing': 'वॉइस टाइपिंग',
+    'stt_listening': 'सुन रहा है…',
+    'stt_speak_now': 'अब बोलें',
+    'stt_unavailable': 'इस डिवाइस पर वॉइस पहचान उपलब्ध नहीं है',
+    'stt_insert': 'सम्मिलित करें',
   };
 
   static const Map<String, String> _bn = {
@@ -1743,6 +1793,11 @@ class S {
     'cleanup': 'নোট পরিষ্কার করুন',
     'security_lock': 'নিরাপত্তা ও লক',
     'advanced_search': 'উন্নত অনুসন্ধান',
+    'voice_typing': 'ভয়েস টাইপিং',
+    'stt_listening': 'শুনছে…',
+    'stt_speak_now': 'এখন বলুন',
+    'stt_unavailable': 'এই ডিভাইসে ভয়েস শনাক্তকরণ উপলব্ধ নয়',
+    'stt_insert': 'সন্নিবেশ',
   };
 
   static const Map<String, String> _fa = {
@@ -1896,6 +1951,11 @@ class S {
     'cleanup': 'پاک‌سازی یادداشت‌ها',
     'security_lock': 'امنیت و قفل',
     'advanced_search': 'جستجوی پیشرفته',
+    'voice_typing': 'تایپ صوتی',
+    'stt_listening': 'در حال شنیدن…',
+    'stt_speak_now': 'اکنون صحبت کنید',
+    'stt_unavailable': 'تشخیص گفتار روی این دستگاه در دسترس نیست',
+    'stt_insert': 'درج',
   };
 
   static const Map<String, String> _ru = {
@@ -2049,6 +2109,11 @@ class S {
     'cleanup': 'Очистка заметок',
     'security_lock': 'Безопасность и блокировка',
     'advanced_search': 'Расширенный поиск',
+    'voice_typing': 'Голосовой ввод',
+    'stt_listening': 'Слушаю…',
+    'stt_speak_now': 'Говорите',
+    'stt_unavailable': 'Распознавание речи недоступно на этом устройстве',
+    'stt_insert': 'Вставить',
   };
 }
 

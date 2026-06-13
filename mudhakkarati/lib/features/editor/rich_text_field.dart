@@ -6,8 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/app_strings.dart';
 import '../../core/text/line_direction.dart';
 import '../settings/settings_provider.dart';
+import 'voice_dictation.dart';
 
 /// وحدة تحكّم نص غني مع تتبّع التغييرات (Delta JSON) وتأجيل الحفظ.
 ///
@@ -327,6 +329,25 @@ class RichTextToolbar extends StatelessWidget {
                 // التراجع/الإعادة في أول الصفّ.
                 QuillToolbarHistoryButton(controller: q, isUndo: true),
                 QuillToolbarHistoryButton(controller: q, isUndo: false),
+                sep(),
+                // إملاء صوتيّ: تحدّث فيُكتب النصّ في موضع المؤشر.
+                IconButton(
+                  icon: const Icon(Icons.mic, size: 22),
+                  tooltip: S.of(context).t('voice_typing'),
+                  visualDensity: VisualDensity.compact,
+                  color: Theme.of(context).colorScheme.primary,
+                  onPressed: () async {
+                    final text = await showVoiceDictation(context);
+                    if (text == null || text.trim().isEmpty) return;
+                    final sel = q.selection;
+                    final docLen = q.document.length; // ينتهي دائمًا بـ \n
+                    var index = sel.isValid ? sel.baseOffset : docLen - 1;
+                    if (index < 0 || index > docLen - 1) index = docLen - 1;
+                    final insert = '${text.trim()} ';
+                    q.replaceText(index, 0, insert,
+                        TextSelection.collapsed(offset: index + insert.length));
+                  },
+                ),
                 sep(),
                 // الخط + الحجم.
                 QuillToolbarFontFamilyButton(
