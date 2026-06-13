@@ -685,47 +685,74 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
+  /// اتجاه السطر تلقائيًّا حسب أول حرف قويّ فيه (عربي ⇒ يمين، لاتيني ⇒ يسار).
+  /// الأسطر الفارغة/المحايدة تأخذ الاتجاه العربي (الافتراضي في التطبيق).
+  TextDirection _lineDir(String s) {
+    for (final r in s.runes) {
+      if ((r >= 0x0590 && r <= 0x08FF) ||
+          (r >= 0xFB1D && r <= 0xFDFF) ||
+          (r >= 0xFE70 && r <= 0xFEFF)) {
+        return TextDirection.rtl;
+      }
+      if ((r >= 0x41 && r <= 0x5A) ||
+          (r >= 0x61 && r <= 0x7A) ||
+          (r >= 0xC0 && r <= 0x24F)) {
+        return TextDirection.ltr;
+      }
+    }
+    return TextDirection.rtl;
+  }
+
   List<Widget> _checklistBody(S s) {
     return [
       for (var i = 0; i < _checklist.length; i++)
-        Row(
+        // كل سطر يتبع لغته: عربي ⇒ المربع يمين والكتابة يمين، إنجليزي ⇒ العكس.
+        Directionality(
           key: ValueKey('item_$i'),
-          children: [
-            Checkbox(
-              value: _checklist[i].isDone,
-              onChanged: (v) {
-                setState(() =>
-                    _checklist[i] = _checklist[i].copyWith(isDone: v ?? false));
-                _onChanged();
-              },
-            ),
-            Expanded(
-              child: TextField(
-                controller: _itemCtrls[i],
-                onChanged: (_) => _onChanged(),
-                style: TextStyle(
-                  decoration: _checklist[i].isDone
-                      ? TextDecoration.lineThrough
-                      : null,
-                ),
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  filled: false,
-                  isDense: true,
+          textDirection: _lineDir(_itemCtrls[i].text),
+          child: Row(
+            children: [
+              Checkbox(
+                value: _checklist[i].isDone,
+                onChanged: (v) {
+                  setState(() => _checklist[i] =
+                      _checklist[i].copyWith(isDone: v ?? false));
+                  _onChanged();
+                },
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _itemCtrls[i],
+                  textDirection: _lineDir(_itemCtrls[i].text),
+                  // نعيد البناء عند الكتابة كي يتحدّث الاتجاه فورًا مع اللغة.
+                  onChanged: (_) {
+                    _onChanged();
+                    setState(() {});
+                  },
+                  style: TextStyle(
+                    decoration: _checklist[i].isDone
+                        ? TextDecoration.lineThrough
+                        : null,
+                  ),
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                  ),
                 ),
               ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, size: 18),
-              onPressed: () {
-                setState(() {
-                  _checklist.removeAt(i);
-                  _itemCtrls.removeAt(i).dispose();
-                });
-                _onChanged();
-              },
-            ),
-          ],
+              IconButton(
+                icon: const Icon(Icons.close, size: 18),
+                onPressed: () {
+                  setState(() {
+                    _checklist.removeAt(i);
+                    _itemCtrls.removeAt(i).dispose();
+                  });
+                  _onChanged();
+                },
+              ),
+            ],
+          ),
         ),
       TextButton.icon(
         onPressed: () {
