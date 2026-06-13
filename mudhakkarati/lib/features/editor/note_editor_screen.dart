@@ -13,6 +13,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../data/models/password_entry.dart';
 import '../../services/pdf_export_service.dart';
+import '../../services/word_export_service.dart';
 import '../../services/secure_screen.dart';
 import '../../services/vault_service.dart';
 import 'password_form.dart';
@@ -296,6 +297,21 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
   }
 
+  /// تصدير الملاحظة إلى مستند Word‏ (.doc) مع الحفاظ على التنسيق.
+  Future<void> _exportWord() async {
+    final messenger = ScaffoldMessenger.of(context);
+    await _save(force: true);
+    final exportNote = _note.copyWith(content: _richContent);
+    messenger.showSnackBar(const SnackBar(
+        content: Text('جارٍ تجهيز ملف Word…'),
+        duration: Duration(seconds: 1)));
+    try {
+      await WordExportService.exportNote(exportNote);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('تعذّر التصدير: $e')));
+    }
+  }
+
   Future<void> _editDrawing() async {
     await _ensureSaved();
     if (!mounted) return;
@@ -482,6 +498,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   child: RichTextToolbar(
                     controller: _richCtrl!,
                     onExportPdf: _exportPdf,
+                    onExportWord: _exportWord,
                   ),
                 ),
             ],

@@ -266,13 +266,17 @@ class RichTextEditorBody extends StatelessWidget {
 class RichTextToolbar extends StatelessWidget {
   final RichTextController controller;
 
-  /// عند تمريره يظهر زرّ «PDF» بارز في بداية الشريط لتصدير الملاحظة.
+  /// عند تمريره يظهر زرّ «PDF» في آخر الشريط لتصدير الملاحظة.
   final VoidCallback? onExportPdf;
+
+  /// عند تمريره يظهر زرّ «Word» بجوار PDF لتصدير الملاحظة كمستند .doc.
+  final VoidCallback? onExportWord;
 
   const RichTextToolbar({
     super.key,
     required this.controller,
     this.onExportPdf,
+    this.onExportWord,
   });
 
   @override
@@ -397,13 +401,20 @@ class RichTextToolbar extends StatelessWidget {
                   visualDensity: VisualDensity.compact,
                   onPressed: () => settings.setHideSelectionMenu(!hide),
                 ),
-                // تصدير PDF — أيقونة في آخر الصفّ (استخدامها قليل).
+                // تصدير PDF / Word — أيقونتان في آخر الصفّ (استخدامها قليل).
                 if (onExportPdf != null)
                   IconButton(
                     icon: const Icon(Icons.picture_as_pdf, size: 22),
                     tooltip: 'تصدير PDF',
                     visualDensity: VisualDensity.compact,
                     onPressed: onExportPdf,
+                  ),
+                if (onExportWord != null)
+                  IconButton(
+                    icon: const Icon(Icons.description, size: 22),
+                    tooltip: 'تصدير Word‏ (.doc)',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: onExportWord,
                   ),
               ],
             ),
