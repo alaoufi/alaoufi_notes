@@ -40,18 +40,12 @@ class _DictationSheetState extends State<_DictationSheet> {
     _start();
   }
 
+  bool _retrying = false; // لتسلسل إعادة المحاولة (تفادي error_busy)
+
   Future<void> _start() async {
     bool ok = false;
     try {
-      ok = await _stt.initialize(
-        onStatus: _onStatus,
-        onError: (e) {
-          if (!mounted) return;
-          setState(() => _err = e.errorMsg);
-          // أخطاء دائمة (لا متعرّف/شبكة/عميل) ⇒ أوقف إعادة المحاولة المتواصلة.
-          if (e.permanent) _want = false;
-        },
-      );
+      ok = await _stt.initialize(onStatus: _onStatus, onError: _onError);
     } catch (e) {
       ok = false;
       _err = '$e';
@@ -72,47 +66,66 @@ class _DictationSheetState extends State<_DictationSheet> {
     });
     if (ok) {
       _want = true;
+      // مهلة قصيرة قبل أول استماع كي يتحرّر المتعرّف بعد التهيئة (يمنع البدء المشغول).
+      await Future.delayed(const Duration(milliseconds: 350));
       _listen();
     }
   }
 
-  // إعادة التشغيل التلقائيّ: يبقى مستمعًا حتى يضغط المستخدم إيقاف/إلغاء/إدراج.
   void _onStatus(String s) {
     if (!mounted) return;
-    final listening = s == 'listening';
-    setState(() => _listening = listening);
-    if (!listening && _want && !_stt.isListening) {
-      Future.delayed(const Duration(milliseconds: 250), () {
-        if (mounted && _want && !_stt.isListening) _listen();
-      });
+    setState(() => _listening = _stt.isListening);
+  }
+
+  void _onError(dynamic e) {
+    if (!mounted) return;
+    final msg = e.errorMsg as String? ?? '$e';
+    setState(() => _err = msg);
+    // المتعرّف مشغول/خطأ مؤقّت ⇒ تنظيف ثم محاولة واحدة بعد تهدئة.
+    if (msg == 'error_busy' || msg == 'error_client') {
+      _cleanRetry();
     }
   }
 
+  /// يُلغي أي جلسة عالقة، ينتظر قليلًا، ثم يبدأ استماعًا نظيفًا (يعالج error_busy).
+  Future<void> _cleanRetry() async {
+    if (_retrying || !_want) return;
+    _retrying = true;
+    try {
+      await _stt.cancel();
+    } catch (_) {}
+    await Future.delayed(const Duration(milliseconds: 800));
+    _retrying = false;
+    if (mounted && _want && !_stt.isListening) _listen();
+  }
+
   Future<void> _listen() async {
-    if (_stt.isListening) return;
+    if (_stt.isListening || _retrying) return;
+    if (mounted) setState(() => _err = null);
     try {
       await _stt.listen(
         onResult: (r) {
           if (mounted) setState(() => _text = r.recognizedWords);
         },
         localeId: _localeId,
-        listenFor: const Duration(seconds: 30),
-        pauseFor: const Duration(seconds: 6),
+        // جلسة طويلة بمهلة صمت كبيرة كي لا تتوقّف بسرعة (بلا حلقة إعادة تشغيل).
+        listenFor: const Duration(minutes: 5),
+        pauseFor: const Duration(seconds: 10),
       );
+      if (mounted) setState(() => _listening = _stt.isListening);
     } catch (e) {
       if (mounted) setState(() => _err = '$e');
     }
   }
 
   Future<void> _toggle() async {
-    if (_listening || _stt.isListening) {
+    if (_stt.isListening) {
       _want = false;
       await _stt.stop();
       if (mounted) setState(() => _listening = false);
     } else {
       _want = true;
-      _err = null;
-      _listen();
+      await _cleanRetry();
     }
   }
 
