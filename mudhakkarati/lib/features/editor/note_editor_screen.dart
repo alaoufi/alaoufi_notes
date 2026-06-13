@@ -723,12 +723,22 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   List<Widget> _checklistBody(S s) {
+    // نمط الكتابة من إعدادات الصفحة الافتراضية (الخط/الحجم/التباعد/اللون).
+    final settings = context.read<SettingsProvider>();
+    final base = TextStyle(
+      fontFamily: settings.noteFontFamily,
+      fontSize: settings.noteFontSize,
+      height: settings.noteLineHeight,
+      fontWeight: settings.noteBold ? FontWeight.bold : null,
+      color: _fgColor,
+    );
     return [
       for (var i = 0; i < _checklist.length; i++)
         ChecklistTile(
           key: ValueKey('item_${_itemCtrls[i].hashCode}'),
           controller: _itemCtrls[i],
           focusNode: _itemFocus[i],
+          baseStyle: base,
           isDone: _checklist[i].isDone,
           isTask: _checklist[i].isTask,
           onToggle: (v) {
@@ -941,6 +951,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 class ChecklistTile extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
+  final TextStyle baseStyle; // نمط الكتابة من إعدادات الصفحة الافتراضية
   final bool isDone;
   final bool isTask; // مهمة (بمربع) أو نصّ عادي (بلا مربع)
   final ValueChanged<bool> onToggle;
@@ -953,6 +964,7 @@ class ChecklistTile extends StatefulWidget {
     super.key,
     required this.controller,
     required this.focusNode,
+    required this.baseStyle,
     required this.isDone,
     required this.isTask,
     required this.onToggle,
@@ -1060,7 +1072,7 @@ class _ChecklistTileState extends State<ChecklistTile> {
               // Enter ⇒ ينشئ سطرًا/مهمة جديدة بدل سطر داخل نفس الحقل.
               textInputAction: TextInputAction.next,
               onSubmitted: (_) => widget.onSubmit(),
-              style: TextStyle(
+              style: widget.baseStyle.copyWith(
                 decoration: (widget.isTask && widget.isDone)
                     ? TextDecoration.lineThrough
                     : null,
