@@ -22,7 +22,7 @@ class HelpGuideScreen extends StatelessWidget {
           _Header(
               dark: dark,
               scheme: scheme,
-              title: chrome.title,
+              title: S.of(context).t('user_guide'),
               subtitle: chrome.subtitle),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(14, 6, 14, 28),

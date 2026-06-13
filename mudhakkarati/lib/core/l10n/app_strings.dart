@@ -217,6 +217,7 @@ class S {
     'stt_unavailable': 'التعرّف الصوتي غير متاح على هذا الجهاز',
     'stt_insert': 'إدراج',
     'stt_busy_help': 'المايك مشغول. أغلق المساعد الصوتيّ، أو استخدم مايك لوحة المفاتيح للكتابة بالصوت.',
+    'user_guide': 'دليل الاستخدام',
   };
 
   static const Map<String, String> _en = {
@@ -378,6 +379,7 @@ class S {
     'stt_unavailable': 'Speech recognition is unavailable on this device',
     'stt_insert': 'Insert',
     'stt_busy_help': 'Mic is busy. Close the voice assistant, or use the keyboard mic for voice typing.',
+    'user_guide': 'User Guide',
   };
 
   static const Map<String, String> _es = {
@@ -537,6 +539,7 @@ class S {
     'stt_unavailable': 'El reconocimiento de voz no está disponible en este dispositivo',
     'stt_insert': 'Insertar',
     'stt_busy_help': 'El micrófono está ocupado. Cierra el asistente de voz o usa el micrófono del teclado.',
+    'user_guide': 'Guía de uso',
   };
 
   static const Map<String, String> _de = {
@@ -696,6 +699,7 @@ class S {
     'stt_unavailable': 'Spracherkennung ist auf diesem Gerät nicht verfügbar',
     'stt_insert': 'Einfügen',
     'stt_busy_help': 'Mikrofon ist belegt. Schließe den Sprachassistenten oder nutze das Tastatur-Mikrofon.',
+    'user_guide': 'Benutzerhandbuch',
   };
 
   static const Map<String, String> _fil = {
@@ -855,6 +859,7 @@ class S {
     'stt_unavailable': 'Hindi available ang speech recognition sa device na ito',
     'stt_insert': 'Ipasok',
     'stt_busy_help': 'Busy ang mic. Isara ang voice assistant, o gamitin ang mic ng keyboard.',
+    'user_guide': 'Gabay sa paggamit',
   };
 
   static const Map<String, String> _fr = {
@@ -1014,6 +1019,7 @@ class S {
     'stt_unavailable': 'La reconnaissance vocale n’est pas disponible sur cet appareil',
     'stt_insert': 'Insérer',
     'stt_busy_help': 'Micro occupé. Fermez l’assistant vocal ou utilisez le micro du clavier.',
+    'user_guide': 'Guide d’utilisation',
   };
 
   static const Map<String, String> _id = {
@@ -1173,6 +1179,7 @@ class S {
     'stt_unavailable': 'Pengenalan suara tidak tersedia di perangkat ini',
     'stt_insert': 'Sisipkan',
     'stt_busy_help': 'Mikrofon sibuk. Tutup asisten suara, atau gunakan mikrofon keyboard.',
+    'user_guide': 'Panduan pengguna',
   };
 
   static const Map<String, String> _it = {
@@ -1332,6 +1339,7 @@ class S {
     'stt_unavailable': 'Il riconoscimento vocale non è disponibile su questo dispositivo',
     'stt_insert': 'Inserisci',
     'stt_busy_help': 'Microfono occupato. Chiudi l’assistente vocale o usa il microfono della tastiera.',
+    'user_guide': 'Guida utente',
   };
 
   static const Map<String, String> _ms = {
@@ -1491,6 +1499,7 @@ class S {
     'stt_unavailable': 'Pengecaman suara tidak tersedia pada peranti ini',
     'stt_insert': 'Sisip',
     'stt_busy_help': 'Mikrofon sibuk. Tutup pembantu suara, atau guna mikrofon papan kekunci.',
+    'user_guide': 'Panduan pengguna',
   };
 
   static const Map<String, String> _hi = {
@@ -1650,6 +1659,7 @@ class S {
     'stt_unavailable': 'इस डिवाइस पर वॉइस पहचान उपलब्ध नहीं है',
     'stt_insert': 'सम्मिलित करें',
     'stt_busy_help': 'माइक व्यस्त है। वॉइस असिस्टेंट बंद करें, या कीबोर्ड का माइक उपयोग करें।',
+    'user_guide': 'उपयोग गाइड',
   };
 
   static const Map<String, String> _bn = {
@@ -1809,6 +1819,7 @@ class S {
     'stt_unavailable': 'এই ডিভাইসে ভয়েস শনাক্তকরণ উপলব্ধ নয়',
     'stt_insert': 'সন্নিবেশ',
     'stt_busy_help': 'মাইক ব্যস্ত। ভয়েস অ্যাসিস্ট্যান্ট বন্ধ করুন, বা কীবোর্ডের মাইক ব্যবহার করুন।',
+    'user_guide': 'ব্যবহার নির্দেশিকা',
   };
 
   static const Map<String, String> _fa = {
@@ -1968,6 +1979,7 @@ class S {
     'stt_unavailable': 'تشخیص گفتار روی این دستگاه در دسترس نیست',
     'stt_insert': 'درج',
     'stt_busy_help': 'میکروفون مشغول است. دستیار صوتی را ببندید یا از میکروفون صفحه‌کلید استفاده کنید.',
+    'user_guide': 'راهنمای استفاده',
   };
 
   static const Map<String, String> _ru = {
@@ -2127,6 +2139,7 @@ class S {
     'stt_unavailable': 'Распознавание речи недоступно на этом устройстве',
     'stt_insert': 'Вставить',
     'stt_busy_help': 'Микрофон занят. Закройте голосовой помощник или используйте микрофон клавиатуры.',
+    'user_guide': 'Руководство пользователя',
   };
 }
 

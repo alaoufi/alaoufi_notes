@@ -100,6 +100,15 @@ class AppDrawer extends StatelessWidget {
                 ],
               ),
             ),
+            // دليل الاستخدام بارز أعلى القائمة (يفتح حسب اللغة المختارة).
+            ListTile(
+              leading: Icon(Icons.auto_stories, color: scheme.primary),
+              title: Text(s.t('user_guide'),
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: scheme.primary)),
+              onTap: () => go(const HelpGuideScreen()),
+            ),
+            const Divider(height: 1),
             // مجموعات قابلة للطيّ (تمدّد/انكماش) لتنظيم أوضح.
             _group(context, Icons.explore_outlined, s.t('group_quick'),
                 initiallyExpanded: true, children: [
@@ -138,7 +147,7 @@ class AppDrawer extends StatelessWidget {
                   () => go(const BackupScreen())),
             ]),
             const Divider(),
-            _tile(context, Icons.auto_stories, s.t('guide_help'),
+            _tile(context, Icons.auto_stories, s.t('user_guide'),
                 () => go(const HelpGuideScreen())),
             _tile(context, Icons.settings_outlined, s.t('settings'),
                 () => go(const SettingsScreen())),
