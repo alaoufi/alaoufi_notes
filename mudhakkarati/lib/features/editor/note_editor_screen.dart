@@ -482,14 +482,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   child: RichTextToolbar(
                     controller: _richCtrl!,
                     onExportPdf: _exportPdf,
-                    currentLineSpacing:
-                        _note.ruleLineHeight ?? settings.noteLineHeight,
-                    onLineSpacing: (v) async {
-                      setState(() => _note = _note.copyWith(ruleLineHeight: v));
-                      _dirty = true;
-                      await _ensureSaved();
-                      await _save(force: true);
-                    },
                   ),
                 ),
             ],

@@ -269,16 +269,10 @@ class RichTextToolbar extends StatelessWidget {
   /// عند تمريره يظهر زرّ «PDF» بارز في بداية الشريط لتصدير الملاحظة.
   final VoidCallback? onExportPdf;
 
-  /// تباعد أسطر الملاحظة الحالي ومُبدِّله (مضاعِف ارتفاع السطر: 1.0 / 1.25 …).
-  final double currentLineSpacing;
-  final ValueChanged<double>? onLineSpacing;
-
   const RichTextToolbar({
     super.key,
     required this.controller,
     this.onExportPdf,
-    this.currentLineSpacing = 1.5,
-    this.onLineSpacing,
   });
 
   @override
@@ -371,21 +365,25 @@ class RichTextToolbar extends StatelessWidget {
                 alignBtn(Icons.format_align_justify, 'ضبط',
                     Attribute.justifyAlignment),
                 sep(),
-                // تباعد الأسطر (مضاعِف ارتفاع السطر) — بلا تسطير.
-                if (onLineSpacing != null)
-                  PopupMenuButton<double>(
-                    tooltip: 'تباعد الأسطر',
-                    icon: const Icon(Icons.format_line_spacing, size: 22),
-                    initialValue: currentLineSpacing,
-                    onSelected: onLineSpacing,
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 1.0, child: Text('1.0')),
-                      PopupMenuItem(value: 1.25, child: Text('1.25')),
-                      PopupMenuItem(value: 1.5, child: Text('1.5')),
-                      PopupMenuItem(value: 1.75, child: Text('1.75')),
-                      PopupMenuItem(value: 2.0, child: Text('2.0')),
-                    ],
+                // تباعد الأسطر (مضاعِف ارتفاع السطر) — يُطبَّق على **الأسطر
+                // المحدّدة فقط** (أو السطر الحالي عند المؤشر) عبر سمة line-height،
+                // بلا أي تسطير. القيمة 0 ⇒ إزالة التباعد الخاص (العودة للافتراضي).
+                PopupMenuButton<double>(
+                  tooltip: 'تباعد الأسطر (للأسطر المحدّدة)',
+                  icon: const Icon(Icons.format_line_spacing, size: 22),
+                  onSelected: (v) => q.formatSelection(
+                    Attribute<double?>(
+                        'line-height', AttributeScope.block, v == 0 ? null : v),
                   ),
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: 1.0, child: Text('1.0')),
+                    PopupMenuItem(value: 1.25, child: Text('1.25')),
+                    PopupMenuItem(value: 1.5, child: Text('1.5')),
+                    PopupMenuItem(value: 1.75, child: Text('1.75')),
+                    PopupMenuItem(value: 2.0, child: Text('2.0')),
+                    PopupMenuItem(value: 0.0, child: Text('افتراضي')),
+                  ],
+                ),
                 // مسح التنسيق.
                 QuillToolbarClearFormatButton(controller: q),
                 // إظهار/إخفاء قائمة النسخ واللصق.
