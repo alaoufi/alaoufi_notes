@@ -223,6 +223,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const PopupMenuItem<String>(
             enabled: false, child: Text('إضافة نوع آخر')),
         PopupMenuItem<String>(
+            value: 'type_text',
+            child: _menuRow(Icons.notes, 'ملاحظة نصية (تنسيق غني)')),
+        PopupMenuItem<String>(
             value: 'type_checklist',
             child: _menuRow(Icons.checklist, s.t('note_checklist'))),
         PopupMenuItem<String>(

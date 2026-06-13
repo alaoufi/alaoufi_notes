@@ -144,9 +144,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   /// إدراج عنصر جديد بعد [i] مباشرةً والانتقال إليه (عند ضغط Enter).
+  /// يرث نوع السطر الحالي (مهمة/نص) كما في تطبيقات المذكرات.
   void _addItemAfter(int i) {
+    final inheritTask =
+        (i >= 0 && i < _checklist.length) ? _checklist[i].isTask : true;
     setState(() {
-      _checklist.insert(i + 1, ChecklistItem(noteId: _note.id ?? 0, text: ''));
+      _checklist.insert(i + 1,
+          ChecklistItem(noteId: _note.id ?? 0, text: '', isTask: inheritTask));
       _itemCtrls.insert(i + 1, TextEditingController());
       _itemFocus.insert(i + 1, FocusNode());
     });
@@ -164,8 +168,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   String _checklistToContent() {
     return _checklist
-        .map((i) => '${i.isDone ? '[x]' : '[ ]'} ${i.text}')
-        .where((l) => l.trim().length > 3)
+        .map((i) => i.isTask
+            ? '${i.isDone ? '[x]' : '[ ]'} ${i.text}'
+            : i.text)
+        .where((l) => l.trim().isNotEmpty)
         .join('\n');
   }
 
@@ -718,8 +724,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           controller: _itemCtrls[i],
           focusNode: _itemFocus[i],
           isDone: _checklist[i].isDone,
+          isTask: _checklist[i].isTask,
           onToggle: (v) {
             setState(() => _checklist[i] = _checklist[i].copyWith(isDone: v));
+            _onChanged();
+          },
+          onToggleType: () {
+            setState(() => _checklist[i] = _checklist[i]
+                .copyWith(isTask: !_checklist[i].isTask, isDone: false));
             _onChanged();
           },
           onTextChanged: _onChanged,
@@ -924,7 +936,9 @@ class ChecklistTile extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final bool isDone;
+  final bool isTask; // مهمة (بمربع) أو نصّ عادي (بلا مربع)
   final ValueChanged<bool> onToggle;
+  final VoidCallback onToggleType; // تحويل مهمة⇄نص
   final VoidCallback onTextChanged;
   final VoidCallback onSubmit; // Enter ⇒ سطر/مهمة جديدة
   final VoidCallback onDelete;
@@ -934,7 +948,9 @@ class ChecklistTile extends StatefulWidget {
     required this.controller,
     required this.focusNode,
     required this.isDone,
+    required this.isTask,
     required this.onToggle,
+    required this.onToggleType,
     required this.onTextChanged,
     required this.onSubmit,
     required this.onDelete,
@@ -1001,21 +1017,34 @@ class _ChecklistTileState extends State<ChecklistTile> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // مربع اختيار مضمون التفعيل: لمس صريح (opaque) يتفعّل من أول ضغطة دائمًا.
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () => widget.onToggle(!widget.isDone),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Icon(
-                widget.isDone
-                    ? Icons.check_box
-                    : Icons.check_box_outline_blank,
-                size: 22,
-                color: widget.isDone ? scheme.primary : scheme.outline,
+          // مهمة: مربع اختيار (لمس = تعليم، لمس مطوّل = تحويل لنصّ).
+          // نصّ عادي: دائرة باهتة (لمس = تحويل لمهمة).
+          if (widget.isTask)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => widget.onToggle(!widget.isDone),
+              onLongPress: widget.onToggleType,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Icon(
+                  widget.isDone
+                      ? Icons.check_box
+                      : Icons.check_box_outline_blank,
+                  size: 22,
+                  color: widget.isDone ? scheme.primary : scheme.outline,
+                ),
+              ),
+            )
+          else
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onToggleType,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                child: Icon(Icons.radio_button_unchecked,
+                    size: 16, color: scheme.outline.withValues(alpha: 0.5)),
               ),
             ),
-          ),
           Expanded(
             child: TextField(
               controller: widget.controller,
@@ -1026,8 +1055,9 @@ class _ChecklistTileState extends State<ChecklistTile> {
               textInputAction: TextInputAction.next,
               onSubmitted: (_) => widget.onSubmit(),
               style: TextStyle(
-                decoration:
-                    widget.isDone ? TextDecoration.lineThrough : null,
+                decoration: (widget.isTask && widget.isDone)
+                    ? TextDecoration.lineThrough
+                    : null,
               ),
               decoration: const InputDecoration(
                 border: InputBorder.none,

@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 9;
+  static const _dbVersion = 10;
 
   Database? _db;
   Future<Database>? _opening;
@@ -217,6 +217,7 @@ class AppDatabase {
         text TEXT NOT NULL DEFAULT '',
         is_done INTEGER NOT NULL DEFAULT 0,
         position INTEGER NOT NULL DEFAULT 0,
+        is_task INTEGER NOT NULL DEFAULT 1,
         FOREIGN KEY (note_id) REFERENCES notes (id) ON DELETE CASCADE
       )
     ''');
@@ -324,6 +325,11 @@ class AppDatabase {
           "WHERE uuid IS NULL OR uuid = ''");
       await db.execute(
           'CREATE INDEX IF NOT EXISTS idx_notes_uuid ON notes (uuid)');
+    }
+    if (oldVersion < 10) {
+      // سطر مهمة (بمربع) أو نصّ عادي. الافتراضي مهمة (توافقًا مع القوائم القديمة).
+      await db.execute(
+          'ALTER TABLE checklist_items ADD COLUMN is_task INTEGER NOT NULL DEFAULT 1');
     }
   }
 
