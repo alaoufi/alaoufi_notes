@@ -281,10 +281,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       drawer: const AppDrawer(),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _quickAdd,
-        icon: const Icon(Icons.add),
-        label: Text(s.t('add_note')),
+      // ضغطة عادية: تفتح المحرّر السلس (قائمة مهام) مباشرةً — محاذاة تلقائية لكل
+      // سطر ومربعات اختيار تعمل. ضغطة مطوّلة: قائمة الأنواع الأخرى (نص/صوت/صورة...).
+      floatingActionButton: GestureDetector(
+        onLongPress: _quickAdd,
+        child: FloatingActionButton.extended(
+          onPressed: () => _quickType(NoteType.checklist),
+          icon: const Icon(Icons.add),
+          label: Text(s.t('add_note')),
+        ),
       ),
       body: SafeArea(
         child: RefreshIndicator(
