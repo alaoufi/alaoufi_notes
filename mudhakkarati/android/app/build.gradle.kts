@@ -19,7 +19,8 @@ android {
     defaultConfig {
         applicationId = "com.mudhakkarati.app"
         minSdk = 26 // Android 8.0
-        targetSdk = flutter.targetSdkVersion
+        // مستوى مستهدف حديث مطلوب لقبول Google Play (يتطلب 34+ للتطبيقات الجديدة).
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled = true

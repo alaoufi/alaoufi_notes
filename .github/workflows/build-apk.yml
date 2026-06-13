@@ -45,8 +45,11 @@ jobs:
             flutter pub get
             echo "===== flutter build apk (split per abi) ====="
             flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}
+            echo "===== flutter build appbundle (Google Play) ====="
+            flutter build appbundle --release --build-number=${{ github.run_number }}
             echo "===== sizes ====="
             ls -lh build/app/outputs/flutter-apk/
+            ls -lh build/app/outputs/bundle/release/
           } 2>&1 | tee /tmp/build.log
 
       - name: نشر سجل البناء إلى فرع build-log (تشخيص)
@@ -93,17 +96,21 @@ jobs:
             • app-arm64-v8a-release.apk — لمعظم الأجهزة الحديثة (الأصغر، يُنصح به)
             • app-armeabi-v7a-release.apk — لأجهزة 32-بت القديمة
             • app-x86_64-release.apk — للمحاكيات
+            • app-release.aab — لرفعه على Google Play Console (App Bundle)
           files: |
             mudhakkarati/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             mudhakkarati/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             mudhakkarati/build/app/outputs/flutter-apk/app-x86_64-release.apk
+            mudhakkarati/build/app/outputs/bundle/release/app-release.aab
 
       - name: رفع APK كـ Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: AlaoufiNotes-apk
-          path: mudhakkarati/build/app/outputs/flutter-apk/*.apk
+          path: |
+            mudhakkarati/build/app/outputs/flutter-apk/*.apk
+            mudhakkarati/build/app/outputs/bundle/release/app-release.aab
 
       # نشر النسخة في مستودع عام مخصّص للتحميل المباشر بلا تسجيل دخول.
       # يعمل فقط إذا ضُبط السرّ PUBLIC_APK_TOKEN (رمز وصول شخصي بصلاحية
