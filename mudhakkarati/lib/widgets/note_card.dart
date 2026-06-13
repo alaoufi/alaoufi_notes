@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/text/line_direction.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/note_gradient.dart';
 import '../features/settings/settings_provider.dart';
@@ -86,6 +87,7 @@ class NoteCard extends StatelessWidget {
                   note.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
+                  textDirection: lineDirection(note.title),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -263,23 +265,34 @@ class NoteCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: lines.map((l) {
+              // سطر مهمة يبدأ بـ [x]/[ ]، وإلا فهو نصّ عادي بلا مربع.
+              final isTask = RegExp(r'^\[[ x]\]\s?').hasMatch(l);
               final done = l.startsWith('[x]');
-              final text = l.replaceFirst(RegExp(r'^\[.\]\s?'), '');
-              return Row(children: [
-                Icon(done ? Icons.check_box : Icons.check_box_outline_blank,
-                    size: 16, color: onBg.withOpacity(0.7)),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(text,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: onBg.withOpacity(0.85),
-                        decoration:
-                            done ? TextDecoration.lineThrough : null,
-                      )),
-                ),
-              ]);
+              final text = isTask ? l.replaceFirst(RegExp(r'^\[.\]\s?'), '') : l;
+              return Directionality(
+                textDirection: lineDirection(text),
+                child: Row(children: [
+                  if (isTask) ...[
+                    Icon(
+                        done
+                            ? Icons.check_box
+                            : Icons.check_box_outline_blank,
+                        size: 16,
+                        color: onBg.withOpacity(0.7)),
+                    const SizedBox(width: 6),
+                  ],
+                  Expanded(
+                    child: Text(text,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: onBg.withOpacity(0.85),
+                          decoration:
+                              done ? TextDecoration.lineThrough : null,
+                        )),
+                  ),
+                ]),
+              );
             }).toList(),
           ),
         );
@@ -313,7 +326,7 @@ class NoteCard extends StatelessWidget {
     if (plain.trim().isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: Text(
+      child: AutoDirText(
         plain,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,

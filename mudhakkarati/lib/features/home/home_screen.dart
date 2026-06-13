@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../core/text/line_direction.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
@@ -464,9 +465,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          TextField(
+          StatefulBuilder(
+            builder: (ctx, setSearchState) => TextField(
             controller: _searchCtrl,
-            onChanged: provider.setSearch,
+            onChanged: (v) {
+              provider.setSearch(v);
+              setSearchState(() {}); // اتجاه الحقل فورًا (دون إعادة بناء القائمة)
+            },
+            textDirection: lineDirection(_searchCtrl.text),
             textInputAction: TextInputAction.search,
             decoration: InputDecoration(
               hintText: s.t('search_hint'),
@@ -493,7 +499,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          ),
+          )),
           const SizedBox(height: 12),
           _categoryChips(context, s, settings, provider),
         ],

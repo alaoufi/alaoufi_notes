@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../core/text/line_direction.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/note_gradient.dart';
 import '../../data/models/checklist_item.dart';
@@ -567,19 +568,24 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             Text('تفاصيل الملاحظة',
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
-            TextField(
-              controller: _titleCtrl,
-              textInputAction: TextInputAction.done,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                labelText: s.t('title_hint'),
-                border: const OutlineInputBorder(),
-                isDense: true,
+            StatefulBuilder(
+              builder: (ctx, setTitle) => TextField(
+                controller: _titleCtrl,
+                textInputAction: TextInputAction.done,
+                textDirection: lineDirection(_titleCtrl.text),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                decoration: InputDecoration(
+                  labelText: s.t('title_hint'),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                onChanged: (_) {
+                  _dirty = true;
+                  setTitle(() {}); // تحديث اتجاه العنوان فورًا
+                  if (mounted) setState(() {});
+                },
               ),
-              onChanged: (_) {
-                _dirty = true;
-                if (mounted) setState(() {});
-              },
             ),
             const SizedBox(height: 12),
             _categorySelector(s),
@@ -713,6 +719,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       controller: _contentCtrl,
       maxLines: null,
       minLines: 8,
+      textDirection: lineDirection(_contentCtrl.text),
       style: TextStyle(fontSize: 16, height: 1.5, color: _fgColor),
       decoration: InputDecoration(
         hintText: s.t('content_hint'),
@@ -974,22 +981,8 @@ class ChecklistTile extends StatefulWidget {
     required this.onDelete,
   });
 
-  /// اتجاه النص حسب أول حرف قويّ (عربي ⇒ rtl، لاتيني ⇒ ltr، وإلا rtl افتراضًا).
-  static TextDirection dirOf(String s) {
-    for (final r in s.runes) {
-      if ((r >= 0x0590 && r <= 0x08FF) ||
-          (r >= 0xFB1D && r <= 0xFDFF) ||
-          (r >= 0xFE70 && r <= 0xFEFF)) {
-        return TextDirection.rtl;
-      }
-      if ((r >= 0x41 && r <= 0x5A) ||
-          (r >= 0x61 && r <= 0x7A) ||
-          (r >= 0xC0 && r <= 0x24F)) {
-        return TextDirection.ltr;
-      }
-    }
-    return TextDirection.rtl;
-  }
+  /// اتجاه النص حسب أول حرف قويّ (الدالة المشتركة الموحّدة في كل التطبيق).
+  static TextDirection dirOf(String s) => lineDirection(s);
 
   @override
   State<ChecklistTile> createState() => _ChecklistTileState();
