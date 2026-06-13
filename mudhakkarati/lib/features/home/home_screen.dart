@@ -110,9 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // المحرّر السلس (أسطر بمحاذاة تلقائية): ملاحظة عامة أو قائمة مهام.
+            // «ملاحظة» = ملاحظة نصّية عادية (الأصل) باتجاه لكل سطر وتباعد أسطر.
             _qa(sheetCtx, Icons.edit_note, 'ملاحظة',
-                () => _quickSmooth(startAsTask: false)),
+                () => _quickType(NoteType.text)),
             _qa(sheetCtx, Icons.checklist, 'قائمة مهام',
                 () => _quickSmooth(startAsTask: true)),
             _qa(sheetCtx, Icons.mic, 'تسجيل صوتي',
@@ -120,8 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
             _qa(sheetCtx, Icons.image, 'صورة',
                 () => _quickType(NoteType.image)),
             const Divider(height: 1),
-            _qa(sheetCtx, Icons.text_format, 'نص بتنسيق غني',
-                () => _quickType(NoteType.text)),
             _qa(sheetCtx, Icons.dashboard_customize_outlined, 'قالب جاهز',
                 () => showTemplatePicker(context)),
             _qa(sheetCtx, Icons.today, 'ملاحظة اليوم', _openDaily),
