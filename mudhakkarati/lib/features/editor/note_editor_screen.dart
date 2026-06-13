@@ -31,11 +31,15 @@ class NoteEditorScreen extends StatefulWidget {
   final NoteType initialType;
   final int? initialCategoryId;
 
+  /// عند فتح «قائمة مهام» جديدة: هل يبدأ السطر الأول كمهمة (بمربع) أم نصًّا عاديًّا.
+  final bool startAsTask;
+
   const NoteEditorScreen({
     super.key,
     this.noteId,
     this.initialType = NoteType.text,
     this.initialCategoryId,
+    this.startAsTask = true,
   });
 
   @override
@@ -101,7 +105,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         gradient: settings.defaultGradient,
       );
       if (_note.type == NoteType.checklist) {
-        _checklist = [const ChecklistItem(noteId: 0, text: '')];
+        _checklist = [
+          ChecklistItem(noteId: 0, text: '', isTask: widget.startAsTask)
+        ];
         _rebuildItemCtrls();
       } else if (_note.type == NoteType.password) {
         // ملاحظات كلمات المرور مقفلة افتراضيًا (تتطلب فتح القفل لعرضها).

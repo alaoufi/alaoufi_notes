@@ -109,15 +109,18 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _qa(sheetCtx, Icons.notes, 'ملاحظة نصية سريعة',
-                () => _quickType(NoteType.text)),
-            _qa(sheetCtx, Icons.mic, 'تسجيل صوتي سريع',
+            // المحرّر السلس (أسطر بمحاذاة تلقائية): ملاحظة عامة أو قائمة مهام.
+            _qa(sheetCtx, Icons.edit_note, 'ملاحظة',
+                () => _quickSmooth(startAsTask: false)),
+            _qa(sheetCtx, Icons.checklist, 'قائمة مهام',
+                () => _quickSmooth(startAsTask: true)),
+            _qa(sheetCtx, Icons.mic, 'تسجيل صوتي',
                 () => _quickType(NoteType.audio)),
-            _qa(sheetCtx, Icons.image, 'صورة سريعة',
+            _qa(sheetCtx, Icons.image, 'صورة',
                 () => _quickType(NoteType.image)),
-            _qa(sheetCtx, Icons.checklist, 'قائمة مهام سريعة',
-                () => _quickType(NoteType.checklist)),
             const Divider(height: 1),
+            _qa(sheetCtx, Icons.text_format, 'نص بتنسيق غني',
+                () => _quickType(NoteType.text)),
             _qa(sheetCtx, Icons.dashboard_customize_outlined, 'قالب جاهز',
                 () => showTemplatePicker(context)),
             _qa(sheetCtx, Icons.today, 'ملاحظة اليوم', _openDaily),
@@ -136,6 +139,23 @@ class _HomeScreenState extends State<HomeScreen> {
         Navigator.pop(sheetCtx);
         action();
       },
+    );
+  }
+
+  /// المحرّر السلس (قائمة أسطر بمحاذاة تلقائية + مربعات اختيارية).
+  /// [startAsTask] = يبدأ السطر الأول كمهمة (قائمة مهام) أو نصًّا (ملاحظة عامة).
+  Future<void> _quickSmooth({required bool startAsTask}) async {
+    final provider = context.read<NotesProvider>();
+    final catId = provider.inboxId ?? provider.filterCategoryId;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NoteEditorScreen(
+          initialType: NoteType.checklist,
+          initialCategoryId: catId,
+          startAsTask: startAsTask,
+        ),
+      ),
     );
   }
 
@@ -284,15 +304,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       drawer: const AppDrawer(),
-      // ضغطة عادية: تفتح المحرّر السلس (قائمة مهام) مباشرةً — محاذاة تلقائية لكل
-      // سطر ومربعات اختيار تعمل. ضغطة مطوّلة: قائمة الأنواع الأخرى (نص/صوت/صورة...).
-      floatingActionButton: GestureDetector(
-        onLongPress: _quickAdd,
-        child: FloatingActionButton.extended(
-          onPressed: () => _quickType(NoteType.checklist),
-          icon: const Icon(Icons.add),
-          label: Text(s.t('add_note')),
-        ),
+      // زر + يفتح قائمة الخيارات (ملاحظة/قائمة مهام/صوت/صورة...).
+      floatingActionButton: FloatingActionButton(
+        onPressed: _quickAdd,
+        child: const Icon(Icons.add),
       ),
       body: SafeArea(
         child: RefreshIndicator(

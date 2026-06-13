@@ -260,7 +260,6 @@ class RichTextToolbar extends StatelessWidget {
                     controller: q, attribute: Attribute.ul),
                 QuillToolbarToggleStyleButton(
                     controller: q, attribute: Attribute.ol),
-                QuillToolbarToggleCheckListButton(controller: q),
                 QuillToolbarToggleStyleButton(
                     controller: q, attribute: Attribute.blockQuote),
                 sep(),
