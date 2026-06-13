@@ -30,13 +30,19 @@ enum _Phase { starting, permDenied, unavailable, ready, error }
 
 class _DictationSheetState extends State<_DictationSheet> {
   final SpeechToText _stt = SpeechToText();
-  String _text = '';
+  String _text = ''; // النتيجة الجزئية للجلسة الحالية
+  String _committed = ''; // ما تأكّد من الجلسات السابقة (تجميع)
+  String get _display => [_committed, _text]
+      .where((p) => p.trim().isNotEmpty)
+      .join(' ')
+      .trim();
   String _status = 'idle';
   String? _err; // مفتاح/رسالة خطأ
   _Phase _phase = _Phase.starting;
   bool _listening = false;
   bool _want = false; // المستخدم يريد الاستماع
   bool _busyGuard = false; // يمنع بدء جلسة أثناء عملية بدء/إلغاء أخرى
+  bool _restarting = false; // يسلسل إعادة التشغيل التلقائيّ
   int _busyTries = 0;
   String? _localeId;
   bool _debug = false;
@@ -182,12 +188,39 @@ class _DictationSheetState extends State<_DictationSheet> {
     if (listening) _busyTries = 0;
     _logE('status = $s (isListening=$listening)');
     if (mounted) setState(() => _listening = listening);
+    // استماع متواصل: إن انتهت الجلسة والمستخدم ما زال يريد ⇒ أعد تشغيلًا نظيفًا.
+    if (!listening && _want && !_busyGuard) _autoRestart();
+  }
+
+  /// إعادة تشغيل آمنة (تحرير كامل أولًا) كي يبقى المايك نشطًا دون error_busy.
+  Future<void> _autoRestart() async {
+    if (_restarting || _busyGuard || !_want || _stt.isListening) return;
+    _restarting = true;
+    await _hardReset();
+    _restarting = false;
+    if (mounted && _want && !_stt.isListening) {
+      _logE('auto-restart');
+      _startListen();
+    }
   }
 
   void _onResult(dynamic r) {
     final words = r.recognizedWords as String? ?? '';
-    _logE('RESULT "$words" final=${r.finalResult}');
-    if (mounted) setState(() => _text = words);
+    final isFinal = (r.finalResult as bool?) ?? false;
+    _logE('RESULT "$words" final=$isFinal');
+    if (!mounted) return;
+    setState(() {
+      if (isFinal) {
+        // ثبّت النتيجة النهائية في المخزَّن كي لا تضيع عند إعادة التشغيل.
+        if (words.trim().isNotEmpty) {
+          _committed =
+              _committed.isEmpty ? words.trim() : '$_committed ${words.trim()}';
+        }
+        _text = '';
+      } else {
+        _text = words;
+      }
+    });
   }
 
   void _onError(dynamic e) {
@@ -200,8 +233,8 @@ class _DictationSheetState extends State<_DictationSheet> {
       _scheduleBusyRetry();
       return;
     }
+    // صمت/عدم تطابق ⇒ ليس خطأً حقيقيًّا؛ نُبقي الاستماع المتواصل دون إزعاج.
     if (msg.contains('no_match') || msg.contains('speech_timeout')) {
-      setState(() => _err = 'stt_no_speech');
       return;
     }
     setState(() => _err = msg);
@@ -244,8 +277,9 @@ class _DictationSheetState extends State<_DictationSheet> {
   void _insert() async {
     _want = false;
     await _stt.stop();
-    _logE('INSERT "${_text.trim()}"');
-    if (mounted) Navigator.pop(context, _text.trim());
+    final out = _display;
+    _logE('INSERT "$out"');
+    if (mounted) Navigator.pop(context, out);
   }
 
   @override
@@ -376,13 +410,13 @@ class _DictationSheetState extends State<_DictationSheet> {
           child: SingleChildScrollView(
             reverse: true,
             child: Text(
-              _text.isEmpty ? '…' : _text,
-              textDirection: lineDirection(_text),
+              _display.isEmpty ? '…' : _display,
+              textDirection: lineDirection(_display),
               style: const TextStyle(fontSize: 16, height: 1.4),
             ),
           ),
         ),
-        if (_err != null && _text.isEmpty) ...[
+        if (_err != null && _display.isEmpty) ...[
           const SizedBox(height: 8),
           Text(
               _err == 'busy_help'
@@ -406,7 +440,7 @@ class _DictationSheetState extends State<_DictationSheet> {
             const SizedBox(width: 12),
             Expanded(
               child: FilledButton.icon(
-                onPressed: _text.trim().isEmpty ? null : _insert,
+                onPressed: _display.trim().isEmpty ? null : _insert,
                 icon: const Icon(Icons.check),
                 label: Text(s.t('stt_insert')),
               ),
