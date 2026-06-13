@@ -41,6 +41,7 @@ class _DictationSheetState extends State<_DictationSheet> {
   }
 
   bool _retrying = false; // لتسلسل إعادة المحاولة (تفادي error_busy)
+  int _busyTries = 0; // عدّاد محاولات الانشغال (تباعد متدرّج)
 
   Future<void> _start() async {
     bool ok = false;
@@ -66,35 +67,59 @@ class _DictationSheetState extends State<_DictationSheet> {
     });
     if (ok) {
       _want = true;
-      // مهلة قصيرة قبل أول استماع كي يتحرّر المتعرّف بعد التهيئة (يمنع البدء المشغول).
-      await Future.delayed(const Duration(milliseconds: 350));
+      // إلغاء أي جلسة عالقة من تشغيل سابق ثم مهلة قبل أول استماع.
+      try {
+        await _stt.cancel();
+      } catch (_) {}
+      await Future.delayed(const Duration(milliseconds: 400));
       _listen();
     }
   }
 
   void _onStatus(String s) {
     if (!mounted) return;
-    setState(() => _listening = _stt.isListening);
+    final listening = _stt.isListening;
+    if (listening) _busyTries = 0; // بدأ بنجاح ⇒ صفّر العدّاد
+    setState(() => _listening = listening);
   }
 
   void _onError(dynamic e) {
     if (!mounted) return;
     final msg = e.errorMsg as String? ?? '$e';
     setState(() => _err = msg);
-    // المتعرّف مشغول/خطأ مؤقّت ⇒ تنظيف ثم محاولة واحدة بعد تهدئة.
-    if (msg == 'error_busy' || msg == 'error_client') {
-      _cleanRetry();
+    // المتعرّف مشغول/خطأ مؤقّت ⇒ إعادة محاولة بتباعد متدرّج (شائع في MIUI).
+    if (msg.contains('busy') || msg.contains('client')) {
+      _scheduleBusyRetry();
     }
   }
 
-  /// يُلغي أي جلسة عالقة، ينتظر قليلًا، ثم يبدأ استماعًا نظيفًا (يعالج error_busy).
+  /// إعادة محاولة متدرّجة عند الانشغال (0.6s, 1.2s, …) حتى 5 مرّات.
+  void _scheduleBusyRetry() {
+    if (!_want || _retrying) return;
+    if (_busyTries >= 5) {
+      setState(() => _err = 'busy_help'); // رسالة إرشادية بدل الكود
+      return;
+    }
+    _busyTries++;
+    _retrying = true;
+    Future.delayed(Duration(milliseconds: 600 * _busyTries), () async {
+      try {
+        await _stt.cancel();
+      } catch (_) {}
+      await Future.delayed(const Duration(milliseconds: 200));
+      _retrying = false;
+      if (mounted && _want && !_stt.isListening) _listen();
+    });
+  }
+
   Future<void> _cleanRetry() async {
     if (_retrying || !_want) return;
+    _busyTries = 0;
     _retrying = true;
     try {
       await _stt.cancel();
     } catch (_) {}
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 600));
     _retrying = false;
     if (mounted && _want && !_stt.isListening) _listen();
   }
@@ -221,7 +246,10 @@ class _DictationSheetState extends State<_DictationSheet> {
           ),
           if (_err != null && _text.isEmpty) ...[
             const SizedBox(height: 8),
-            Text('⚠ $_err',
+            Text(
+                _err == 'busy_help'
+                    ? '⚠ ${s.t('stt_busy_help')}'
+                    : '⚠ $_err',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 11.5, color: scheme.error)),
           ],
