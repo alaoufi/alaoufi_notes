@@ -49,6 +49,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   late Note _note;
   List<ChecklistItem> _checklist = [];
   final List<TextEditingController> _itemCtrls = [];
+  final List<FocusNode> _itemFocus = [];
   PasswordEntry _passwordEntry = const PasswordEntry();
   String _richContent = ''; // محتوى النص الغني (Delta JSON) لنوع النص
   RichTextController? _richCtrl; // وحدة تحكّم النص الغني (لنوع النص فقط)
@@ -131,10 +132,28 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     for (final c in _itemCtrls) {
       c.dispose();
     }
+    for (final f in _itemFocus) {
+      f.dispose();
+    }
     _itemCtrls.clear();
+    _itemFocus.clear();
     for (final item in _checklist) {
       _itemCtrls.add(TextEditingController(text: item.text));
+      _itemFocus.add(FocusNode());
     }
+  }
+
+  /// إدراج عنصر جديد بعد [i] مباشرةً والانتقال إليه (عند ضغط Enter).
+  void _addItemAfter(int i) {
+    setState(() {
+      _checklist.insert(i + 1, ChecklistItem(noteId: _note.id ?? 0, text: ''));
+      _itemCtrls.insert(i + 1, TextEditingController());
+      _itemFocus.insert(i + 1, FocusNode());
+    });
+    _onChanged();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (i + 1 < _itemFocus.length) _itemFocus[i + 1].requestFocus();
+    });
   }
 
   void _onChanged() {
@@ -219,6 +238,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     _contentCtrl.dispose();
     for (final c in _itemCtrls) {
       c.dispose();
+    }
+    for (final f in _itemFocus) {
+      f.dispose();
     }
     super.dispose();
   }
@@ -694,16 +716,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ChecklistTile(
           key: ValueKey('item_${_itemCtrls[i].hashCode}'),
           controller: _itemCtrls[i],
+          focusNode: _itemFocus[i],
           isDone: _checklist[i].isDone,
           onToggle: (v) {
             setState(() => _checklist[i] = _checklist[i].copyWith(isDone: v));
             _onChanged();
           },
           onTextChanged: _onChanged,
+          onSubmit: () => _addItemAfter(i),
           onDelete: () {
             setState(() {
               _checklist.removeAt(i);
               _itemCtrls.removeAt(i).dispose();
+              _itemFocus.removeAt(i).dispose();
             });
             _onChanged();
           },
@@ -713,6 +738,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           setState(() {
             _checklist.add(ChecklistItem(noteId: _note.id ?? 0, text: ''));
             _itemCtrls.add(TextEditingController());
+            _itemFocus.add(FocusNode());
           });
         },
         icon: const Icon(Icons.add),
@@ -896,17 +922,21 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 /// كان يُفسد لمس بعض المربعات). عربي ⇒ المربع يمين والكتابة يمين، إنجليزي ⇒ العكس.
 class ChecklistTile extends StatefulWidget {
   final TextEditingController controller;
+  final FocusNode focusNode;
   final bool isDone;
   final ValueChanged<bool> onToggle;
   final VoidCallback onTextChanged;
+  final VoidCallback onSubmit; // Enter ⇒ سطر/مهمة جديدة
   final VoidCallback onDelete;
 
   const ChecklistTile({
     super.key,
     required this.controller,
+    required this.focusNode,
     required this.isDone,
     required this.onToggle,
     required this.onTextChanged,
+    required this.onSubmit,
     required this.onDelete,
   });
 
@@ -969,19 +999,19 @@ class _ChecklistTileState extends State<ChecklistTile> {
     return Directionality(
       textDirection: _dir,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // مربع اختيار مضمون التفعيل: لمس صريح (opaque) بمساحة كبيرة يتفعّل من
-          // أول ضغطة دائمًا حتى أثناء الكتابة (بدل مربع المكتبة الذي يفوّت بعض اللمسات).
+          // مربع اختيار مضمون التفعيل: لمس صريح (opaque) يتفعّل من أول ضغطة دائمًا.
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () => widget.onToggle(!widget.isDone),
             child: Padding(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
               child: Icon(
                 widget.isDone
                     ? Icons.check_box
                     : Icons.check_box_outline_blank,
-                size: 24,
+                size: 22,
                 color: widget.isDone ? scheme.primary : scheme.outline,
               ),
             ),
@@ -989,7 +1019,12 @@ class _ChecklistTileState extends State<ChecklistTile> {
           Expanded(
             child: TextField(
               controller: widget.controller,
+              focusNode: widget.focusNode,
               textDirection: _dir,
+              maxLines: 1,
+              // Enter ⇒ ينشئ سطرًا/مهمة جديدة بدل سطر داخل نفس الحقل.
+              textInputAction: TextInputAction.next,
+              onSubmitted: (_) => widget.onSubmit(),
               style: TextStyle(
                 decoration:
                     widget.isDone ? TextDecoration.lineThrough : null,
@@ -998,12 +1033,17 @@ class _ChecklistTileState extends State<ChecklistTile> {
                 border: InputBorder.none,
                 filled: false,
                 isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 6),
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.close, size: 18),
-            onPressed: widget.onDelete,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: widget.onDelete,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Icon(Icons.close, size: 18, color: scheme.outline),
+            ),
           ),
         ],
       ),
