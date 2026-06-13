@@ -103,6 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// زر + : قائمة إضافة سريعة (تذهب الملاحظة إلى «الوارد»).
   Future<void> _quickAdd() async {
+    final s = S.of(context);
     await showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -111,18 +112,18 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // «ملاحظة» = ملاحظة نصّية عادية (الأصل) باتجاه لكل سطر وتباعد أسطر.
-            _qa(sheetCtx, Icons.edit_note, 'ملاحظة',
+            _qa(sheetCtx, Icons.edit_note, s.t('qa_note'),
                 () => _quickType(NoteType.text)),
-            _qa(sheetCtx, Icons.checklist, 'قائمة مهام',
+            _qa(sheetCtx, Icons.checklist, s.t('note_checklist'),
                 () => _quickSmooth(startAsTask: true)),
-            _qa(sheetCtx, Icons.mic, 'تسجيل صوتي',
+            _qa(sheetCtx, Icons.mic, s.t('qa_audio'),
                 () => _quickType(NoteType.audio)),
-            _qa(sheetCtx, Icons.image, 'صورة',
+            _qa(sheetCtx, Icons.image, s.t('qa_image'),
                 () => _quickType(NoteType.image)),
             const Divider(height: 1),
-            _qa(sheetCtx, Icons.dashboard_customize_outlined, 'قالب جاهز',
+            _qa(sheetCtx, Icons.dashboard_customize_outlined, s.t('qa_template'),
                 () => showTemplatePicker(context)),
-            _qa(sheetCtx, Icons.today, 'ملاحظة اليوم', _openDaily),
+            _qa(sheetCtx, Icons.today, s.t('qa_today'), _openDaily),
           ],
         ),
       ),
@@ -447,7 +448,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     MaterialPageRoute(builder: (_) => const CalendarScreen())),
               ),
               IconButton(
-                tooltip: 'التنبيهات',
+                tooltip: s.t('reminders'),
                 icon: const Icon(Icons.alarm),
                 onPressed: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const RemindersScreen())),
@@ -479,7 +480,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    tooltip: 'بحث متقدّم',
+                    tooltip: s.t('advanced_search'),
                     icon: Icon(Icons.tune,
                         color: provider.hasAdvancedFilter
                             ? Theme.of(context).colorScheme.primary
