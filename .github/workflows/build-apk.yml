@@ -43,10 +43,12 @@ jobs:
           {
             echo "===== flutter pub get ====="
             flutter pub get
-            echo "===== flutter build apk (split per abi) ====="
-            flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}
-            echo "===== flutter build appbundle (Google Play) ====="
-            flutter build appbundle --release --build-number=${{ github.run_number }}
+            echo "===== flutter build apk (split per abi, obfuscated) ====="
+            flutter build apk --release --split-per-abi --build-number=${{ github.run_number }} \
+              --obfuscate --split-debug-info=build/symbols
+            echo "===== flutter build appbundle (Google Play, obfuscated) ====="
+            flutter build appbundle --release --build-number=${{ github.run_number }} \
+              --obfuscate --split-debug-info=build/symbols
             echo "===== sizes ====="
             ls -lh build/app/outputs/flutter-apk/
             ls -lh build/app/outputs/bundle/release/
