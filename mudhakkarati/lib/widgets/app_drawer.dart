@@ -8,6 +8,7 @@ import '../features/categories/manage_categories_screen.dart';
 import '../features/cleanup/cleanup_screen.dart';
 import '../features/insights/weekly_summary_screen.dart';
 import '../features/favorites/favorites_screen.dart';
+import '../features/help/help_guide_screen.dart';
 import '../features/info/info_list_screen.dart';
 import '../features/security/info_lock.dart';
 import '../features/reminders/reminders_screen.dart';
@@ -137,6 +138,8 @@ class AppDrawer extends StatelessWidget {
                   () => go(const BackupScreen())),
             ]),
             const Divider(),
+            _tile(context, Icons.auto_stories, 'دليل ومساعدة',
+                () => go(const HelpGuideScreen())),
             _tile(context, Icons.settings_outlined, s.t('settings'),
                 () => go(const SettingsScreen())),
           ],
