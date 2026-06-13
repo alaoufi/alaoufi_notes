@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/text/line_direction.dart';
 import '../settings/settings_provider.dart';
 
 /// وحدة تحكّم نص غني مع تتبّع التغييرات (Delta JSON) وتأجيل الحفظ.
@@ -19,6 +20,8 @@ class RichTextController {
       selection: const TextSelection.collapsed(offset: 0),
     );
     quill.addListener(_handle);
+    // اضبط اتجاه كل سطر فور التحميل (للملاحظات الموجودة مسبقًا).
+    _applyAutoDirection();
   }
 
   late final QuillController quill;
@@ -27,6 +30,7 @@ class RichTextController {
   final ScrollController scroll = ScrollController();
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
+  bool _applyingDir = false; // حارس ضد التكرار أثناء ضبط الاتجاه
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -42,10 +46,43 @@ class RichTextController {
   }
 
   void _handle() {
+    // اضبط اتجاه كل سطر مباشرةً أثناء الكتابة (لا ننتظر التأجيل).
+    _applyAutoDirection();
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
-      _onChanged(jsonEncode(quill.document.toDelta().toJson()));
+      _onChanged(_serializeWithoutDirection());
     });
+  }
+
+  /// يُسلسِل المستند للتخزين **دون** سمة الاتجاه — فلا نُغيّر التمثيل المخزَّن؛
+  /// يُعاد حساب الاتجاه من النصّ عند كل تحميل (معالجة وقت العرض/التحرير فقط).
+  String _serializeWithoutDirection() {
+    final ops = quill.document.toDelta().toJson();
+    for (final op in ops) {
+      if (op is Map && op['attributes'] is Map) {
+        final attrs = op['attributes'] as Map;
+        attrs.remove('direction');
+        if (attrs.isEmpty) op.remove('attributes');
+      }
+    }
+    return jsonEncode(ops);
+  }
+
+  /// يضبط اتجاه **كل سطر على حدة** داخل محرّر النص الغني حسب أوّل حرف لغوي فيه:
+  ///
+  /// - flutter_quill يَستخدم اتجاهًا واحدًا للمستند كلّه ولا يكتشف اتجاه السطر
+  ///   تلقائيًّا؛ القيمة الوحيدة المدعومة لسمة الاتجاه هي `direction: rtl` (لا
+  ///   توجد `ltr`). لذا نُغلّف المحرّر باتجاه LTR محيط (انظر [RichTextEditorBody])
+  ///   فتُعرض الأسطرُ بلا سمة يسارًا، ونُعلّم الأسطرَ العربية/المحايدة بـ`rtl`.
+  /// - تحديد الاتجاه يتجاهل رموز بداية السطر (- * • أرقام القوائم …) ويعتمد أوّل
+  ///   حرف لغوي حقيقي عبر [lineDirection] الموحّدة. عندها يضع محرّك Unicode Bidi
+  ///   الشرطةَ المحايدة في بداية السطر بصريًّا (يمين العربي/يسار الإنجليزي).
+  /// - لا يُغيّر هذا نصَّ السطر المخزَّن (لا يُدرج أي رموز)، بل سمة اتجاه السطر فقط.
+  void _applyAutoDirection() {
+    if (_applyingDir) return;
+    _applyingDir = true;
+    applyLineDirections(quill);
+    _applyingDir = false;
   }
 
   void dispose() {
@@ -55,6 +92,50 @@ class RichTextController {
     focus.dispose();
     scroll.dispose();
   }
+}
+
+/// يضبط سمة اتجاه **كل سطر على حدة** داخل مستند flutter_quill حسب أوّل حرف لغوي.
+///
+/// لماذا هذا ضروري: flutter_quill يَعرض المستند باتجاهٍ واحد محيط، ولا يكتشف
+/// اتجاه السطر تلقائيًّا. القيمة الوحيدة المدعومة لسمة الاتجاه هي `direction: rtl`
+/// (لا توجد `ltr`). لذا نُغلّف المحرّر/العارض باتجاه LTR محيط فتُعرض الأسطر بلا
+/// سمة يسارًا، ونُعلّم الأسطر العربية/المحايدة بـ`rtl` فتُعرض يمينًا. عندها يضع
+/// محرّك Unicode Bidi رمزَ بداية السطر (- * • …) في موضعه الصحيح بصريًّا.
+///
+/// لا يُدرج هذا أيّ رموز في النصّ (لا يغيّر النصّ المخزَّن)، بل يضبط سمة اتجاه
+/// السطر فقط، ويُجري أقلّ تعديل ممكن (الأسطر المختلفة عن المطلوب فقط).
+void applyLineDirections(QuillController quill) {
+  final text = quill.document.toPlainText();
+  final ops = <List<int>>[]; // [offset, length, wantRtl(1/0)]
+  var start = 0;
+  for (var i = 0; i <= text.length; i++) {
+    if (i == text.length || text[i] == '\n') {
+      final lineText = text.substring(start, i);
+      // طول السطر شاملًا فاصل الأسطر (سمة الاتجاه تُخزَّن على فاصل السطر).
+      final lineLen = (i < text.length) ? (i - start + 1) : (i - start);
+      if (lineLen > 0) {
+        final wantRtl = lineDirection(lineText) == TextDirection.rtl;
+        var hasRtl = false;
+        try {
+          final st = quill.document.collectStyle(start, lineLen);
+          hasRtl = st.attributes['direction']?.value == 'rtl';
+        } catch (_) {}
+        if (wantRtl != hasRtl) ops.add([start, lineLen, wantRtl ? 1 : 0]);
+      }
+      start = i + 1;
+    }
+  }
+  if (ops.isEmpty) return;
+  final sel = quill.selection; // النص لا يتغيّر طولُه ⇒ التحديد يبقى صالحًا
+  for (final op in ops) {
+    quill.formatText(
+      op[0],
+      op[1],
+      op[2] == 1 ? Attribute.rtl : Attribute.clone(Attribute.rtl, null),
+      shouldNotifyListeners: false,
+    );
+  }
+  if (sel.isValid) quill.updateSelection(sel, ChangeSource.local);
 }
 
 /// يبني أنماط المحرّر الافتراضية (خط المتن وحجمه وتباعد أسطره) من الإعدادات.
@@ -166,10 +247,17 @@ class RichTextEditorBody extends StatelessWidget {
         },
       ),
     );
-    if (expand) return editor;
-    return Container(
-      constraints: const BoxConstraints(minHeight: 240),
-      child: editor,
+    // اتجاه محيط LTR: الأسطر بلا سمة (إنجليزية) تُعرض يسارًا، والأسطر المعلّمة
+    // بـ`rtl` (عربية/محايدة) تُعرض يمينًا ⇒ اتجاه مستقلّ لكل سطر.
+    if (expand) {
+      return Directionality(textDirection: TextDirection.ltr, child: editor);
+    }
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 240),
+        child: editor,
+      ),
     );
   }
 }
@@ -465,11 +553,14 @@ class _RichTextViewerState extends State<RichTextViewer> {
       doc = Document();
       if (trimmed.isNotEmpty) doc.insert(0, widget.content);
     }
-    return QuillController(
+    final controller = QuillController(
       document: doc,
       selection: const TextSelection.collapsed(offset: 0),
       readOnly: true,
     );
+    // اضبط اتجاه كل سطر (يشمل الملاحظات القديمة المخزّنة قبل هذه الميزة).
+    applyLineDirections(controller);
+    return controller;
   }
 
   @override
@@ -480,13 +571,17 @@ class _RichTextViewerState extends State<RichTextViewer> {
 
   @override
   Widget build(BuildContext context) {
-    return QuillEditor.basic(
-      controller: _controller,
-      config: const QuillEditorConfig(
-        showCursor: false,
-        expands: false,
-        padding: EdgeInsets.zero,
-        autoFocus: false,
+    // اتجاه محيط LTR كي يُعرض كل سطر باتجاهه المستقلّ (المعلّم بـ`rtl` يمينًا).
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: QuillEditor.basic(
+        controller: _controller,
+        config: const QuillEditorConfig(
+          showCursor: false,
+          expands: false,
+          padding: EdgeInsets.zero,
+          autoFocus: false,
+        ),
       ),
     );
   }
