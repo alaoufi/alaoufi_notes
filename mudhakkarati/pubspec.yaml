@@ -34,7 +34,7 @@ dependencies:
   record: ^7.0.0
   audioplayers: ^6.0.0
   # Voice typing (on-device speech recognition)
-  speech_to_text: ^6.6.0
+  speech_to_text: ^7.0.0
   file_picker: ^8.0.6
   open_filex: ^4.5.0
 
