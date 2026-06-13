@@ -27,9 +27,12 @@ class _DictationSheet extends StatefulWidget {
 class _DictationSheetState extends State<_DictationSheet> {
   final SpeechToText _stt = SpeechToText();
   String _text = '';
+  String? _err; // رسالة خطأ للتشخيص (تظهر للمستخدم)
   bool _unavailable = false;
   bool _listening = false;
   bool _initDone = false;
+  bool _want = false; // المستخدم يريد الاستماع (لإعادة التشغيل المتواصل)
+  String? _localeId;
 
   @override
   void initState() {
@@ -41,57 +44,81 @@ class _DictationSheetState extends State<_DictationSheet> {
     bool ok = false;
     try {
       ok = await _stt.initialize(
-        onStatus: (s) {
-          if ((s == 'done' || s == 'notListening') && mounted) {
-            setState(() => _listening = false);
-          }
+        onStatus: _onStatus,
+        onError: (e) {
+          if (!mounted) return;
+          setState(() => _err = e.errorMsg);
+          // أخطاء دائمة (لا متعرّف/شبكة/عميل) ⇒ أوقف إعادة المحاولة المتواصلة.
+          if (e.permanent) _want = false;
         },
-        onError: (_) {},
       );
-    } catch (_) {
+    } catch (e) {
       ok = false;
+      _err = '$e';
     }
+    if (!mounted) return;
+    // حدّد لغة التعرّف حسب لغة التطبيق (مرّة واحدة).
+    try {
+      final lang = S.of(context).locale.languageCode;
+      final locales = await _stt.locales();
+      final match =
+          locales.where((l) => l.localeId.toLowerCase().startsWith(lang));
+      if (match.isNotEmpty) _localeId = match.first.localeId;
+    } catch (_) {}
     if (!mounted) return;
     setState(() {
       _initDone = true;
       _unavailable = !ok;
     });
-    if (ok) _listen();
+    if (ok) {
+      _want = true;
+      _listen();
+    }
+  }
+
+  // إعادة التشغيل التلقائيّ: يبقى مستمعًا حتى يضغط المستخدم إيقاف/إلغاء/إدراج.
+  void _onStatus(String s) {
+    if (!mounted) return;
+    final listening = s == 'listening';
+    setState(() => _listening = listening);
+    if (!listening && _want && !_stt.isListening) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (mounted && _want && !_stt.isListening) _listen();
+      });
+    }
   }
 
   Future<void> _listen() async {
-    final lang = S.of(context).locale.languageCode;
-    String? localeId;
+    if (_stt.isListening) return;
     try {
-      final locales = await _stt.locales();
-      final match = locales
-          .where((l) => l.localeId.toLowerCase().startsWith(lang))
-          .toList();
-      if (match.isNotEmpty) localeId = match.first.localeId;
-    } catch (_) {}
-    if (!mounted) return;
-    setState(() => _listening = true);
-    await _stt.listen(
-      onResult: (r) {
-        if (mounted) setState(() => _text = r.recognizedWords);
-      },
-      localeId: localeId,
-      listenFor: const Duration(minutes: 2),
-      pauseFor: const Duration(seconds: 4),
-    );
+      await _stt.listen(
+        onResult: (r) {
+          if (mounted) setState(() => _text = r.recognizedWords);
+        },
+        localeId: _localeId,
+        listenFor: const Duration(seconds: 30),
+        pauseFor: const Duration(seconds: 6),
+      );
+    } catch (e) {
+      if (mounted) setState(() => _err = '$e');
+    }
   }
 
   Future<void> _toggle() async {
-    if (_listening) {
+    if (_listening || _stt.isListening) {
+      _want = false;
       await _stt.stop();
       if (mounted) setState(() => _listening = false);
     } else {
+      _want = true;
+      _err = null;
       _listen();
     }
   }
 
   @override
   void dispose() {
+    _want = false;
     _stt.stop();
     _stt.cancel();
     super.dispose();
@@ -173,12 +200,21 @@ class _DictationSheetState extends State<_DictationSheet> {
               ),
             ),
           ),
+          if (_err != null && _text.isEmpty) ...[
+            const SizedBox(height: 8),
+            Text('⚠ $_err',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11.5, color: scheme.error)),
+          ],
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    _want = false;
+                    Navigator.pop(context);
+                  },
                   child: Text(s.t('cancel')),
                 ),
               ),
@@ -188,6 +224,7 @@ class _DictationSheetState extends State<_DictationSheet> {
                   onPressed: _text.trim().isEmpty
                       ? null
                       : () async {
+                          _want = false;
                           await _stt.stop();
                           if (context.mounted) {
                             Navigator.pop(context, _text.trim());
