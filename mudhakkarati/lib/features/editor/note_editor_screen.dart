@@ -410,7 +410,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 child: _note.type == NoteType.text
                     ? _textLayout(s, onBg, settings)
                     : ListView(
-                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                        // حشوة سفلية بقدر لوحة المفاتيح كي تبقى العناصر السفلية
+                        // (ومنها مربعات الاختيار) قابلة للتمرير فوقها والضغط عليها.
+                        padding: EdgeInsets.fromLTRB(16, 8, 16,
+                            24 + MediaQuery.of(context).viewInsets.bottom),
                         children: [
                           PaperBackground(
                             style: _note.bgStyle,
@@ -685,74 +688,25 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
-  /// اتجاه السطر تلقائيًّا حسب أول حرف قويّ فيه (عربي ⇒ يمين، لاتيني ⇒ يسار).
-  /// الأسطر الفارغة/المحايدة تأخذ الاتجاه العربي (الافتراضي في التطبيق).
-  TextDirection _lineDir(String s) {
-    for (final r in s.runes) {
-      if ((r >= 0x0590 && r <= 0x08FF) ||
-          (r >= 0xFB1D && r <= 0xFDFF) ||
-          (r >= 0xFE70 && r <= 0xFEFF)) {
-        return TextDirection.rtl;
-      }
-      if ((r >= 0x41 && r <= 0x5A) ||
-          (r >= 0x61 && r <= 0x7A) ||
-          (r >= 0xC0 && r <= 0x24F)) {
-        return TextDirection.ltr;
-      }
-    }
-    return TextDirection.rtl;
-  }
-
   List<Widget> _checklistBody(S s) {
     return [
       for (var i = 0; i < _checklist.length; i++)
-        // كل سطر يتبع لغته: عربي ⇒ المربع يمين والكتابة يمين، إنجليزي ⇒ العكس.
-        Directionality(
-          key: ValueKey('item_$i'),
-          textDirection: _lineDir(_itemCtrls[i].text),
-          child: Row(
-            children: [
-              Checkbox(
-                value: _checklist[i].isDone,
-                onChanged: (v) {
-                  setState(() => _checklist[i] =
-                      _checklist[i].copyWith(isDone: v ?? false));
-                  _onChanged();
-                },
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _itemCtrls[i],
-                  textDirection: _lineDir(_itemCtrls[i].text),
-                  // نعيد البناء عند الكتابة كي يتحدّث الاتجاه فورًا مع اللغة.
-                  onChanged: (_) {
-                    _onChanged();
-                    setState(() {});
-                  },
-                  style: TextStyle(
-                    decoration: _checklist[i].isDone
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    filled: false,
-                    isDense: true,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () {
-                  setState(() {
-                    _checklist.removeAt(i);
-                    _itemCtrls.removeAt(i).dispose();
-                  });
-                  _onChanged();
-                },
-              ),
-            ],
-          ),
+        ChecklistTile(
+          key: ValueKey('item_${_itemCtrls[i].hashCode}'),
+          controller: _itemCtrls[i],
+          isDone: _checklist[i].isDone,
+          onToggle: (v) {
+            setState(() => _checklist[i] = _checklist[i].copyWith(isDone: v));
+            _onChanged();
+          },
+          onTextChanged: _onChanged,
+          onDelete: () {
+            setState(() {
+              _checklist.removeAt(i);
+              _itemCtrls.removeAt(i).dispose();
+            });
+            _onChanged();
+          },
         ),
       TextButton.icon(
         onPressed: () {
@@ -931,6 +885,114 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// عنصر سطر في قائمة المهام: مربع اختيار يعمل + كتابة بمحاذاة تلقائية لكل سطر.
+///
+/// عنصر مستقلّ بحالته الخاصة كي يتحدّث اتجاهه دون إعادة بناء القائمة كلها (ما
+/// كان يُفسد لمس بعض المربعات). عربي ⇒ المربع يمين والكتابة يمين، إنجليزي ⇒ العكس.
+class ChecklistTile extends StatefulWidget {
+  final TextEditingController controller;
+  final bool isDone;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onTextChanged;
+  final VoidCallback onDelete;
+
+  const ChecklistTile({
+    super.key,
+    required this.controller,
+    required this.isDone,
+    required this.onToggle,
+    required this.onTextChanged,
+    required this.onDelete,
+  });
+
+  /// اتجاه النص حسب أول حرف قويّ (عربي ⇒ rtl، لاتيني ⇒ ltr، وإلا rtl افتراضًا).
+  static TextDirection dirOf(String s) {
+    for (final r in s.runes) {
+      if ((r >= 0x0590 && r <= 0x08FF) ||
+          (r >= 0xFB1D && r <= 0xFDFF) ||
+          (r >= 0xFE70 && r <= 0xFEFF)) {
+        return TextDirection.rtl;
+      }
+      if ((r >= 0x41 && r <= 0x5A) ||
+          (r >= 0x61 && r <= 0x7A) ||
+          (r >= 0xC0 && r <= 0x24F)) {
+        return TextDirection.ltr;
+      }
+    }
+    return TextDirection.rtl;
+  }
+
+  @override
+  State<ChecklistTile> createState() => _ChecklistTileState();
+}
+
+class _ChecklistTileState extends State<ChecklistTile> {
+  late TextDirection _dir;
+
+  @override
+  void initState() {
+    super.initState();
+    _dir = ChecklistTile.dirOf(widget.controller.text);
+    widget.controller.addListener(_onText);
+  }
+
+  @override
+  void didUpdateWidget(covariant ChecklistTile old) {
+    super.didUpdateWidget(old);
+    if (old.controller != widget.controller) {
+      old.controller.removeListener(_onText);
+      widget.controller.addListener(_onText);
+      _dir = ChecklistTile.dirOf(widget.controller.text);
+    }
+  }
+
+  void _onText() {
+    final d = ChecklistTile.dirOf(widget.controller.text);
+    if (d != _dir && mounted) setState(() => _dir = d);
+    widget.onTextChanged();
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onText);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Directionality(
+      textDirection: _dir,
+      child: Row(
+        children: [
+          Checkbox(
+            value: widget.isDone,
+            onChanged: (v) => widget.onToggle(v ?? false),
+          ),
+          Expanded(
+            child: TextField(
+              controller: widget.controller,
+              textDirection: _dir,
+              style: TextStyle(
+                decoration:
+                    widget.isDone ? TextDecoration.lineThrough : null,
+              ),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                filled: false,
+                isDense: true,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.close, size: 18),
+            onPressed: widget.onDelete,
+          ),
+        ],
       ),
     );
   }
