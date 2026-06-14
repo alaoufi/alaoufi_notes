@@ -45,6 +45,7 @@ class _DictationSheetState extends State<_DictationSheet> {
   bool _restarting = false; // يسلسل إعادة التشغيل التلقائيّ
   int _busyTries = 0;
   bool _onDevice = false; // يتناوب: إنترنت ↔ على الجهاز (أيّهما يعمل يلتقط)
+  bool _localeMissing = false; // لا توجد لغة التطبيق ضمن لغات المحرّك
   String? _localeId;
   bool _debug = false;
   final List<String> _log = [];
@@ -111,16 +112,31 @@ class _DictationSheetState extends State<_DictationSheet> {
       return;
     }
 
-    // 3) اختيار لغة التعرّف حسب لغة التطبيق.
+    // 3) اختيار لغة التعرّف — مع طباعة كل اللغات المتاحة للتشخيص، واختيار
+    //    العربية بمرونة (ar_SA → أيّ ar_* → ar → لغة النظام).
     try {
       final lang = S.of(context).locale.languageCode;
       final locales = await _stt.locales();
-      final match =
-          locales.where((l) => l.localeId.toLowerCase().startsWith(lang));
-      _localeId = match.isNotEmpty
-          ? match.first.localeId
-          : (await _stt.systemLocale())?.localeId;
-      _logE('locale = $_localeId (app=$lang)');
+      final ids = locales.map((l) => l.localeId).toList();
+      _logE('locales(${ids.length}): ${ids.take(40).join(", ")}');
+
+      String norm(String s) => s.toLowerCase().replaceAll('-', '_');
+      final wanted = locales
+          .where((l) => norm(l.localeId) == lang || norm(l.localeId).startsWith('${lang}_'))
+          .toList();
+      if (wanted.isNotEmpty) {
+        // فضّل الصيغة الإقليمية (مثل ar_SA) إن وُجدت.
+        final region = wanted.firstWhere(
+          (l) => norm(l.localeId) == '${lang}_sa' || norm(l.localeId).contains('_'),
+          orElse: () => wanted.first,
+        );
+        _localeId = region.localeId;
+        _logE('selected $lang locale: $_localeId');
+      } else {
+        _localeMissing = true;
+        _localeId = (await _stt.systemLocale())?.localeId;
+        _logE('NO "$lang" locale on device! using system: $_localeId');
+      }
     } catch (e) {
       _logE('locale detect EXCEPTION: $e');
     }
@@ -210,7 +226,12 @@ class _DictationSheetState extends State<_DictationSheet> {
   void _onResult(dynamic r) {
     final words = r.recognizedWords as String? ?? '';
     final isFinal = (r.finalResult as bool?) ?? false;
-    _logE('RESULT "$words" final=$isFinal');
+    double conf = 0;
+    try {
+      conf = (r.confidence as num?)?.toDouble() ?? 0;
+    } catch (_) {}
+    _logE('RESULT "$words" final=$isFinal conf=${conf.toStringAsFixed(2)}');
+    if (words.trim().isNotEmpty) _err = null; // وصل نصّ ⇒ أزل أي رسالة
     if (!mounted) return;
     setState(() {
       if (isFinal) {
@@ -236,8 +257,12 @@ class _DictationSheetState extends State<_DictationSheet> {
       _scheduleBusyRetry();
       return;
     }
-    // صمت/عدم تطابق ⇒ ليس خطأً حقيقيًّا؛ نُبقي الاستماع المتواصل دون إزعاج.
+    // صمت/عدم تطابق ⇒ ليس خطأً قاطعًا؛ نُبقي الاستماع المتواصل ونُظهر تنبيهًا
+    // واضحًا فقط إن لم يصل أي نصّ بعد (والمستخدم يرى أنه يحاول).
     if (msg.contains('no_match') || msg.contains('speech_timeout')) {
+      if (_display.isEmpty) {
+        setState(() => _err = _localeMissing ? 'stt_busy_help' : 'stt_no_speech');
+      }
       return;
     }
     setState(() => _err = msg);
