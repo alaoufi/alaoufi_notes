@@ -44,7 +44,9 @@ class _DictationSheetState extends State<_DictationSheet> {
   bool _busyGuard = false; // يمنع بدء جلسة أثناء عملية بدء/إلغاء أخرى
   bool _restarting = false; // يسلسل إعادة التشغيل التلقائيّ
   int _busyTries = 0;
-  bool _onDevice = false; // يتناوب: إنترنت ↔ على الجهاز (أيّهما يعمل يلتقط)
+  // الأولوية للتعرّف **على الجهاز** (يعمل بدون إنترنت)، ويتناوب مع الإنترنت
+  // عند إعادة التشغيل ليُحدّث/يُحسّن عند توفّر الاتصال.
+  bool _onDevice = true;
   bool _localeMissing = false; // لا توجد لغة التطبيق ضمن لغات المحرّك
   String? _localeId;
   bool _debug = false;
