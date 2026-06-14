@@ -44,6 +44,7 @@ class _DictationSheetState extends State<_DictationSheet> {
   bool _busyGuard = false; // يمنع بدء جلسة أثناء عملية بدء/إلغاء أخرى
   bool _restarting = false; // يسلسل إعادة التشغيل التلقائيّ
   int _busyTries = 0;
+  bool _onDevice = false; // يتناوب: إنترنت ↔ على الجهاز (أيّهما يعمل يلتقط)
   String? _localeId;
   bool _debug = false;
   final List<String> _log = [];
@@ -159,7 +160,7 @@ class _DictationSheetState extends State<_DictationSheet> {
     }
     _busyGuard = true;
     try {
-      _logE('listen() starting… locale=$_localeId');
+      _logE('listen() starting… locale=$_localeId onDevice=$_onDevice');
       await _stt.listen(
         onResult: _onResult,
         localeId: _localeId,
@@ -169,7 +170,7 @@ class _DictationSheetState extends State<_DictationSheet> {
           partialResults: true,
           listenMode: ListenMode.dictation,
           cancelOnError: true,
-          onDevice: false,
+          onDevice: _onDevice,
         ),
       );
       _logE('listen() returned. isListening=${_stt.isListening}');
@@ -198,8 +199,10 @@ class _DictationSheetState extends State<_DictationSheet> {
     _restarting = true;
     await _hardReset();
     _restarting = false;
+    // بدّل وضع التعرّف (إنترنت ↔ على الجهاز) كي يلتقط الكلامَ أيّهما يعمل.
+    _onDevice = !_onDevice;
     if (mounted && _want && !_stt.isListening) {
-      _logE('auto-restart');
+      _logE('auto-restart (onDevice=$_onDevice)');
       _startListen();
     }
   }
