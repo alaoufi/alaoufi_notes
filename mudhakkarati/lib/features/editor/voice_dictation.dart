@@ -48,6 +48,7 @@ class _DictationSheetState extends State<_DictationSheet> {
   // عند إعادة التشغيل ليُحدّث/يُحسّن عند توفّر الاتصال.
   bool _onDevice = true;
   bool _localeMissing = false; // لا توجد لغة التطبيق ضمن لغات المحرّك
+  bool _onDeviceUnavailable = false; // حزمة التعرّف على الجهاز غير منزّلة
   String? _localeId;
   bool _debug = false;
   final List<String> _log = [];
@@ -217,8 +218,9 @@ class _DictationSheetState extends State<_DictationSheet> {
     _restarting = true;
     await _hardReset();
     _restarting = false;
-    // بدّل وضع التعرّف (إنترنت ↔ على الجهاز) كي يلتقط الكلامَ أيّهما يعمل.
-    _onDevice = !_onDevice;
+    // بدّل وضع التعرّف (إنترنت ↔ على الجهاز) كي يلتقط أيّهما يعمل — ما لم تكن
+    // حزمة الجهاز غير منزّلة، فنبقى على الإنترنت.
+    if (!_onDeviceUnavailable) _onDevice = !_onDevice;
     if (mounted && _want && !_stt.isListening) {
       _logE('auto-restart (onDevice=$_onDevice)');
       _startListen();
@@ -259,12 +261,33 @@ class _DictationSheetState extends State<_DictationSheet> {
       _scheduleBusyRetry();
       return;
     }
+    // التعرّف على الجهاز غير منزَّل لهذه اللغة ⇒ اشرح للمستخدم + انتقل للإنترنت.
+    if (msg.contains('language') ||
+        msg.contains('unavailable') ||
+        msg.contains('not_support') ||
+        msg.contains('insufficient')) {
+      _onDeviceUnavailable = true;
+      if (_onDevice) {
+        _onDevice = false; // جرّب الإنترنت في الجلسة التالية
+        _logE('on-device model missing → switch to online');
+      }
+      setState(() => _err = 'stt_offline_guide');
+      return;
+    }
     // صمت/عدم تطابق ⇒ ليس خطأً قاطعًا؛ نُبقي الاستماع المتواصل ونُظهر تنبيهًا
     // واضحًا فقط إن لم يصل أي نصّ بعد (والمستخدم يرى أنه يحاول).
     if (msg.contains('no_match') || msg.contains('speech_timeout')) {
       if (_display.isEmpty) {
-        setState(() => _err = _localeMissing ? 'stt_busy_help' : 'stt_no_speech');
+        // إن فشل الجهاز سابقًا وما زال لا نتيجة ⇒ أرشده لتنزيل الحزمة.
+        setState(() =>
+            _err = _onDeviceUnavailable ? 'stt_offline_guide' : 'stt_no_speech');
       }
+      return;
+    }
+    // شبكة ⇒ إن كان الجهاز أيضًا غير متاح فالحلّ تنزيل الحزمة أو إنترنت أفضل.
+    if (msg.contains('network')) {
+      setState(() =>
+          _err = _onDeviceUnavailable ? 'stt_offline_guide' : 'stt_no_speech');
       return;
     }
     setState(() => _err = msg);

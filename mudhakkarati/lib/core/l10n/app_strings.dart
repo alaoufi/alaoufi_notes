@@ -221,6 +221,7 @@ class S {
     'stt_perm_denied': 'تم رفض إذن الميكروفون. فعّله من إعدادات التطبيق.',
     'stt_open_settings': 'فتح الإعدادات',
     'stt_no_speech': 'لم يُلتقط أي كلام — حاول مجددًا.',
+    'stt_offline_guide': 'للكتابة بالصوت بدون إنترنت نزّل حزمة اللغة: إعدادات الجهاز ← Google ← الإدخال الصوتي ← التعرّف دون اتصال. أو استخدم مايك لوحة المفاتيح.',
   };
 
   static const Map<String, String> _en = {
@@ -386,6 +387,7 @@ class S {
     'stt_perm_denied': 'Microphone permission denied. Enable it in app settings.',
     'stt_open_settings': 'Open settings',
     'stt_no_speech': 'No speech detected — try again.',
+    'stt_offline_guide': 'For offline voice typing, download the language pack: Settings → Google → Voice → Offline speech recognition. Or use the keyboard mic.',
   };
 
   static const Map<String, String> _es = {
@@ -549,6 +551,7 @@ class S {
     'stt_perm_denied': 'Permiso de micrófono denegado. Actívalo en los ajustes de la app.',
     'stt_open_settings': 'Abrir ajustes',
     'stt_no_speech': 'No se detectó voz — inténtalo de nuevo.',
+    'stt_offline_guide': 'Para dictado sin conexión, descarga el paquete de idioma: Ajustes → Google → Voz → Reconocimiento sin conexión. O usa el micrófono del teclado.',
   };
 
   static const Map<String, String> _de = {
@@ -712,6 +715,7 @@ class S {
     'stt_perm_denied': 'Mikrofonberechtigung verweigert. Aktiviere sie in den App-Einstellungen.',
     'stt_open_settings': 'Einstellungen öffnen',
     'stt_no_speech': 'Keine Sprache erkannt – erneut versuchen.',
+    'stt_offline_guide': 'Für Offline-Spracheingabe lade das Sprachpaket: Einstellungen → Google → Sprache → Offline-Spracherkennung. Oder nutze das Tastatur-Mikrofon.',
   };
 
   static const Map<String, String> _fil = {
@@ -875,6 +879,7 @@ class S {
     'stt_perm_denied': 'Tinanggihan ang pahintulot sa mikropono. I-enable sa app settings.',
     'stt_open_settings': 'Buksan ang settings',
     'stt_no_speech': 'Walang narinig na boses — subukan ulit.',
+    'stt_offline_guide': 'Para sa offline na voice typing, i-download ang language pack: Settings → Google → Voice → Offline speech recognition. O gamitin ang keyboard mic.',
   };
 
   static const Map<String, String> _fr = {
@@ -1038,6 +1043,7 @@ class S {
     'stt_perm_denied': 'Autorisation du micro refusée. Activez-la dans les paramètres de l’app.',
     'stt_open_settings': 'Ouvrir les paramètres',
     'stt_no_speech': 'Aucune parole détectée — réessayez.',
+    'stt_offline_guide': 'Pour la dictée hors ligne, téléchargez le pack de langue : Paramètres → Google → Voix → Reconnaissance hors ligne. Ou utilisez le micro du clavier.',
   };
 
   static const Map<String, String> _id = {
@@ -1201,6 +1207,7 @@ class S {
     'stt_perm_denied': 'Izin mikrofon ditolak. Aktifkan di pengaturan aplikasi.',
     'stt_open_settings': 'Buka pengaturan',
     'stt_no_speech': 'Tidak ada suara terdeteksi — coba lagi.',
+    'stt_offline_guide': 'Untuk ketik suara offline, unduh paket bahasa: Pengaturan → Google → Suara → Pengenalan suara offline. Atau gunakan mikrofon keyboard.',
   };
 
   static const Map<String, String> _it = {
@@ -1364,6 +1371,7 @@ class S {
     'stt_perm_denied': 'Autorizzazione microfono negata. Attivala nelle impostazioni dell’app.',
     'stt_open_settings': 'Apri impostazioni',
     'stt_no_speech': 'Nessun parlato rilevato — riprova.',
+    'stt_offline_guide': 'Per la dettatura offline, scarica il pacchetto lingua: Impostazioni → Google → Voce → Riconoscimento offline. Oppure usa il microfono della tastiera.',
   };
 
   static const Map<String, String> _ms = {
@@ -1527,6 +1535,7 @@ class S {
     'stt_perm_denied': 'Kebenaran mikrofon ditolak. Aktifkan dalam tetapan apl.',
     'stt_open_settings': 'Buka tetapan',
     'stt_no_speech': 'Tiada suara dikesan — cuba lagi.',
+    'stt_offline_guide': 'Untuk taip suara luar talian, muat turun pakej bahasa: Tetapan → Google → Suara → Pengecaman luar talian. Atau guna mikrofon papan kekunci.',
   };
 
   static const Map<String, String> _hi = {
@@ -1690,6 +1699,7 @@ class S {
     'stt_perm_denied': 'माइक्रोफ़ोन अनुमति अस्वीकृत। ऐप सेटिंग्स में सक्षम करें।',
     'stt_open_settings': 'सेटिंग्स खोलें',
     'stt_no_speech': 'कोई आवाज़ नहीं मिली — फिर कोशिश करें।',
+    'stt_offline_guide': 'ऑफ़लाइन वॉइस टाइपिंग के लिए भाषा पैक डाउनलोड करें: सेटिंग्स → Google → Voice → ऑफ़लाइन स्पीच पहचान। या कीबोर्ड माइक उपयोग करें।',
   };
 
   static const Map<String, String> _bn = {
@@ -1853,6 +1863,7 @@ class S {
     'stt_perm_denied': 'মাইক্রোফোন অনুমতি প্রত্যাখ্যাত। অ্যাপ সেটিংসে সক্রিয় করুন।',
     'stt_open_settings': 'সেটিংস খুলুন',
     'stt_no_speech': 'কোনো কথা শনাক্ত হয়নি — আবার চেষ্টা করুন।',
+    'stt_offline_guide': 'অফলাইন ভয়েস টাইপিংয়ের জন্য ভাষা প্যাক ডাউনলোড করুন: সেটিংস → Google → Voice → অফলাইন স্পিচ রিকগনিশন। বা কীবোর্ড মাইক ব্যবহার করুন।',
   };
 
   static const Map<String, String> _fa = {
@@ -2016,6 +2027,7 @@ class S {
     'stt_perm_denied': 'دسترسی میکروفون رد شد. آن را در تنظیمات برنامه فعال کنید.',
     'stt_open_settings': 'باز کردن تنظیمات',
     'stt_no_speech': 'گفتاری شنیده نشد — دوباره تلاش کنید.',
+    'stt_offline_guide': 'برای تایپ صوتی آفلاین بسته زبان را دانلود کنید: تنظیمات → Google → صدا → تشخیص گفتار آفلاین. یا از میکروفون صفحه‌کلید استفاده کنید.',
   };
 
   static const Map<String, String> _ru = {
@@ -2179,6 +2191,7 @@ class S {
     'stt_perm_denied': 'Доступ к микрофону запрещён. Включите его в настройках приложения.',
     'stt_open_settings': 'Открыть настройки',
     'stt_no_speech': 'Речь не распознана — попробуйте снова.',
+    'stt_offline_guide': 'Для офлайн-ввода голосом скачайте языковой пакет: Настройки → Google → Голос → Офлайн-распознавание. Или используйте микрофон клавиатуры.',
   };
 }
 
