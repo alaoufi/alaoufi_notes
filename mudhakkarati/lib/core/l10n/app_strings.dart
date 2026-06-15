@@ -251,6 +251,14 @@ class S {
     'stats': 'الإحصائيات',
     'on_track': 'على المسار',
     'nc_total': 'الإجمالي',
+    'med_mode': 'وضع الدواء',
+    'med_log_dose': 'تسجيل جرعة',
+    'med_name': 'اسم الدواء',
+    'med_dose': 'الجرعة',
+    'med_taken': 'أُخذت',
+    'med_missed': 'فاتت',
+    'adherence': 'الالتزام',
+    'no_med_log': 'لا سجلّ جرعات بعد',
   };
 
   static const Map<String, String> _en = {
@@ -446,6 +454,14 @@ class S {
     'stats': 'Statistics',
     'on_track': 'on track',
     'nc_total': 'Total',
+    'med_mode': 'Medication',
+    'med_log_dose': 'Log a dose',
+    'med_name': 'Medicine name',
+    'med_dose': 'Dose',
+    'med_taken': 'Taken',
+    'med_missed': 'Missed',
+    'adherence': 'Adherence',
+    'no_med_log': 'No dose log yet',
   };
 
   static const Map<String, String> _es = {
@@ -639,6 +655,14 @@ class S {
     'stats': 'Estadísticas',
     'on_track': 'en marcha',
     'nc_total': 'Total',
+    'med_mode': 'Medicación',
+    'med_log_dose': 'Registrar dosis',
+    'med_name': 'Nombre del medicamento',
+    'med_dose': 'Dosis',
+    'med_taken': 'Tomada',
+    'med_missed': 'Omitida',
+    'adherence': 'Cumplimiento',
+    'no_med_log': 'Aún sin registro',
   };
 
   static const Map<String, String> _de = {
@@ -832,6 +856,14 @@ class S {
     'stats': 'Statistik',
     'on_track': 'im Plan',
     'nc_total': 'Gesamt',
+    'med_mode': 'Medikamente',
+    'med_log_dose': 'Dosis erfassen',
+    'med_name': 'Medikamentenname',
+    'med_dose': 'Dosis',
+    'med_taken': 'Genommen',
+    'med_missed': 'Verpasst',
+    'adherence': 'Therapietreue',
+    'no_med_log': 'Noch kein Protokoll',
   };
 
   static const Map<String, String> _fil = {
@@ -1025,6 +1057,14 @@ class S {
     'stats': 'Istatistika',
     'on_track': 'nasa tama',
     'nc_total': 'Kabuuan',
+    'med_mode': 'Gamot',
+    'med_log_dose': 'Mag-log ng dosis',
+    'med_name': 'Pangalan ng gamot',
+    'med_dose': 'Dosis',
+    'med_taken': 'Nainom',
+    'med_missed': 'Hindi nainom',
+    'adherence': 'Pagsunod',
+    'no_med_log': 'Wala pang record',
   };
 
   static const Map<String, String> _fr = {
@@ -1218,6 +1258,14 @@ class S {
     'stats': 'Statistiques',
     'on_track': 'sur la voie',
     'nc_total': 'Total',
+    'med_mode': 'Médicaments',
+    'med_log_dose': 'Enregistrer une dose',
+    'med_name': 'Nom du médicament',
+    'med_dose': 'Dose',
+    'med_taken': 'Prise',
+    'med_missed': 'Manquée',
+    'adherence': 'Observance',
+    'no_med_log': 'Aucun journal',
   };
 
   static const Map<String, String> _id = {
@@ -1411,6 +1459,14 @@ class S {
     'stats': 'Statistik',
     'on_track': 'sesuai jadwal',
     'nc_total': 'Total',
+    'med_mode': 'Obat',
+    'med_log_dose': 'Catat dosis',
+    'med_name': 'Nama obat',
+    'med_dose': 'Dosis',
+    'med_taken': 'Diminum',
+    'med_missed': 'Terlewat',
+    'adherence': 'Kepatuhan',
+    'no_med_log': 'Belum ada catatan',
   };
 
   static const Map<String, String> _it = {
@@ -1604,6 +1660,14 @@ class S {
     'stats': 'Statistiche',
     'on_track': 'in linea',
     'nc_total': 'Totale',
+    'med_mode': 'Farmaci',
+    'med_log_dose': 'Registra dose',
+    'med_name': 'Nome farmaco',
+    'med_dose': 'Dose',
+    'med_taken': 'Presa',
+    'med_missed': 'Saltata',
+    'adherence': 'Aderenza',
+    'no_med_log': 'Nessun registro',
   };
 
   static const Map<String, String> _ms = {
@@ -1797,6 +1861,14 @@ class S {
     'stats': 'Statistik',
     'on_track': 'mengikut jadual',
     'nc_total': 'Jumlah',
+    'med_mode': 'Ubat',
+    'med_log_dose': 'Log dos',
+    'med_name': 'Nama ubat',
+    'med_dose': 'Dos',
+    'med_taken': 'Diambil',
+    'med_missed': 'Terlepas',
+    'adherence': 'Kepatuhan',
+    'no_med_log': 'Tiada rekod lagi',
   };
 
   static const Map<String, String> _hi = {
@@ -1990,6 +2062,14 @@ class S {
     'stats': 'आँकड़े',
     'on_track': 'सही राह पर',
     'nc_total': 'कुल',
+    'med_mode': 'दवा',
+    'med_log_dose': 'खुराक दर्ज करें',
+    'med_name': 'दवा का नाम',
+    'med_dose': 'खुराक',
+    'med_taken': 'ली गई',
+    'med_missed': 'छूटी',
+    'adherence': 'पालन',
+    'no_med_log': 'अभी कोई रिकॉर्ड नहीं',
   };
 
   static const Map<String, String> _bn = {
@@ -2183,6 +2263,14 @@ class S {
     'stats': 'পরিসংখ্যান',
     'on_track': 'সঠিক পথে',
     'nc_total': 'মোট',
+    'med_mode': 'ওষুধ',
+    'med_log_dose': 'ডোজ লগ করুন',
+    'med_name': 'ওষুধের নাম',
+    'med_dose': 'ডোজ',
+    'med_taken': 'নেওয়া হয়েছে',
+    'med_missed': 'মিস',
+    'adherence': 'মেনে চলা',
+    'no_med_log': 'এখনো কোনো রেকর্ড নেই',
   };
 
   static const Map<String, String> _fa = {
@@ -2376,6 +2464,14 @@ class S {
     'stats': 'آمار',
     'on_track': 'در مسیر',
     'nc_total': 'مجموع',
+    'med_mode': 'دارو',
+    'med_log_dose': 'ثبت دوز',
+    'med_name': 'نام دارو',
+    'med_dose': 'دوز',
+    'med_taken': 'مصرف شد',
+    'med_missed': 'فراموش شد',
+    'adherence': 'پایبندی',
+    'no_med_log': 'هنوز سابقه‌ای نیست',
   };
 
   static const Map<String, String> _ru = {
@@ -2569,6 +2665,14 @@ class S {
     'stats': 'Статистика',
     'on_track': 'в графике',
     'nc_total': 'Всего',
+    'med_mode': 'Лекарства',
+    'med_log_dose': 'Записать приём',
+    'med_name': 'Название лекарства',
+    'med_dose': 'Доза',
+    'med_taken': 'Принято',
+    'med_missed': 'Пропущено',
+    'adherence': 'Соблюдение',
+    'no_med_log': 'Пока нет записей',
   };
 }
 
