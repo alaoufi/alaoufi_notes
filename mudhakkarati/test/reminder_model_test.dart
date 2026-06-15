@@ -14,6 +14,7 @@ void main() {
         isActive: true,
         importance: ReminderImportance.critical,
         preAlerts: const [5, 15, 60, 1440],
+        location: 'https://maps.google.com/?q=24.7,46.6',
         notificationId: 12345,
       );
       final back = Reminder.fromMap(r.toMap());
@@ -22,8 +23,35 @@ void main() {
       expect(back.repeat, ReminderRepeat.weekly);
       expect(back.importance, ReminderImportance.critical);
       expect(back.preAlerts, [5, 15, 60, 1440]);
+      expect(back.location, 'https://maps.google.com/?q=24.7,46.6');
       expect(back.notificationId, 12345);
       expect(back.time.millisecondsSinceEpoch, 1700000000000);
+    });
+
+    test('location defaults to empty when column missing (old rows)', () {
+      final r = Reminder.fromMap({
+        'note_id': null,
+        'title': 't',
+        'time': 0,
+        'repeat': 'once',
+        'is_active': 1,
+        'notification_id': 1,
+        'importance': 'high',
+        'pre_alerts': '',
+      });
+      expect(r.location, '');
+    });
+
+    test('copyWith preserves location and other fields', () {
+      final r = Reminder(
+        time: DateTime.fromMillisecondsSinceEpoch(0),
+        notificationId: 9,
+        location: 'geo:1,2',
+      );
+      final c = r.copyWith(title: 'x');
+      expect(c.location, 'geo:1,2');
+      expect(c.notificationId, 9);
+      expect(c.title, 'x');
     });
 
     test('importance unknown value falls back to high', () {
