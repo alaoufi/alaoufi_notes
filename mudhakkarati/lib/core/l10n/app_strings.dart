@@ -245,6 +245,9 @@ class S {
     'nc_today': 'اليوم',
     'nc_upcoming': 'القادمة',
     'nc_overdue': 'المتأخرة',
+    'alarm_done': 'تم الإنجاز',
+    'alarm_snooze': 'تأجيل',
+    'minutes': 'دقيقة',
   };
 
   static const Map<String, String> _en = {
@@ -434,6 +437,9 @@ class S {
     'nc_today': 'Today',
     'nc_upcoming': 'Upcoming',
     'nc_overdue': 'Overdue',
+    'alarm_done': 'Done',
+    'alarm_snooze': 'Snooze',
+    'minutes': 'minutes',
   };
 
   static const Map<String, String> _es = {
@@ -621,6 +627,9 @@ class S {
     'nc_today': 'Hoy',
     'nc_upcoming': 'Próximas',
     'nc_overdue': 'Atrasadas',
+    'alarm_done': 'Hecho',
+    'alarm_snooze': 'Posponer',
+    'minutes': 'minutos',
   };
 
   static const Map<String, String> _de = {
@@ -808,6 +817,9 @@ class S {
     'nc_today': 'Heute',
     'nc_upcoming': 'Anstehend',
     'nc_overdue': 'Überfällig',
+    'alarm_done': 'Erledigt',
+    'alarm_snooze': 'Schlummern',
+    'minutes': 'Minuten',
   };
 
   static const Map<String, String> _fil = {
@@ -995,6 +1007,9 @@ class S {
     'nc_today': 'Ngayon',
     'nc_upcoming': 'Paparating',
     'nc_overdue': 'Lampas na',
+    'alarm_done': 'Tapos na',
+    'alarm_snooze': 'I-snooze',
+    'minutes': 'minuto',
   };
 
   static const Map<String, String> _fr = {
@@ -1182,6 +1197,9 @@ class S {
     'nc_today': 'Aujourd’hui',
     'nc_upcoming': 'À venir',
     'nc_overdue': 'En retard',
+    'alarm_done': 'Terminé',
+    'alarm_snooze': 'Répéter',
+    'minutes': 'minutes',
   };
 
   static const Map<String, String> _id = {
@@ -1369,6 +1387,9 @@ class S {
     'nc_today': 'Hari ini',
     'nc_upcoming': 'Mendatang',
     'nc_overdue': 'Terlambat',
+    'alarm_done': 'Selesai',
+    'alarm_snooze': 'Tunda',
+    'minutes': 'menit',
   };
 
   static const Map<String, String> _it = {
@@ -1556,6 +1577,9 @@ class S {
     'nc_today': 'Oggi',
     'nc_upcoming': 'In arrivo',
     'nc_overdue': 'In ritardo',
+    'alarm_done': 'Fatto',
+    'alarm_snooze': 'Posponi',
+    'minutes': 'minuti',
   };
 
   static const Map<String, String> _ms = {
@@ -1743,6 +1767,9 @@ class S {
     'nc_today': 'Hari ini',
     'nc_upcoming': 'Akan datang',
     'nc_overdue': 'Lewat',
+    'alarm_done': 'Selesai',
+    'alarm_snooze': 'Tunda',
+    'minutes': 'minit',
   };
 
   static const Map<String, String> _hi = {
@@ -1930,6 +1957,9 @@ class S {
     'nc_today': 'आज',
     'nc_upcoming': 'आगामी',
     'nc_overdue': 'विलंबित',
+    'alarm_done': 'पूर्ण',
+    'alarm_snooze': 'स्नूज़',
+    'minutes': 'मिनट',
   };
 
   static const Map<String, String> _bn = {
@@ -2117,6 +2147,9 @@ class S {
     'nc_today': 'আজ',
     'nc_upcoming': 'আসন্ন',
     'nc_overdue': 'বিলম্বিত',
+    'alarm_done': 'সম্পন্ন',
+    'alarm_snooze': 'স্নুজ',
+    'minutes': 'মিনিট',
   };
 
   static const Map<String, String> _fa = {
@@ -2304,6 +2337,9 @@ class S {
     'nc_today': 'امروز',
     'nc_upcoming': 'آینده',
     'nc_overdue': 'عقب‌افتاده',
+    'alarm_done': 'انجام شد',
+    'alarm_snooze': 'تعویق',
+    'minutes': 'دقیقه',
   };
 
   static const Map<String, String> _ru = {
@@ -2491,6 +2527,9 @@ class S {
     'nc_today': 'Сегодня',
     'nc_upcoming': 'Предстоящие',
     'nc_overdue': 'Просроченные',
+    'alarm_done': 'Готово',
+    'alarm_snooze': 'Отложить',
+    'minutes': 'минут',
   };
 }
 

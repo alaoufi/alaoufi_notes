@@ -53,6 +53,10 @@ class NotificationService {
   /// يُستدعى عند فتح ملاحظة من التذكير (يضبطه التطبيق).
   void Function(int noteId)? onOpenNote;
 
+  /// يُستدعى عند الضغط على تذكير **حرج** — لعرض شاشة المنبّه داخل التطبيق.
+  /// info يحوي: title, body, base, note.
+  void Function(Map<String, String> info)? onAlarm;
+
   Future<void> init() async {
     if (_initialized) return;
 
@@ -339,13 +343,52 @@ class NotificationService {
         await _scheduleSnooze(base, payload);
         return;
       default:
-        // ضغط على جسم الإشعار → افتح الملاحظة.
+        // ضغط على جسم الإشعار: تذكير حرج ⇒ شاشة المنبّه، وإلا افتح الملاحظة.
+        final imp = _extractStr(payload, 'imp:');
+        if (imp == 'critical' && onAlarm != null && !fromBackground) {
+          onAlarm!({
+            'title': _extractStr(payload, 'title:') ?? '⏰',
+            'body': _extractStr(payload, 'body:') ?? '',
+            'base': '$base',
+            'note': '${noteId ?? -1}',
+          });
+          return;
+        }
         if (noteId != null) {
           if (onOpenNote != null) {
             onOpenNote!(noteId);
           }
         }
     }
+  }
+
+  /// «تم الإنجاز»: يُلغي المنبّه وكل إعاداته نهائيًّا.
+  Future<void> acknowledgeAlarm(int base) async {
+    await init();
+    await _plugin.cancel(base);
+    await _cancelFollowups(base);
+  }
+
+  /// تأجيل المنبّه [minutes] دقيقة (يُلغي الإعادات ثم يُعيد جدولته حرجًا).
+  Future<void> snoozeAlarm(
+      int base, String title, String body, int minutes, int? noteId) async {
+    await init();
+    await _plugin.cancel(base);
+    await _cancelFollowups(base);
+    final when =
+        tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
+    await _plugin.zonedSchedule(
+      base,
+      title,
+      body,
+      when,
+      _detailsFor(ReminderImportance.critical),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      payload: 'note:${noteId ?? -1}|title:$title|body:$body'
+          '|imp:critical|base:$base',
+    );
   }
 
   Future<void> _scheduleSnooze(int id, String payload) async {

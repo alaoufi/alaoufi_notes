@@ -11,6 +11,7 @@ import 'data/repositories/note_repository.dart';
 import 'data/repositories/reminder_repository.dart';
 import 'features/editor/note_editor_screen.dart';
 import 'features/home/notes_provider.dart';
+import 'features/reminders/alarm_screen.dart';
 import 'features/reminders/reminders_provider.dart';
 import 'features/settings/settings_provider.dart';
 import 'services/notification_service.dart';
@@ -79,6 +80,14 @@ Future<void> main() async {
       NotificationService.instance.onOpenNote = (noteId) {
         appNavigatorKey.currentState?.push(
           MaterialPageRoute(builder: (_) => NoteEditorScreen(noteId: noteId)),
+        );
+      };
+      // تذكير حرج ⇒ شاشة المنبّه داخل التطبيق (تم الإنجاز/تأجيل).
+      NotificationService.instance.onAlarm = (info) {
+        appNavigatorKey.currentState?.push(
+          MaterialPageRoute(
+              fullscreenDialog: true,
+              builder: (_) => AlarmScreen(info: info)),
         );
       };
     });
