@@ -18,11 +18,12 @@ class SettingsProvider extends ChangeNotifier {
   InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('en');
-  String _alarmTone = 'alarm';
+  String _alarmTone = 'ocean'; // Ocean Whisper افتراضيًّا
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
   String? _customToneTitle; // اسم النغمة المخصّصة للعرض
   int _customToneSeq = 0; // معرّف متزايد لقناة النغمة المخصّصة
+  Set<String> _favoriteTones = {}; // النغمات المفضّلة
 
   // ---- الافتراضي للملاحظات الجديدة ----
   int? _defaultNoteColor; // null = اللون الافتراضي للسمة
@@ -50,6 +51,15 @@ class SettingsProvider extends ChangeNotifier {
   int get snoozeMinutes => _snoozeMinutes;
   String? get customToneUri => _customToneUri;
   String? get customToneTitle => _customToneTitle;
+  Set<String> get favoriteTones => _favoriteTones;
+  bool isFavoriteTone(String id) => _favoriteTones.contains(id);
+
+  Future<void> toggleFavoriteTone(String id) async {
+    if (!_favoriteTones.add(id)) _favoriteTones.remove(id);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favorite_tones', _favoriteTones.toList());
+  }
 
   int? get defaultNoteColor => _defaultNoteColor;
   String? get defaultGradient => _defaultGradient;
@@ -145,7 +155,8 @@ class SettingsProvider extends ChangeNotifier {
         .firstWhere((e) => e.name == ip, orElse: () => InfoPlacement.tab);
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
     _locale = Locale(prefs.getString(_kLocale) ?? 'en');
-    _alarmTone = prefs.getString(_kTone) ?? 'alarm';
+    _alarmTone = prefs.getString(_kTone) ?? 'ocean';
+    _favoriteTones = (prefs.getStringList('favorite_tones') ?? const []).toSet();
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
     NotificationService.instance.snoozeMinutes = _snoozeMinutes;
     _customToneUri = prefs.getString(_kCustomToneUri);

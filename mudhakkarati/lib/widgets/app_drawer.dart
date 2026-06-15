@@ -16,6 +16,7 @@ import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
 import '../features/security/security_settings_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/sounds/sound_library_screen.dart';
 import '../features/tags/tags_screen.dart';
 import '../features/trash/archive_screen.dart';
 import '../features/trash/trash_screen.dart';
@@ -130,6 +131,8 @@ class AppDrawer extends StatelessWidget {
             ]),
             _group(context, Icons.handyman_outlined, s.t('group_tools'),
                 children: [
+              _tile(context, Icons.library_music_outlined, s.t('sound_library'),
+                  () => go(const SoundLibraryScreen())),
               _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
                   () => go(const WeeklySummaryScreen())),
               _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),

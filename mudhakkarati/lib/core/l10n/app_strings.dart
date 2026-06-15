@@ -224,6 +224,17 @@ class S {
     'stt_offline_guide': 'للكتابة بالصوت بدون إنترنت نزّل حزمة اللغة: إعدادات الجهاز ← Google ← الإدخال الصوتي ← التعرّف دون اتصال. أو استخدم مايك لوحة المفاتيح.',
     'stt_system_missing': 'خدمة الإملاء الصوتي غير متوفرة أو غير مفعّلة على هذا الجهاز. فعّل خدمة تحويل الكلام إلى نص من إعدادات النظام، أو ثبّت/فعّل لوحة مفاتيح تدعم الإملاء مثل Gboard أو خدمة Huawei Voice Input.',
     'stt_continue': 'متابعة',
+    'sound_library': 'مكتبة الأصوات',
+    'cat_sea': 'أصوات البحر',
+    'cat_forest': 'أصوات الغابة',
+    'cat_rain': 'أصوات المطر',
+    'cat_wind': 'أصوات الرياح',
+    'cat_calm': 'أصوات هادئة',
+    'cat_alarms': 'منبّهات قوية',
+    'set_as_default': 'تعيين افتراضي',
+    'import_tone': 'إضافة نغمة من الجهاز',
+    'calm_level': 'الهدوء',
+    'preview': 'معاينة',
   };
 
   static const Map<String, String> _en = {
@@ -392,6 +403,17 @@ class S {
     'stt_offline_guide': 'For offline voice typing, download the language pack: Settings → Google → Voice → Offline speech recognition. Or use the keyboard mic.',
     'stt_system_missing': 'Voice dictation service is unavailable or disabled on this device. Enable speech-to-text in system settings, or install/enable a keyboard that supports voice typing such as Gboard or Huawei Voice Input.',
     'stt_continue': 'Continue',
+    'sound_library': 'Sound Library',
+    'cat_sea': 'Sea sounds',
+    'cat_forest': 'Forest sounds',
+    'cat_rain': 'Rain sounds',
+    'cat_wind': 'Wind sounds',
+    'cat_calm': 'Calm sounds',
+    'cat_alarms': 'Strong alarms',
+    'set_as_default': 'Set default',
+    'import_tone': 'Add tone from device',
+    'calm_level': 'Calm',
+    'preview': 'Preview',
   };
 
   static const Map<String, String> _es = {
@@ -558,6 +580,17 @@ class S {
     'stt_offline_guide': 'Para dictado sin conexión, descarga el paquete de idioma: Ajustes → Google → Voz → Reconocimiento sin conexión. O usa el micrófono del teclado.',
     'stt_system_missing': 'El servicio de dictado por voz no está disponible o está desactivado. Activa la conversión de voz a texto en los ajustes del sistema, o instala un teclado con dictado como Gboard o Huawei Voice Input.',
     'stt_continue': 'Continuar',
+    'sound_library': 'Biblioteca de sonidos',
+    'cat_sea': 'Sonidos del mar',
+    'cat_forest': 'Sonidos del bosque',
+    'cat_rain': 'Sonidos de lluvia',
+    'cat_wind': 'Sonidos de viento',
+    'cat_calm': 'Sonidos suaves',
+    'cat_alarms': 'Alarmas fuertes',
+    'set_as_default': 'Predeterminar',
+    'import_tone': 'Añadir tono del dispositivo',
+    'calm_level': 'Calma',
+    'preview': 'Vista previa',
   };
 
   static const Map<String, String> _de = {
@@ -724,6 +757,17 @@ class S {
     'stt_offline_guide': 'Für Offline-Spracheingabe lade das Sprachpaket: Einstellungen → Google → Sprache → Offline-Spracherkennung. Oder nutze das Tastatur-Mikrofon.',
     'stt_system_missing': 'Der Sprachdiktat-Dienst ist auf diesem Gerät nicht verfügbar oder deaktiviert. Aktiviere die Sprache-zu-Text-Funktion in den Systemeinstellungen oder installiere eine Tastatur mit Spracheingabe wie Gboard oder Huawei Voice Input.',
     'stt_continue': 'Weiter',
+    'sound_library': 'Klangbibliothek',
+    'cat_sea': 'Meeresklänge',
+    'cat_forest': 'Waldklänge',
+    'cat_rain': 'Regenklänge',
+    'cat_wind': 'Windklänge',
+    'cat_calm': 'Ruhige Klänge',
+    'cat_alarms': 'Starke Wecker',
+    'set_as_default': 'Als Standard',
+    'import_tone': 'Ton vom Gerät',
+    'calm_level': 'Ruhe',
+    'preview': 'Vorschau',
   };
 
   static const Map<String, String> _fil = {
@@ -890,6 +934,17 @@ class S {
     'stt_offline_guide': 'Para sa offline na voice typing, i-download ang language pack: Settings → Google → Voice → Offline speech recognition. O gamitin ang keyboard mic.',
     'stt_system_missing': 'Hindi available o naka-disable ang voice dictation sa device na ito. I-enable ang speech-to-text sa system settings, o mag-install ng keyboard na may voice typing gaya ng Gboard o Huawei Voice Input.',
     'stt_continue': 'Magpatuloy',
+    'sound_library': 'Aklatan ng Tunog',
+    'cat_sea': 'Tunog ng dagat',
+    'cat_forest': 'Tunog ng gubat',
+    'cat_rain': 'Tunog ng ulan',
+    'cat_wind': 'Tunog ng hangin',
+    'cat_calm': 'Mga banayad na tunog',
+    'cat_alarms': 'Malalakas na alarma',
+    'set_as_default': 'Itakda default',
+    'import_tone': 'Magdagdag mula sa device',
+    'calm_level': 'Kalmado',
+    'preview': 'Preview',
   };
 
   static const Map<String, String> _fr = {
@@ -1056,6 +1111,17 @@ class S {
     'stt_offline_guide': 'Pour la dictée hors ligne, téléchargez le pack de langue : Paramètres → Google → Voix → Reconnaissance hors ligne. Ou utilisez le micro du clavier.',
     'stt_system_missing': 'Le service de dictée vocale est indisponible ou désactivé sur cet appareil. Activez la reconnaissance vocale dans les paramètres système, ou installez un clavier avec dictée comme Gboard ou Huawei Voice Input.',
     'stt_continue': 'Continuer',
+    'sound_library': 'Bibliothèque de sons',
+    'cat_sea': 'Sons de la mer',
+    'cat_forest': 'Sons de la forêt',
+    'cat_rain': 'Sons de pluie',
+    'cat_wind': 'Sons du vent',
+    'cat_calm': 'Sons calmes',
+    'cat_alarms': 'Alarmes fortes',
+    'set_as_default': 'Par défaut',
+    'import_tone': 'Ajouter depuis l’appareil',
+    'calm_level': 'Calme',
+    'preview': 'Aperçu',
   };
 
   static const Map<String, String> _id = {
@@ -1222,6 +1288,17 @@ class S {
     'stt_offline_guide': 'Untuk ketik suara offline, unduh paket bahasa: Pengaturan → Google → Suara → Pengenalan suara offline. Atau gunakan mikrofon keyboard.',
     'stt_system_missing': 'Layanan dikte suara tidak tersedia atau dinonaktifkan di perangkat ini. Aktifkan speech-to-text di pengaturan sistem, atau pasang keyboard dengan ketik suara seperti Gboard atau Huawei Voice Input.',
     'stt_continue': 'Lanjutkan',
+    'sound_library': 'Pustaka Suara',
+    'cat_sea': 'Suara laut',
+    'cat_forest': 'Suara hutan',
+    'cat_rain': 'Suara hujan',
+    'cat_wind': 'Suara angin',
+    'cat_calm': 'Suara tenang',
+    'cat_alarms': 'Alarm kuat',
+    'set_as_default': 'Jadikan default',
+    'import_tone': 'Tambah dari perangkat',
+    'calm_level': 'Tenang',
+    'preview': 'Pratinjau',
   };
 
   static const Map<String, String> _it = {
@@ -1388,6 +1465,17 @@ class S {
     'stt_offline_guide': 'Per la dettatura offline, scarica il pacchetto lingua: Impostazioni → Google → Voce → Riconoscimento offline. Oppure usa il microfono della tastiera.',
     'stt_system_missing': 'Il servizio di dettatura vocale non è disponibile o è disattivato. Attiva il riconoscimento vocale nelle impostazioni di sistema, oppure installa una tastiera con dettatura come Gboard o Huawei Voice Input.',
     'stt_continue': 'Continua',
+    'sound_library': 'Libreria suoni',
+    'cat_sea': 'Suoni del mare',
+    'cat_forest': 'Suoni della foresta',
+    'cat_rain': 'Suoni di pioggia',
+    'cat_wind': 'Suoni del vento',
+    'cat_calm': 'Suoni calmi',
+    'cat_alarms': 'Sveglie forti',
+    'set_as_default': 'Imposta predefinito',
+    'import_tone': 'Aggiungi dal dispositivo',
+    'calm_level': 'Calma',
+    'preview': 'Anteprima',
   };
 
   static const Map<String, String> _ms = {
@@ -1554,6 +1642,17 @@ class S {
     'stt_offline_guide': 'Untuk taip suara luar talian, muat turun pakej bahasa: Tetapan → Google → Suara → Pengecaman luar talian. Atau guna mikrofon papan kekunci.',
     'stt_system_missing': 'Perkhidmatan imlak suara tidak tersedia atau dimatikan pada peranti ini. Aktifkan tukar suara ke teks dalam tetapan sistem, atau pasang papan kekunci dengan taip suara seperti Gboard atau Huawei Voice Input.',
     'stt_continue': 'Teruskan',
+    'sound_library': 'Pustaka Bunyi',
+    'cat_sea': 'Bunyi laut',
+    'cat_forest': 'Bunyi hutan',
+    'cat_rain': 'Bunyi hujan',
+    'cat_wind': 'Bunyi angin',
+    'cat_calm': 'Bunyi tenang',
+    'cat_alarms': 'Penggera kuat',
+    'set_as_default': 'Jadikan lalai',
+    'import_tone': 'Tambah dari peranti',
+    'calm_level': 'Tenang',
+    'preview': 'Pratonton',
   };
 
   static const Map<String, String> _hi = {
@@ -1720,6 +1819,17 @@ class S {
     'stt_offline_guide': 'ऑफ़लाइन वॉइस टाइपिंग के लिए भाषा पैक डाउनलोड करें: सेटिंग्स → Google → Voice → ऑफ़लाइन स्पीच पहचान। या कीबोर्ड माइक उपयोग करें।',
     'stt_system_missing': 'इस डिवाइस पर वॉइस डिक्टेशन सेवा उपलब्ध नहीं या बंद है। सिस्टम सेटिंग्स से स्पीच-टू-टेक्स्ट सक्षम करें, या Gboard या Huawei Voice Input जैसा वॉइस टाइपिंग कीबोर्ड इंस्टॉल करें।',
     'stt_continue': 'जारी रखें',
+    'sound_library': 'ध्वनि लाइब्रेरी',
+    'cat_sea': 'समुद्र ध्वनि',
+    'cat_forest': 'जंगल ध्वनि',
+    'cat_rain': 'वर्षा ध्वनि',
+    'cat_wind': 'हवा ध्वनि',
+    'cat_calm': 'शांत ध्वनि',
+    'cat_alarms': 'तेज़ अलार्म',
+    'set_as_default': 'डिफ़ॉल्ट करें',
+    'import_tone': 'डिवाइस से जोड़ें',
+    'calm_level': 'शांति',
+    'preview': 'पूर्वावलोकन',
   };
 
   static const Map<String, String> _bn = {
@@ -1886,6 +1996,17 @@ class S {
     'stt_offline_guide': 'অফলাইন ভয়েস টাইপিংয়ের জন্য ভাষা প্যাক ডাউনলোড করুন: সেটিংস → Google → Voice → অফলাইন স্পিচ রিকগনিশন। বা কীবোর্ড মাইক ব্যবহার করুন।',
     'stt_system_missing': 'এই ডিভাইসে ভয়েস ডিকটেশন সেবা উপলব্ধ নয় বা বন্ধ। সিস্টেম সেটিংস থেকে স্পিচ-টু-টেক্সট চালু করুন, অথবা Gboard বা Huawei Voice Input এর মতো ভয়েস টাইপিং কীবোর্ড ইনস্টল করুন।',
     'stt_continue': 'চালিয়ে যান',
+    'sound_library': 'সাউন্ড লাইব্রেরি',
+    'cat_sea': 'সমুদ্রের শব্দ',
+    'cat_forest': 'বনের শব্দ',
+    'cat_rain': 'বৃষ্টির শব্দ',
+    'cat_wind': 'বাতাসের শব্দ',
+    'cat_calm': 'শান্ত শব্দ',
+    'cat_alarms': 'জোরালো অ্যালার্ম',
+    'set_as_default': 'ডিফল্ট করুন',
+    'import_tone': 'ডিভাইস থেকে যোগ',
+    'calm_level': 'প্রশান্তি',
+    'preview': 'প্রিভিউ',
   };
 
   static const Map<String, String> _fa = {
@@ -2052,6 +2173,17 @@ class S {
     'stt_offline_guide': 'برای تایپ صوتی آفلاین بسته زبان را دانلود کنید: تنظیمات → Google → صدا → تشخیص گفتار آفلاین. یا از میکروفون صفحه‌کلید استفاده کنید.',
     'stt_system_missing': 'سرویس دیکته صوتی روی این دستگاه در دسترس نیست یا غیرفعال است. تبدیل گفتار به متن را در تنظیمات سیستم فعال کنید، یا صفحه‌کلیدی با تایپ صوتی مانند Gboard یا Huawei Voice Input نصب کنید.',
     'stt_continue': 'ادامه',
+    'sound_library': 'کتابخانه صداها',
+    'cat_sea': 'صدای دریا',
+    'cat_forest': 'صدای جنگل',
+    'cat_rain': 'صدای باران',
+    'cat_wind': 'صدای باد',
+    'cat_calm': 'صداهای آرام',
+    'cat_alarms': 'زنگ‌های قوی',
+    'set_as_default': 'تنظیم پیش‌فرض',
+    'import_tone': 'افزودن از دستگاه',
+    'calm_level': 'آرامش',
+    'preview': 'پیش‌نمایش',
   };
 
   static const Map<String, String> _ru = {
@@ -2218,6 +2350,17 @@ class S {
     'stt_offline_guide': 'Для офлайн-ввода голосом скачайте языковой пакет: Настройки → Google → Голос → Офлайн-распознавание. Или используйте микрофон клавиатуры.',
     'stt_system_missing': 'Служба голосового ввода недоступна или отключена на этом устройстве. Включите преобразование речи в текст в настройках системы или установите клавиатуру с голосовым вводом, например Gboard или Huawei Voice Input.',
     'stt_continue': 'Продолжить',
+    'sound_library': 'Библиотека звуков',
+    'cat_sea': 'Звуки моря',
+    'cat_forest': 'Звуки леса',
+    'cat_rain': 'Звуки дождя',
+    'cat_wind': 'Звуки ветра',
+    'cat_calm': 'Спокойные звуки',
+    'cat_alarms': 'Громкие будильники',
+    'set_as_default': 'По умолчанию',
+    'import_tone': 'Добавить с устройства',
+    'calm_level': 'Спокойствие',
+    'preview': 'Прослушать',
   };
 }
 

@@ -77,21 +77,26 @@ class NotificationService {
     _initialized = true;
   }
 
-  /// النغمات المتاحة (أسماء ملفات raw). نغمات طبيعية ناعمة مولّدة أصليًّا.
+  /// النغمات المتاحة (أسماء ملفات raw). نغمات طبيعية ناعمة مولّدة أصليًّا
+  /// (خالية من حقوق النشر). مرتّبة ضمن تصنيفات في «مكتبة الأصوات».
   static const alarmTones = [
-    'alarm',
-    'chime',
-    'bell',
-    'forest',
-    'birds',
-    'water',
-    'rain',
-    'ocean'
+    // بحر
+    'ocean', 'gentle_waves', 'sea_shore', 'blue_harbour', 'water',
+    // غابة
+    'forest', 'rainforest', 'creek', 'birds',
+    // مطر
+    'rain', 'rain_window', 'soft_storm',
+    // رياح
+    'desert_wind', 'evening_breeze',
+    // هادئة
+    'aurora', 'morning_light', 'soft_bell', 'chime', 'bell',
+    // منبّهات
+    'alarm', 'digital_alarm', 'urgent', 'wake_bell',
   ];
 
-  /// النغمة المختارة حاليًا (افتراضي alarm) — تُضبط من الإعدادات.
+  /// النغمة المختارة حاليًا (افتراضي ocean = Ocean Whisper) — تُضبط من الإعدادات.
   /// قد تكون 'custom' عند اختيار نغمة من ملفات/نغمات الجهاز.
-  String _tone = 'alarm';
+  String _tone = 'ocean';
   String get tone => _tone;
   set tone(String t) {
     if (alarmTones.contains(t) || t == 'custom') _tone = t;
