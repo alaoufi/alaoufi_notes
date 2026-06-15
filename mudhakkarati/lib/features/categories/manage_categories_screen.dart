@@ -5,6 +5,7 @@ import '../../core/constants/category_icons.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/category.dart';
 import '../../services/security_service.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 import '../security/info_lock.dart';
@@ -83,7 +84,14 @@ class ManageCategoriesScreen extends StatelessWidget {
                       ),
                       IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () => provider.deleteCategory(c.id!),
+                        onPressed: () async {
+                          if (await confirmDelete(context,
+                              title: 'حذف التصنيف؟',
+                              message:
+                                  'سيُحذف التصنيف «${c.name}». لن تُحذف ملاحظاته بل تُصبح بلا تصنيف.')) {
+                            await provider.deleteCategory(c.id!);
+                          }
+                        },
                       ),
                       ReorderableDragStartListener(
                         index: i,

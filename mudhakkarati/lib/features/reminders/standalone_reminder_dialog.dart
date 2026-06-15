@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../services/ringtone_picker.dart';
@@ -568,6 +569,12 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                           if (existing != null)
                             TextButton.icon(
                               onPressed: () async {
+                                if (!await confirmDelete(context,
+                                    title: 'حذف التنبيه؟',
+                                    message:
+                                        'سيُحذف هذا التنبيه ولن يُذكّرك بعد الآن.')) {
+                                  return;
+                                }
                                 await provider.removeReminder(existing);
                                 if (context.mounted) Navigator.pop(context);
                               },

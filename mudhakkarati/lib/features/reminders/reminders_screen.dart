@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../cleanup/cleanup_screen.dart';
 import '../editor/note_editor_screen.dart';
@@ -230,7 +231,13 @@ class RemindersScreen extends StatelessWidget {
             IconButton(
               tooltip: 'حذف',
               icon: Icon(Icons.delete_outline, color: scheme.outline),
-              onPressed: () => provider.removeReminder(r),
+              onPressed: () async {
+                if (await confirmDelete(context,
+                    title: 'حذف التنبيه؟',
+                    message: 'سيُحذف هذا التنبيه ولن يُذكّرك بعد الآن.')) {
+                  await provider.removeReminder(r);
+                }
+              },
             ),
             Switch(
               value: on,

@@ -6,6 +6,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
@@ -286,6 +287,12 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     if (existing != null)
                       TextButton.icon(
                         onPressed: () async {
+                          if (!await confirmDelete(context,
+                              title: 'حذف التذكير؟',
+                              message:
+                                  'سيُحذف تذكير هذه الملاحظة ولن يُذكّرك بعد الآن.')) {
+                            return;
+                          }
                           await provider.removeForNote(note.id!);
                           if (context.mounted) Navigator.pop(context);
                         },

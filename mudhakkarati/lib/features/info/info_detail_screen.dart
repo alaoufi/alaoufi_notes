@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/rich_text_field.dart';
 import 'info_edit_screen.dart';
@@ -35,24 +36,11 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
   }
 
   Future<void> _delete() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('حذف المعلومة'),
-        content: const Text('هل تريد حذف هذه المعلومة نهائيًا؟'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('حذف'),
-          ),
-        ],
-      ),
-    );
-    if (ok == true && _e.id != null) {
+    final ok = await confirmDelete(context,
+        title: 'حذف المعلومة؟',
+        message: 'سيُحذف هذا العنصر نهائيًا بلا إمكانية استرجاع.',
+        icon: Icons.delete_forever);
+    if (ok && _e.id != null) {
       await _repo.delete(_e.id!);
       if (mounted) Navigator.pop(context, true);
     }

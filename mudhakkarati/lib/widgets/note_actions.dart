@@ -14,6 +14,7 @@ import '../features/security/pin_setup.dart';
 import '../features/settings/settings_provider.dart';
 import '../services/pdf_export_service.dart';
 import 'color_picker_sheet.dart';
+import 'confirm_dialog.dart';
 
 /// شيت إجراءات الملاحظة (عند الضغط المطوّل أو من المحرر).
 ///
@@ -174,28 +175,12 @@ Future<void> showNoteActions(BuildContext context, Note note,
 }
 
 /// رسالة تحذير قبل الحذف. تعيد true إن أكّد المستخدم.
-Future<bool> confirmDeleteNote(BuildContext context) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      icon: Icon(Icons.delete_outline,
-          color: Theme.of(ctx).colorScheme.error),
-      title: const Text('حذف الملاحظة؟'),
-      content: const Text('ستُنقل إلى المهملات ويمكنك استرجاعها منها لاحقًا.'),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('إلغاء')),
-        FilledButton(
-          style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error),
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('حذف'),
-        ),
-      ],
-    ),
+Future<bool> confirmDeleteNote(BuildContext context) {
+  return confirmDelete(
+    context,
+    title: 'حذف الملاحظة؟',
+    message: 'ستُنقل إلى المهملات ويمكنك استرجاعها منها لاحقًا.',
   );
-  return ok ?? false;
 }
 
 /// نص النسخ/المشاركة: العنوان + المحتوى فقط — بدون التاريخ أو التصنيف.

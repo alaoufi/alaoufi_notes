@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../data/models/note.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
 import '../editor/rich_text_field.dart';
@@ -76,22 +77,12 @@ class _CleanupScreenState extends State<CleanupScreen> {
   }
 
   Future<void> _trashAll(List<Note> notes, String label) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('تأكيد'),
-        content: Text('نقل ${notes.length} ملاحظة ($label) إلى السلة؟'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('نقل للسلة')),
-        ],
-      ),
-    );
-    if (ok != true) return;
+    final ok = await confirmDelete(context,
+        title: 'نقل إلى السلة؟',
+        message: 'نقل ${notes.length} ملاحظة ($label) إلى سلة المهملات؟',
+        confirmLabel: 'نقل للسلة',
+        icon: Icons.delete_sweep_outlined);
+    if (!ok) return;
     final provider = context.read<NotesProvider>();
     for (final n in notes) {
       if (n.id != null) await provider.moveToTrash(n);

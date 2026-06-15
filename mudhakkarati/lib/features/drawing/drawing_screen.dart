@@ -5,6 +5,7 @@ import 'package:signature/signature.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../services/file_service.dart';
+import '../../widgets/confirm_dialog.dart';
 
 /// لوحة رسم/كتابة يدوية. تعيد مسار صورة PNG المحفوظة عند الحفظ.
 class DrawingScreen extends StatefulWidget {
@@ -87,7 +88,15 @@ class _DrawingScreenState extends State<DrawingScreen> {
           IconButton(
             tooltip: s.t('clear'),
             icon: const Icon(Icons.delete_outline),
-            onPressed: () => setState(_controller.clear),
+            onPressed: () async {
+              if (await confirmDelete(context,
+                  title: 'مسح الرسم؟',
+                  message: 'سيُمسح الرسم بالكامل ولا يمكن التراجع.',
+                  confirmLabel: s.t('clear'),
+                  icon: Icons.delete_sweep_outlined)) {
+                setState(_controller.clear);
+              }
+            },
           ),
           IconButton(
             tooltip: s.t('save'),

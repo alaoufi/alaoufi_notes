@@ -5,6 +5,7 @@ import '../../core/text/line_direction.dart';
 import '../../data/database/app_database.dart';
 import '../../data/models/med_dose.dart';
 import '../../data/repositories/med_repository.dart';
+import '../../widgets/confirm_dialog.dart';
 
 /// وضع الدواء/العلاج: تسجيل أخذ الجرعات أو فواتها، مع سجلّ كامل ونسبة التزام.
 class MedicationScreen extends StatefulWidget {
@@ -156,6 +157,11 @@ class _MedicationScreenState extends State<MedicationScreen> {
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline),
           onPressed: () async {
+            if (!await confirmDelete(context,
+                title: 'حذف السجلّ؟',
+                message: 'سيُحذف سجلّ هذه الجرعة نهائيًا.')) {
+              return;
+            }
             await _repo.delete(d.id!);
             await _load();
           },

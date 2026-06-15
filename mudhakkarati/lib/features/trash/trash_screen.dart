@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/note.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
 
@@ -33,28 +34,13 @@ class _TrashScreenState extends State<TrashScreen> {
     }
   }
 
-  /// رسالة تحذير قبل الحذف النهائي (لا رجعة فيه).
-  Future<bool> _confirm(String title, String message) async {
-    final scheme = Theme.of(context).colorScheme;
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        icon: Icon(Icons.warning_amber_rounded, color: scheme.error),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('إلغاء')),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: scheme.error),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('حذف نهائي'),
-          ),
-        ],
-      ),
-    );
-    return ok ?? false;
+  /// رسالة تحذير قبل الحذف النهائي (لا رجعة فيه) — حوار عصري موحّد.
+  Future<bool> _confirm(String title, String message) {
+    return confirmDelete(context,
+        title: title,
+        message: message,
+        confirmLabel: 'حذف نهائي',
+        icon: Icons.delete_forever);
   }
 
   @override
