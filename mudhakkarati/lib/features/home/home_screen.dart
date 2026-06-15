@@ -109,44 +109,133 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  /// زر + : قائمة إضافة سريعة (تذهب الملاحظة إلى «الوارد»).
+  /// زر + : قائمة إضافة سريعة عصرية (شبكة بطاقات ثلاثية الأبعاد).
   Future<void> _quickAdd() async {
     final s = S.of(context);
     await showModalBottomSheet(
       context: context,
       showDragHandle: true,
-      builder: (sheetCtx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // «ملاحظة» = ملاحظة نصّية عادية (الأصل) باتجاه لكل سطر وتباعد أسطر.
-            _qa(sheetCtx, Icons.edit_note, s.t('qa_note'),
-                () => _quickType(NoteType.text)),
-            _qa(sheetCtx, Icons.checklist, s.t('note_checklist'),
-                () => _quickSmooth(startAsTask: true)),
-            _qa(sheetCtx, Icons.mic, s.t('qa_audio'),
-                () => _quickType(NoteType.audio)),
-            _qa(sheetCtx, Icons.image, s.t('qa_image'),
-                () => _quickType(NoteType.image)),
-            const Divider(height: 1),
-            _qa(sheetCtx, Icons.dashboard_customize_outlined, s.t('qa_template'),
-                () => showTemplatePicker(context)),
-            _qa(sheetCtx, Icons.today, s.t('qa_today'), _openDaily),
-          ],
-        ),
-      ),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetCtx) {
+        // (أيقونة، تسمية، لون، إجراء) لكل نوع إضافة.
+        final items = <(IconData, String, Color, VoidCallback)>[
+          (Icons.edit_note, s.t('qa_note'), const Color(0xFF42A5F5),
+              () => _quickType(NoteType.text)),
+          (Icons.checklist, s.t('note_checklist'), const Color(0xFF66BB6A),
+              () => _quickSmooth(startAsTask: true)),
+          (Icons.mic, s.t('qa_audio'), const Color(0xFFEF5350),
+              () => _quickType(NoteType.audio)),
+          (Icons.image, s.t('qa_image'), const Color(0xFFAB47BC),
+              () => _quickType(NoteType.image)),
+          (Icons.dashboard_customize_outlined, s.t('qa_template'),
+              const Color(0xFFFFA726), () => showTemplatePicker(context)),
+          (Icons.today, s.t('qa_today'), const Color(0xFF26A69A), _openDaily),
+        ];
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 14, right: 2),
+                  child: Text(s.t('qa_title'),
+                      style: Theme.of(sheetCtx).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold)),
+                ),
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.95,
+                  children: [
+                    for (final it in items)
+                      _quickCard(sheetCtx, it.$1, it.$2, it.$3, it.$4),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _qa(BuildContext sheetCtx, IconData icon, String label,
-      VoidCallback action) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(label),
+  /// بطاقة إضافة سريعة عصرية (أيقونة متدرّجة ثلاثية الأبعاد + تسمية).
+  Widget _quickCard(BuildContext sheetCtx, IconData icon, String label,
+      Color color, VoidCallback action) {
+    final scheme = Theme.of(sheetCtx).colorScheme;
+    final dark = Theme.of(sheetCtx).brightness == Brightness.dark;
+    final surface = dark ? const Color(0xFF1E2230) : Colors.white;
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
       onTap: () {
         Navigator.pop(sheetCtx);
         action();
       },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [surface, Color.alphaBlend(color.withOpacity(0.07), surface)],
+          ),
+          border: Border.all(color: color.withOpacity(0.18)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(dark ? 0.4 : 0.08),
+                offset: const Offset(0, 6),
+                blurRadius: 14,
+                spreadRadius: -4),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.alphaBlend(Colors.white.withOpacity(0.25), color),
+                    color,
+                    Color.alphaBlend(Colors.black.withOpacity(0.18), color),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                      color: color.withOpacity(0.45),
+                      offset: const Offset(0, 4),
+                      blurRadius: 10,
+                      spreadRadius: -2),
+                ],
+              ),
+              child: Icon(icon, color: Colors.white, size: 24),
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: scheme.onSurface)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
