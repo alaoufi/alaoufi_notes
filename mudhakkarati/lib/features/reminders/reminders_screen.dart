@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
@@ -214,6 +215,18 @@ class RemindersScreen extends StatelessWidget {
                 ],
               ),
             ),
+            // فتح موقع الموعد على الخرائط (إن وُجد رابط).
+            if (r.location.trim().isNotEmpty)
+              IconButton(
+                tooltip: 'فتح الموقع',
+                icon: Icon(Icons.place_outlined, color: scheme.primary),
+                onPressed: () {
+                  final u = Uri.tryParse(r.location.trim());
+                  if (u != null) {
+                    launchUrl(u, mode: LaunchMode.externalApplication);
+                  }
+                },
+              ),
             IconButton(
               tooltip: 'حذف',
               icon: Icon(Icons.delete_outline, color: scheme.outline),

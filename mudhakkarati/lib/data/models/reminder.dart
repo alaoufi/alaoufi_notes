@@ -15,6 +15,9 @@ class Reminder {
   /// تنبيهات مسبقة قبل الموعد (بالدقائق): مثل [5, 15, 60, 1440].
   final List<int> preAlerts;
 
+  /// موقع التذكير (رابط خرائط جوجل) — للمواعيد. فارغ = بلا موقع.
+  final String location;
+
   /// معرّف الإشعار في flutter_local_notifications (لإلغائه لاحقًا).
   final int notificationId;
 
@@ -27,6 +30,7 @@ class Reminder {
     this.isActive = true,
     this.importance = ReminderImportance.high,
     this.preAlerts = const [],
+    this.location = '',
     required this.notificationId,
   });
 
@@ -44,6 +48,7 @@ class Reminder {
       'notification_id': notificationId,
       'importance': importance.dbValue,
       'pre_alerts': preAlerts.join(','),
+      'location': location,
     };
   }
 
@@ -62,6 +67,7 @@ class Reminder {
           .map((e) => int.tryParse(e.trim()) ?? -1)
           .where((e) => e > 0)
           .toList(),
+      location: (map['location'] as String?) ?? '',
     );
   }
 
@@ -74,6 +80,7 @@ class Reminder {
     bool? isActive,
     ReminderImportance? importance,
     List<int>? preAlerts,
+    String? location,
     int? notificationId,
   }) {
     return Reminder(
@@ -85,6 +92,7 @@ class Reminder {
       isActive: isActive ?? this.isActive,
       importance: importance ?? this.importance,
       preAlerts: preAlerts ?? this.preAlerts,
+      location: location ?? this.location,
       notificationId: notificationId ?? this.notificationId,
     );
   }

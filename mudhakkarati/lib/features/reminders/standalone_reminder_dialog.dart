@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
@@ -71,6 +73,19 @@ String _titleLabelFor(ReminderKind k) => switch (k) {
       ReminderKind.occasion => 'المناسبة',
     };
 
+/// رابط بحث خرائط جوجل لنصّ المكان (لاختيار الموقع ونسخ رابطه).
+Uri _mapsSearchUri(String query) {
+  final q = Uri.encodeComponent(query.trim().isEmpty ? 'موقع' : query.trim());
+  return Uri.parse('https://www.google.com/maps/search/?api=1&query=$q');
+}
+
+/// يفتح رابطًا في تطبيق خارجي (الخرائط/المتصفّح) بأمان.
+Future<void> _openExternal(Uri uri) async {
+  try {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {/* لا يوجد تطبيق يفتح الرابط */}
+}
+
 /// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
 const List<(int, String)> _weekdayDefs = [
   (6, 'السبت'),
@@ -95,10 +110,14 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   ReminderImportance importance = existing?.importance ?? ReminderImportance.high;
   final Set<int> preAlerts = {...?existing?.preAlerts};
   final Set<int> weekdays = {date.weekday};
-  // نوع المنبّه + حقول خاصّة بكل نوع (جرعة الدواء / مكان الموعد).
-  ReminderKind kind = ReminderKind.general;
+  // نوع المنبّه + حقول خاصّة بكل نوع (جرعة الدواء / مكان الموعد + رابط خرائط).
+  // عند تعديل تنبيه له موقع محفوظ، نبدأ بنوع «موعد» لإظهار حقول المكان.
+  ReminderKind kind = (existing?.location.isNotEmpty ?? false)
+      ? ReminderKind.appointment
+      : ReminderKind.general;
   final doseCtrl = TextEditingController();
   final placeCtrl = TextEditingController();
+  final mapLinkCtrl = TextEditingController(text: existing?.location ?? '');
 
   await showModalBottomSheet(
     context: context,
@@ -290,14 +309,70 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               ),
                             ),
                           ],
-                          // حقل خاصّ بالموعد: المكان.
+                          // حقول خاصّة بالموعد: وصف المكان + رابط خرائط جوجل.
                           if (kind == ReminderKind.appointment) ...[
                             const SizedBox(height: 10),
                             TextField(
                               controller: placeCtrl,
                               decoration: const InputDecoration(
-                                labelText: 'المكان (اختياري)',
+                                labelText: 'وصف المكان (اختياري)',
+                                hintText: 'مثال: مستشفى الملك فهد — بوّابة 3',
                                 prefixIcon: Icon(Icons.place_outlined),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: mapLinkCtrl,
+                              keyboardType: TextInputType.url,
+                              onChanged: (_) => setState(() {}),
+                              decoration: InputDecoration(
+                                labelText: 'رابط الموقع (خرائط جوجل)',
+                                hintText: 'الصق رابط الموقع هنا',
+                                prefixIcon: const Icon(Icons.map_outlined),
+                                suffixIcon: IconButton(
+                                  tooltip: 'لصق',
+                                  icon: const Icon(Icons.content_paste),
+                                  onPressed: () async {
+                                    final data = await Clipboard.getData(
+                                        Clipboard.kTextPlain);
+                                    final t = data?.text?.trim() ?? '';
+                                    if (t.isNotEmpty) {
+                                      setState(() => mapLinkCtrl.text = t);
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () => _openExternal(
+                                      _mapsSearchUri(placeCtrl.text)),
+                                  icon: const Icon(Icons.map),
+                                  label: const Text('اختيار من الخريطة'),
+                                ),
+                              ),
+                              if (mapLinkCtrl.text.trim().isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  tooltip: 'فتح الموقع',
+                                  icon: const Icon(Icons.open_in_new),
+                                  onPressed: () {
+                                    final u =
+                                        Uri.tryParse(mapLinkCtrl.text.trim());
+                                    if (u != null) _openExternal(u);
+                                  },
+                                ),
+                              ],
+                            ]),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'افتح الخريطة، اختر المكان، انسخ رابط المشاركة، ثم الصقه هنا.',
+                                style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: scheme.onSurface.withOpacity(0.6)),
                               ),
                             ),
                           ],
@@ -515,6 +590,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                     combined(), repeat, finalTitle,
                                     importance: importance,
                                     preAlerts: preAlerts.toList()..sort(),
+                                    location: mapLinkCtrl.text.trim(),
                                     existing: existing);
                               }
                               if (context.mounted) Navigator.pop(context);
