@@ -310,9 +310,26 @@ class RichTextToolbar extends StatelessWidget {
               height: 26, child: VerticalDivider(width: 1, thickness: 1)),
         );
 
-    return Material(
-      elevation: 8,
-      color: scheme.surface,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.alphaBlend(scheme.primary.withOpacity(0.05), scheme.surface),
+            scheme.surface,
+          ],
+        ),
+        border: Border(
+            top: BorderSide(color: scheme.primary.withOpacity(0.14), width: 1)),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.12),
+              offset: const Offset(0, -3),
+              blurRadius: 12,
+              spreadRadius: -2),
+        ],
+      ),
       child: SafeArea(
         top: false,
         // صفّ واحد قابل للتمرير الأفقي بنعومة (يمين/يسار).
