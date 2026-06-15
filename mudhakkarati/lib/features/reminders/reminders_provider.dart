@@ -55,7 +55,7 @@ class RemindersProvider extends ChangeNotifier {
       await NotificationService.instance.cancel(existing.notificationId);
       await _repo.delete(existing.id!);
     }
-    final notifId = _generateId();
+    final notifId = _uniqueId(await _existingIds());
     final reminder = Reminder(
       title: title.trim().isEmpty ? 'تنبيه' : title.trim(),
       time: time,
@@ -90,6 +90,7 @@ class RemindersProvider extends ChangeNotifier {
     }
     await _repo.deleteForNote(note.id!);
 
+    final taken = await _existingIds();
     final title = note.title.trim().isEmpty ? 'تذكير' : note.title.trim();
     for (final wd in weekdays) {
       final when = _nextWeekday(wd, tod);
@@ -98,7 +99,7 @@ class RemindersProvider extends ChangeNotifier {
         time: when,
         repeat: ReminderRepeat.weekly,
         importance: importance,
-        notificationId: _generateId(),
+        notificationId: _uniqueId(taken),
       );
       final id = await _repo.insert(reminder);
       await NotificationService.instance
@@ -122,7 +123,7 @@ class RemindersProvider extends ChangeNotifier {
       await _repo.delete(existing.id!);
     }
 
-    final notifId = _generateId();
+    final notifId = _uniqueId(await _existingIds());
     final reminder = Reminder(
       noteId: note.id!,
       time: time,
@@ -153,13 +154,14 @@ class RemindersProvider extends ChangeNotifier {
       await _repo.delete(existing.id!);
     }
     final name = title.trim().isEmpty ? 'تنبيه' : title.trim();
+    final taken = await _existingIds();
     for (final wd in weekdays) {
       final when = _nextWeekday(wd, tod);
       final reminder = Reminder(
         title: name,
         time: when,
         repeat: ReminderRepeat.weekly,
-        notificationId: _generateId(),
+        notificationId: _uniqueId(taken),
       );
       final id = await _repo.insert(reminder);
       await NotificationService.instance
@@ -211,7 +213,20 @@ class RemindersProvider extends ChangeNotifier {
     await refresh();
   }
 
-  // نطاق مضغوط (<2^26) كي تبقى معرّفات «عدم النسيان» (base + k·2^26) ضمن 32-بت
-  // وبلا تصادم بين التذكيرات (كل تذكير يملك كتلة معرّفات مستقلّة).
-  int _generateId() => Random().nextInt(1 << 26) + 1;
+  // نطاق مضغوط (<2^26) كي تبقى معرّفات «عدم النسيان»/التنبيهات المسبقة
+  // (base + k·2^26) ضمن 32-بت. **مضمون عدم التصادم**: نتجنّب أي معرّف مستعمَل
+  // مسبقًا (يمنع ضياع تذكير بسبب تطابق نادر للأرقام العشوائية).
+  Future<Set<int>> _existingIds() async {
+    final all = await _repo.getAll();
+    return all.map((r) => r.notificationId).toSet();
+  }
+
+  int _uniqueId(Set<int> taken) {
+    int id;
+    do {
+      id = Random().nextInt(1 << 26) + 1;
+    } while (taken.contains(id));
+    taken.add(id);
+    return id;
+  }
 }
