@@ -91,5 +91,23 @@ void main() {
         expect(ids.length, slots.length);
       }
     });
+
+    // معرّفات شاشة «اختبار الموثوقية» كبيرة (خارج نطاق التذكيرات العادية).
+    // الخطأ السابق: base كان 1.9e9، فعند إلغاء التوابع (base + k·stride) تجاوز
+    // 2^31 ورمى النظام «Invalid argument (id)». نضمن بقاءها ضمن 32-بت.
+    test('reliability-test ids never overflow the followup cancel sweep', () {
+      const maxId = 0x7fffffff; // 2^31 - 1
+      // القيم المستخدمة فعليًّا في NotificationService.
+      for (final base in [200000000, 200000001]) {
+        expect(base, lessThanOrEqualTo(maxId));
+        // أكبر من stride ⇒ لا تُجدول إعادات «عدم النسيان».
+        expect(base, greaterThanOrEqualTo(stride));
+        // مسح الإلغاء يصل إلى k=15 — يجب أن يبقى كلّه ضمن 32-بت.
+        for (var k = 1; k <= 15; k++) {
+          expect(base + k * stride, lessThanOrEqualTo(maxId),
+              reason: 'base $base k $k يتجاوز 32-بت');
+        }
+      }
+    });
   });
 }

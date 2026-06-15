@@ -42,11 +42,17 @@ class NotificationService {
   Duration forgetInterval = const Duration(minutes: 3);
   static const int _forgetStride = 1 << 26; // فصل معرّفات الإعادات
 
+  /// أقصى قيمة لمعرّف إشعار (يجب أن يسع في عدد صحيح 32-بت وإلا رمى النظام خطأً).
+  static const int _maxNotifId = 0x7fffffff; // 2^31 - 1
+
   /// يُلغي تذكيرًا مع كل الإشعارات التابعة (إعادات «عدم النسيان» + التنبيهات
-  /// المسبقة) ضمن كتلة معرّفاته.
+  /// المسبقة) ضمن كتلة معرّفاته. نتخطّى أي معرّف يتجاوز نطاق 32-بت (لا يمكن أن
+  /// يكون مجدولًا أصلًا) لتفادي رمي النظام لخطأ «خارج النطاق».
   Future<void> _cancelFollowups(int baseId) async {
     for (var k = 1; k <= 15; k++) {
-      await _plugin.cancel(baseId + k * _forgetStride);
+      final id = baseId + k * _forgetStride;
+      if (id > _maxNotifId) break; // المعرّفات تتزايد ⇒ ما بعده أكبر
+      await _plugin.cancel(id);
     }
   }
 
@@ -446,9 +452,10 @@ class NotificationService {
   }
 
   // ===== اختبار الموثوقية =====
-  // معرّفات ثابتة للاختبار (> _forgetStride كي لا تُطلَق إعادات «عدم النسيان»).
-  static const int _testNowId = 1900000000;
-  static const int _testAlarmId = 1900000001;
+  // معرّفات ثابتة للاختبار: أكبر من _forgetStride (كي لا تُطلَق إعادات «عدم
+  // النسيان») وفي الوقت ذاته يبقى base + 15·stride ضمن نطاق 32-بت بأمان.
+  static const int _testNowId = 200000000;
+  static const int _testAlarmId = 200000001;
 
   /// هل الإشعارات مُفعّلة لهذا التطبيق؟ (للتشخيص في شاشة الاختبار).
   Future<bool?> areNotificationsEnabled() async {
