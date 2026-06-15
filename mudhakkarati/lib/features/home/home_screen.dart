@@ -8,6 +8,7 @@ import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
 import '../../widgets/note_actions.dart';
+import '../../widgets/ui_kit.dart';
 import '../../widgets/note_card.dart';
 import '../../services/backup_service.dart';
 import '../../services/sync/sync_service.dart';
@@ -197,30 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 46,
-              height: 46,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color.alphaBlend(Colors.white.withOpacity(0.25), color),
-                    color,
-                    Color.alphaBlend(Colors.black.withOpacity(0.18), color),
-                  ],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                      color: color.withOpacity(0.45),
-                      offset: const Offset(0, 4),
-                      blurRadius: 10,
-                      spreadRadius: -2),
-                ],
-              ),
-              child: Icon(icon, color: Colors.white, size: 24),
-            ),
+            gradientBadge(icon, color, size: 46, radius: 14, iconSize: 24),
             const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),

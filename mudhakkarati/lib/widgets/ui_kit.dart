@@ -96,6 +96,38 @@ class GradientIcon extends StatelessWidget {
   }
 }
 
+/// شارة أيقونة بارزة ثلاثية الأبعاد (تدرّج ثلاثي + توهّج + حدّ فاتح).
+/// [radius] = null ⇒ دائرة، وإلا مستطيل بحواف دائرية بهذا القطر.
+Widget gradientBadge(IconData icon, Color color,
+    {double size = 48, double? radius, double? iconSize}) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      shape: radius == null ? BoxShape.circle : BoxShape.rectangle,
+      borderRadius: radius == null ? null : BorderRadius.circular(radius),
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Color.alphaBlend(Colors.white.withOpacity(0.28), color),
+          color,
+          Color.alphaBlend(Colors.black.withOpacity(0.20), color),
+        ],
+      ),
+      boxShadow: [
+        BoxShadow(
+            color: color.withOpacity(0.45),
+            offset: const Offset(0, 6),
+            blurRadius: 14,
+            spreadRadius: -2),
+      ],
+      border: Border.all(color: Colors.white.withOpacity(0.30), width: 1.2),
+    ),
+    child: Icon(icon, color: Colors.white, size: iconSize ?? size * 0.5),
+  );
+}
+
 /// حالة فارغة أنيقة (أيقونة دائرية + عنوان + وصف اختياري).
 class EmptyState extends StatelessWidget {
   final IconData icon;

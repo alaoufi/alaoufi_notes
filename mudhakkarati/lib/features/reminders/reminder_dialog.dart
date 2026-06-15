@@ -8,6 +8,7 @@ import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/time_wheel.dart';
+import 'reminder_helpers.dart';
 import '../settings/settings_provider.dart';
 import 'reminders_provider.dart';
 
@@ -33,27 +34,6 @@ const _toneNames = {
   'rain': 'مطر 🌧️',
   'ocean': 'محيط 🌊',
 };
-
-String _impLabel(S s, ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => s.t('imp_low'),
-      ReminderImportance.medium => s.t('imp_medium'),
-      ReminderImportance.high => s.t('imp_high'),
-      ReminderImportance.critical => s.t('imp_critical'),
-    };
-
-IconData _impIcon(ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => Icons.notifications_none,
-      ReminderImportance.medium => Icons.notifications_active_outlined,
-      ReminderImportance.high => Icons.vibration,
-      ReminderImportance.critical => Icons.crisis_alert,
-    };
-
-Color _impColor(ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => const Color(0xFF78909C),
-      ReminderImportance.medium => const Color(0xFF42A5F5),
-      ReminderImportance.high => const Color(0xFFEF6C00),
-      ReminderImportance.critical => const Color(0xFFE53935),
-    };
 
 /// حوار لإضافة/تعديل تذكير لملاحظة (تاريخ + وقت + تكرار).
 Future<void> showReminderDialog(BuildContext context, Note note) async {
@@ -195,8 +175,8 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                   spacing: 8,
                   children: ReminderImportance.values.map((imp) {
                     return ChoiceChip(
-                      avatar: Icon(_impIcon(imp), size: 18, color: _impColor(imp)),
-                      label: Text(_impLabel(s, imp)),
+                      avatar: Icon(impIcon(imp), size: 18, color: impColor(imp)),
+                      label: Text(impLabel(s, imp)),
                       selected: importance == imp,
                       onSelected: (_) => setState(() => importance = imp),
                     );

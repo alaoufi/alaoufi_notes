@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/l10n/app_strings.dart';
+import 'ui_kit.dart';
 
 /// حوار تأكيد **عصري ثلاثي الأبعاد** موحّد عبر التطبيق.
 ///
@@ -124,32 +125,7 @@ class _ConfirmCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // شارة أيقونة ثلاثية الأبعاد (تدرّج + توهّج).
-                Container(
-                  width: 74,
-                  height: 74,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color.alphaBlend(Colors.white.withOpacity(0.30), color),
-                        color,
-                        Color.alphaBlend(Colors.black.withOpacity(0.22), color),
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                          color: color.withOpacity(0.5),
-                          offset: const Offset(0, 8),
-                          blurRadius: 18,
-                          spreadRadius: -2),
-                    ],
-                    border: Border.all(
-                        color: Colors.white.withOpacity(0.30), width: 1.5),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 38),
-                ),
+                gradientBadge(icon, color, size: 74, iconSize: 38),
                 const SizedBox(height: 18),
                 Text(title,
                     textAlign: TextAlign.center,

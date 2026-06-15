@@ -221,11 +221,12 @@ class RemindersScreen extends StatelessWidget {
               IconButton(
                 tooltip: 'فتح الموقع',
                 icon: Icon(Icons.place_outlined, color: scheme.primary),
-                onPressed: () {
+                onPressed: () async {
                   final u = Uri.tryParse(r.location.trim());
-                  if (u != null) {
-                    launchUrl(u, mode: LaunchMode.externalApplication);
-                  }
+                  if (u == null) return;
+                  try {
+                    await launchUrl(u, mode: LaunchMode.externalApplication);
+                  } catch (_) {/* لا يوجد تطبيق يفتح الرابط */}
                 },
               ),
             IconButton(

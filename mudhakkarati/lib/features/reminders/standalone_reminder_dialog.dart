@@ -12,67 +12,41 @@ import '../../services/tone_preview.dart';
 import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
 import '../sounds/sound_catalog.dart';
+import 'reminder_helpers.dart';
 import 'reminders_provider.dart';
-
-String _impLabel(S s, ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => s.t('imp_low'),
-      ReminderImportance.medium => s.t('imp_medium'),
-      ReminderImportance.high => s.t('imp_high'),
-      ReminderImportance.critical => s.t('imp_critical'),
-    };
-
-IconData _impIcon(ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => Icons.notifications_none,
-      ReminderImportance.medium => Icons.notifications_active_outlined,
-      ReminderImportance.high => Icons.vibration,
-      ReminderImportance.critical => Icons.crisis_alert,
-    };
-
-Color _impColor(ReminderImportance imp) => switch (imp) {
-      ReminderImportance.low => const Color(0xFF78909C),
-      ReminderImportance.medium => const Color(0xFF42A5F5),
-      ReminderImportance.high => const Color(0xFFEF6C00),
-      ReminderImportance.critical => const Color(0xFFE53935),
-    };
-
-/// اسم النغمة للعرض من مكتبة الأصوات (يشمل كل النغمات الـ23).
-String _toneName(String id) {
-  for (final t in soundCatalog) {
-    if (t.id == id) return t.name;
-  }
-  return id;
-}
 
 /// نوع المنبّه — يُغيّر الحقول الظاهرة والإعدادات الافتراضية.
 enum ReminderKind { general, medication, appointment, occasion }
 
-String _kindLabel(ReminderKind k) => switch (k) {
-      ReminderKind.general => 'عام',
-      ReminderKind.medication => 'دواء',
-      ReminderKind.appointment => 'موعد',
-      ReminderKind.occasion => 'مناسبة',
-    };
+extension ReminderKindX on ReminderKind {
+  String get label => switch (this) {
+        ReminderKind.general => 'عام',
+        ReminderKind.medication => 'دواء',
+        ReminderKind.appointment => 'موعد',
+        ReminderKind.occasion => 'مناسبة',
+      };
 
-IconData _kindIcon(ReminderKind k) => switch (k) {
-      ReminderKind.general => Icons.notifications_active_outlined,
-      ReminderKind.medication => Icons.medication_outlined,
-      ReminderKind.appointment => Icons.event_outlined,
-      ReminderKind.occasion => Icons.celebration_outlined,
-    };
+  IconData get icon => switch (this) {
+        ReminderKind.general => Icons.notifications_active_outlined,
+        ReminderKind.medication => Icons.medication_outlined,
+        ReminderKind.appointment => Icons.event_outlined,
+        ReminderKind.occasion => Icons.celebration_outlined,
+      };
 
-String _kindEmoji(ReminderKind k) => switch (k) {
-      ReminderKind.general => '',
-      ReminderKind.medication => '💊 ',
-      ReminderKind.appointment => '📅 ',
-      ReminderKind.occasion => '🎉 ',
-    };
+  String get emoji => switch (this) {
+        ReminderKind.general => '',
+        ReminderKind.medication => '💊 ',
+        ReminderKind.appointment => '📅 ',
+        ReminderKind.occasion => '🎉 ',
+      };
 
-String _titleLabelFor(ReminderKind k) => switch (k) {
-      ReminderKind.general => 'عنوان التنبيه',
-      ReminderKind.medication => 'اسم الدواء',
-      ReminderKind.appointment => 'عنوان الموعد',
-      ReminderKind.occasion => 'المناسبة',
-    };
+  String get titleLabel => switch (this) {
+        ReminderKind.general => 'عنوان التنبيه',
+        ReminderKind.medication => 'اسم الدواء',
+        ReminderKind.appointment => 'عنوان الموعد',
+        ReminderKind.occasion => 'المناسبة',
+      };
+}
 
 /// رابط بحث خرائط جوجل لنصّ المكان (لاختيار الموقع ونسخ رابطه).
 Uri _mapsSearchUri(String query) {
@@ -167,16 +141,16 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
           // يُركّب العنوان النهائي من الاسم + الحقول الخاصّة بالنوع + رمز مميّز.
           String composeTitle() {
             var name = titleCtrl.text.trim();
-            if (name.isEmpty) name = _kindLabel(kind);
+            if (name.isEmpty) name = kind.label;
             switch (kind) {
               case ReminderKind.medication:
                 final d = doseCtrl.text.trim();
-                return '${_kindEmoji(kind)}$name${d.isEmpty ? '' : ' — $d'}';
+                return '${kind.emoji}$name${d.isEmpty ? '' : ' — $d'}';
               case ReminderKind.appointment:
                 final pl = placeCtrl.text.trim();
-                return '${_kindEmoji(kind)}$name${pl.isEmpty ? '' : ' @ $pl'}';
+                return '${kind.emoji}$name${pl.isEmpty ? '' : ' @ $pl'}';
               case ReminderKind.occasion:
-                return '${_kindEmoji(kind)}$name';
+                return '${kind.emoji}$name';
               case ReminderKind.general:
                 return name;
             }
@@ -278,10 +252,10 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             runSpacing: 6,
                             children: ReminderKind.values.map((k) {
                               return ChoiceChip(
-                                avatar: Icon(_kindIcon(k),
+                                avatar: Icon(k.icon,
                                     size: 18,
                                     color: kind == k ? scheme.primary : null),
-                                label: Text(_kindLabel(k)),
+                                label: Text(k.label),
                                 selected: kind == k,
                                 onSelected: (_) => setState(() {
                                   kind = k;
@@ -295,8 +269,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             controller: titleCtrl,
                             textInputAction: TextInputAction.done,
                             decoration: InputDecoration(
-                              labelText: _titleLabelFor(kind),
-                              prefixIcon: Icon(_kindIcon(kind)),
+                              labelText: kind.titleLabel,
+                              prefixIcon: Icon(kind.icon),
                             ),
                           ),
                           // حقل خاصّ بالدواء: الجرعة.
@@ -432,9 +406,9 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             runSpacing: 6,
                             children: ReminderImportance.values.map((imp) {
                               return ChoiceChip(
-                                avatar: Icon(_impIcon(imp),
-                                    size: 18, color: _impColor(imp)),
-                                label: Text(_impLabel(s, imp)),
+                                avatar: Icon(impIcon(imp),
+                                    size: 18, color: impColor(imp)),
+                                label: Text(impLabel(s, imp)),
                                 selected: importance == imp,
                                 onSelected: (_) =>
                                     setState(() => importance = imp),
@@ -483,7 +457,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             ),
                             title: Text(settings.alarmTone == 'custom'
                                 ? (settings.customToneTitle ?? 'نغمة مخصّصة')
-                                : _toneName(settings.alarmTone)),
+                                : toneName(settings.alarmTone)),
                             trailing: DropdownButton<String>(
                               value: soundCatalog
                                       .any((t) => t.id == settings.alarmTone)
