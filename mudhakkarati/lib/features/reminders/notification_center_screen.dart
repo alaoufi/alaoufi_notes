@@ -81,6 +81,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
                     children: [
+                      _statsCard(context, s, items.length, todayL.length,
+                          upcoming.length, overdue.length),
                       _section(s.t('nc_overdue'), Icons.error_outline,
                           Colors.red, overdue),
                       _section(s.t('nc_today'), Icons.today,
@@ -94,6 +96,72 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       ),
     );
   }
+
+  /// بطاقة إحصائيات: الإجماليّ + اليوم/القادمة/المتأخرة + نسبة «على المسار»
+  /// (التذكيرات غير المتأخرة ÷ الإجماليّ).
+  Widget _statsCard(BuildContext context, S s, int total, int today,
+      int upcoming, int overdue) {
+    final scheme = Theme.of(context).colorScheme;
+    final onTrack = total == 0 ? 1.0 : (total - overdue) / total;
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.insights, color: scheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(s.t('stats'),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 15)),
+                const Spacer(),
+                Text('${(onTrack * 100).round()}% ${s.t('on_track')}',
+                    style: TextStyle(
+                        color: onTrack > 0.7
+                            ? Colors.green
+                            : (onTrack > 0.4 ? Colors.orange : Colors.red),
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: onTrack,
+                minHeight: 8,
+                backgroundColor: scheme.surfaceContainerHighest,
+                color: onTrack > 0.7
+                    ? Colors.green
+                    : (onTrack > 0.4 ? Colors.orange : Colors.red),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _metric('$total', s.t('nc_total'), scheme.onSurface),
+                _metric('$today', s.t('nc_today'), Colors.blue),
+                _metric('$upcoming', s.t('nc_upcoming'), Colors.teal),
+                _metric('$overdue', s.t('nc_overdue'), Colors.red),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _metric(String value, String label, Color color) => Column(
+        children: [
+          Text(value,
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.bold, color: color)),
+          Text(label, style: const TextStyle(fontSize: 11)),
+        ],
+      );
 
   Widget _section(
       String title, IconData icon, Color color, List<ReminderView> list) {

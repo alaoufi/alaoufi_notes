@@ -248,6 +248,9 @@ class S {
     'alarm_done': 'تم الإنجاز',
     'alarm_snooze': 'تأجيل',
     'minutes': 'دقيقة',
+    'stats': 'الإحصائيات',
+    'on_track': 'على المسار',
+    'nc_total': 'الإجمالي',
   };
 
   static const Map<String, String> _en = {
@@ -440,6 +443,9 @@ class S {
     'alarm_done': 'Done',
     'alarm_snooze': 'Snooze',
     'minutes': 'minutes',
+    'stats': 'Statistics',
+    'on_track': 'on track',
+    'nc_total': 'Total',
   };
 
   static const Map<String, String> _es = {
@@ -630,6 +636,9 @@ class S {
     'alarm_done': 'Hecho',
     'alarm_snooze': 'Posponer',
     'minutes': 'minutos',
+    'stats': 'Estadísticas',
+    'on_track': 'en marcha',
+    'nc_total': 'Total',
   };
 
   static const Map<String, String> _de = {
@@ -820,6 +829,9 @@ class S {
     'alarm_done': 'Erledigt',
     'alarm_snooze': 'Schlummern',
     'minutes': 'Minuten',
+    'stats': 'Statistik',
+    'on_track': 'im Plan',
+    'nc_total': 'Gesamt',
   };
 
   static const Map<String, String> _fil = {
@@ -1010,6 +1022,9 @@ class S {
     'alarm_done': 'Tapos na',
     'alarm_snooze': 'I-snooze',
     'minutes': 'minuto',
+    'stats': 'Istatistika',
+    'on_track': 'nasa tama',
+    'nc_total': 'Kabuuan',
   };
 
   static const Map<String, String> _fr = {
@@ -1200,6 +1215,9 @@ class S {
     'alarm_done': 'Terminé',
     'alarm_snooze': 'Répéter',
     'minutes': 'minutes',
+    'stats': 'Statistiques',
+    'on_track': 'sur la voie',
+    'nc_total': 'Total',
   };
 
   static const Map<String, String> _id = {
@@ -1390,6 +1408,9 @@ class S {
     'alarm_done': 'Selesai',
     'alarm_snooze': 'Tunda',
     'minutes': 'menit',
+    'stats': 'Statistik',
+    'on_track': 'sesuai jadwal',
+    'nc_total': 'Total',
   };
 
   static const Map<String, String> _it = {
@@ -1580,6 +1601,9 @@ class S {
     'alarm_done': 'Fatto',
     'alarm_snooze': 'Posponi',
     'minutes': 'minuti',
+    'stats': 'Statistiche',
+    'on_track': 'in linea',
+    'nc_total': 'Totale',
   };
 
   static const Map<String, String> _ms = {
@@ -1770,6 +1794,9 @@ class S {
     'alarm_done': 'Selesai',
     'alarm_snooze': 'Tunda',
     'minutes': 'minit',
+    'stats': 'Statistik',
+    'on_track': 'mengikut jadual',
+    'nc_total': 'Jumlah',
   };
 
   static const Map<String, String> _hi = {
@@ -1960,6 +1987,9 @@ class S {
     'alarm_done': 'पूर्ण',
     'alarm_snooze': 'स्नूज़',
     'minutes': 'मिनट',
+    'stats': 'आँकड़े',
+    'on_track': 'सही राह पर',
+    'nc_total': 'कुल',
   };
 
   static const Map<String, String> _bn = {
@@ -2150,6 +2180,9 @@ class S {
     'alarm_done': 'সম্পন্ন',
     'alarm_snooze': 'স্নুজ',
     'minutes': 'মিনিট',
+    'stats': 'পরিসংখ্যান',
+    'on_track': 'সঠিক পথে',
+    'nc_total': 'মোট',
   };
 
   static const Map<String, String> _fa = {
@@ -2340,6 +2373,9 @@ class S {
     'alarm_done': 'انجام شد',
     'alarm_snooze': 'تعویق',
     'minutes': 'دقیقه',
+    'stats': 'آمار',
+    'on_track': 'در مسیر',
+    'nc_total': 'مجموع',
   };
 
   static const Map<String, String> _ru = {
@@ -2530,6 +2566,9 @@ class S {
     'alarm_done': 'Готово',
     'alarm_snooze': 'Отложить',
     'minutes': 'минут',
+    'stats': 'Статистика',
+    'on_track': 'в графике',
+    'nc_total': 'Всего',
   };
 }
 
