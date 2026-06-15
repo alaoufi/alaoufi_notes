@@ -67,6 +67,32 @@ class _SoundLibraryScreenState extends State<SoundLibraryScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
         children: [
+          // نغمة الجهاز المستوردة (تظهر هنا بعد الاستيراد، قابلة للتعيين/التغيير).
+          if (st.customToneUri != null && !_favOnly) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
+              child: Row(children: [
+                Icon(Icons.smartphone, color: scheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(s.t('device_tones'),
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: scheme.onSurface)),
+              ]),
+            ),
+            _DeviceToneTile(
+              title: st.customToneTitle ?? s.t('device_tones'),
+              selected: st.alarmTone == 'custom',
+              onSetDefault: () => st.setAlarmTone('custom'),
+              onChange: () async {
+                final uri = await RingtonePicker.pick(current: st.customToneUri);
+                if (uri == null) return;
+                final title = await RingtonePicker.title(uri);
+                await st.setCustomTone(uri, title);
+              },
+            ),
+          ],
           for (final cat in soundCategories) ...[
             () {
               final tones = soundCatalog
@@ -105,6 +131,63 @@ class _SoundLibraryScreenState extends State<SoundLibraryScreen> {
             }(),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// بطاقة نغمة الجهاز المستوردة (تعيين كافتراضيّ / تغييرها).
+class _DeviceToneTile extends StatelessWidget {
+  final String title;
+  final bool selected;
+  final VoidCallback onSetDefault;
+  final VoidCallback onChange;
+  const _DeviceToneTile({
+    required this.title,
+    required this.selected,
+    required this.onSetDefault,
+    required this.onChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final color = scheme.primary;
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      color: selected ? color.withOpacity(0.10) : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: selected
+            ? BorderSide(color: color, width: 1.5)
+            : BorderSide(color: scheme.outlineVariant.withOpacity(0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+        child: Row(
+          children: [
+            Icon(Icons.music_note, color: color, size: 26),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 14.5)),
+            ),
+            TextButton(onPressed: onChange, child: Text(s.t('change'))),
+            selected
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Icon(Icons.check_circle, color: color),
+                  )
+                : TextButton(
+                    onPressed: onSetDefault,
+                    child: Text(s.t('set_as_default')),
+                  ),
+          ],
+        ),
       ),
     );
   }
