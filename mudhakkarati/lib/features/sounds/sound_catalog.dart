@@ -29,7 +29,7 @@ const soundCategories = <SoundCategory>[
 /// مكتبة النغمات الأصلية (خالية من حقوق النشر) المضمّنة في التطبيق.
 const soundCatalog = <SoundTone>[
   // 🌊 بحر
-  SoundTone('ocean', 'Ocean Whisper', 'cat_sea', 5),
+  SoundTone('ocean', 'Calm Tide', 'cat_sea', 5),
   SoundTone('gentle_waves', 'Gentle Waves', 'cat_sea', 5),
   SoundTone('sea_shore', 'Sound Of The Sea', 'cat_sea', 4),
   SoundTone('blue_harbour', 'Blue Harbour', 'cat_sea', 4),

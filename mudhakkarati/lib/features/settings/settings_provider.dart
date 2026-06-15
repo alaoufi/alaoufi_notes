@@ -18,7 +18,7 @@ class SettingsProvider extends ChangeNotifier {
   InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('en');
-  String _alarmTone = 'ocean'; // Ocean Whisper افتراضيًّا
+  String _alarmTone = 'ocean'; // Calm Tide افتراضيًّا
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
   String? _customToneTitle; // اسم النغمة المخصّصة للعرض

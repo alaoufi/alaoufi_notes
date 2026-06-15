@@ -124,7 +124,7 @@ class NotificationService {
     'alarm', 'digital_alarm', 'urgent', 'wake_bell',
   ];
 
-  /// النغمة المختارة حاليًا (افتراضي ocean = Ocean Whisper) — تُضبط من الإعدادات.
+  /// النغمة المختارة حاليًا (افتراضي ocean = Calm Tide) — تُضبط من الإعدادات.
   /// قد تكون 'custom' عند اختيار نغمة من ملفات/نغمات الجهاز.
   String _tone = 'ocean';
   String get tone => _tone;
