@@ -241,6 +241,10 @@ class S {
     'imp_high': 'مرتفع',
     'imp_critical': 'حرج',
     'pre_alerts': 'تنبيهات مسبقة',
+    'notif_center': 'مركز التنبيهات',
+    'nc_today': 'اليوم',
+    'nc_upcoming': 'القادمة',
+    'nc_overdue': 'المتأخرة',
   };
 
   static const Map<String, String> _en = {
@@ -426,6 +430,10 @@ class S {
     'imp_high': 'High',
     'imp_critical': 'Critical',
     'pre_alerts': 'Pre-alerts',
+    'notif_center': 'Notification Center',
+    'nc_today': 'Today',
+    'nc_upcoming': 'Upcoming',
+    'nc_overdue': 'Overdue',
   };
 
   static const Map<String, String> _es = {
@@ -609,6 +617,10 @@ class S {
     'imp_high': 'Alta',
     'imp_critical': 'Crítica',
     'pre_alerts': 'Avisos previos',
+    'notif_center': 'Centro de notificaciones',
+    'nc_today': 'Hoy',
+    'nc_upcoming': 'Próximas',
+    'nc_overdue': 'Atrasadas',
   };
 
   static const Map<String, String> _de = {
@@ -792,6 +804,10 @@ class S {
     'imp_high': 'Hoch',
     'imp_critical': 'Kritisch',
     'pre_alerts': 'Vorab-Hinweise',
+    'notif_center': 'Benachrichtigungen',
+    'nc_today': 'Heute',
+    'nc_upcoming': 'Anstehend',
+    'nc_overdue': 'Überfällig',
   };
 
   static const Map<String, String> _fil = {
@@ -975,6 +991,10 @@ class S {
     'imp_high': 'Mataas',
     'imp_critical': 'Kritikal',
     'pre_alerts': 'Maagang alerto',
+    'notif_center': 'Sentro ng Abiso',
+    'nc_today': 'Ngayon',
+    'nc_upcoming': 'Paparating',
+    'nc_overdue': 'Lampas na',
   };
 
   static const Map<String, String> _fr = {
@@ -1158,6 +1178,10 @@ class S {
     'imp_high': 'Élevée',
     'imp_critical': 'Critique',
     'pre_alerts': 'Pré-alertes',
+    'notif_center': 'Centre de notifications',
+    'nc_today': 'Aujourd’hui',
+    'nc_upcoming': 'À venir',
+    'nc_overdue': 'En retard',
   };
 
   static const Map<String, String> _id = {
@@ -1341,6 +1365,10 @@ class S {
     'imp_high': 'Tinggi',
     'imp_critical': 'Kritis',
     'pre_alerts': 'Pra-peringatan',
+    'notif_center': 'Pusat Notifikasi',
+    'nc_today': 'Hari ini',
+    'nc_upcoming': 'Mendatang',
+    'nc_overdue': 'Terlambat',
   };
 
   static const Map<String, String> _it = {
@@ -1524,6 +1552,10 @@ class S {
     'imp_high': 'Alta',
     'imp_critical': 'Critica',
     'pre_alerts': 'Pre-avvisi',
+    'notif_center': 'Centro notifiche',
+    'nc_today': 'Oggi',
+    'nc_upcoming': 'In arrivo',
+    'nc_overdue': 'In ritardo',
   };
 
   static const Map<String, String> _ms = {
@@ -1707,6 +1739,10 @@ class S {
     'imp_high': 'Tinggi',
     'imp_critical': 'Kritikal',
     'pre_alerts': 'Pra-amaran',
+    'notif_center': 'Pusat Pemberitahuan',
+    'nc_today': 'Hari ini',
+    'nc_upcoming': 'Akan datang',
+    'nc_overdue': 'Lewat',
   };
 
   static const Map<String, String> _hi = {
@@ -1890,6 +1926,10 @@ class S {
     'imp_high': 'उच्च',
     'imp_critical': 'गंभीर',
     'pre_alerts': 'पूर्व-सूचनाएँ',
+    'notif_center': 'सूचना केंद्र',
+    'nc_today': 'आज',
+    'nc_upcoming': 'आगामी',
+    'nc_overdue': 'विलंबित',
   };
 
   static const Map<String, String> _bn = {
@@ -2073,6 +2113,10 @@ class S {
     'imp_high': 'উচ্চ',
     'imp_critical': 'সংকটপূর্ণ',
     'pre_alerts': 'পূর্ব-সতর্কতা',
+    'notif_center': 'বিজ্ঞপ্তি কেন্দ্র',
+    'nc_today': 'আজ',
+    'nc_upcoming': 'আসন্ন',
+    'nc_overdue': 'বিলম্বিত',
   };
 
   static const Map<String, String> _fa = {
@@ -2256,6 +2300,10 @@ class S {
     'imp_high': 'زیاد',
     'imp_critical': 'بحرانی',
     'pre_alerts': 'هشدارهای پیش‌از موعد',
+    'notif_center': 'مرکز اعلان‌ها',
+    'nc_today': 'امروز',
+    'nc_upcoming': 'آینده',
+    'nc_overdue': 'عقب‌افتاده',
   };
 
   static const Map<String, String> _ru = {
@@ -2439,6 +2487,10 @@ class S {
     'imp_high': 'Высокая',
     'imp_critical': 'Критическая',
     'pre_alerts': 'Предв. оповещения',
+    'notif_center': 'Центр уведомлений',
+    'nc_today': 'Сегодня',
+    'nc_upcoming': 'Предстоящие',
+    'nc_overdue': 'Просроченные',
   };
 }
 

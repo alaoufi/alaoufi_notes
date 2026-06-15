@@ -11,6 +11,7 @@ import '../features/favorites/favorites_screen.dart';
 import '../features/help/help_guide_screen.dart';
 import '../features/info/info_list_screen.dart';
 import '../features/security/info_lock.dart';
+import '../features/reminders/notification_center_screen.dart';
 import '../features/reminders/reminders_screen.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
@@ -117,6 +118,9 @@ class AppDrawer extends StatelessWidget {
                   () => go(const CalendarScreen())),
               _tile(context, Icons.alarm, s.t('reminders'),
                   () => go(const RemindersScreen())),
+              _tile(context, Icons.notifications_active_outlined,
+                  s.t('notif_center'),
+                  () => go(const NotificationCenterScreen())),
               _tile(context, Icons.star, s.t('favorites'),
                   () => go(const FavoritesScreen())),
               _tile(context, Icons.tag, s.t('tags_page'),
