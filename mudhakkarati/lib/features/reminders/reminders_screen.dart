@@ -6,7 +6,9 @@ import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../widgets/ui_kit.dart';
+import '../cleanup/cleanup_screen.dart';
 import '../editor/note_editor_screen.dart';
+import '../meds/medication_screen.dart';
 import '../sounds/sound_library_screen.dart';
 import 'notification_center_screen.dart';
 import 'reliability_test_screen.dart';
@@ -37,8 +39,14 @@ class RemindersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: gradientAppBar(context, s.t('reminders'), actions: [
+        // «وضع الدواء» بارز كزرّ مباشر (وصول سريع).
+        IconButton(
+          tooltip: s.t('med_mode'),
+          icon: const Icon(Icons.medication_outlined),
+          onPressed: () => _open(context, const MedicationScreen()),
+        ),
         PopupMenuButton<String>(
-          icon: const Icon(Icons.tune),
+          icon: const Icon(Icons.settings),
           tooltip: s.t('reminder_tools'),
           onSelected: (v) {
             switch (v) {
@@ -51,6 +59,9 @@ class RemindersScreen extends StatelessWidget {
               case 'reliability_test':
                 _open(context, const ReliabilityTestScreen());
                 break;
+              case 'cleanup':
+                _open(context, const CleanupScreen());
+                break;
             }
           },
           itemBuilder: (context) => [
@@ -60,6 +71,8 @@ class RemindersScreen extends StatelessWidget {
                 s.t('sound_library')),
             _menuItem('reliability_test', Icons.health_and_safety_outlined,
                 s.t('reliability_test')),
+            _menuItem('cleanup', Icons.cleaning_services_outlined,
+                s.t('cleanup')),
           ],
         ),
       ]),
