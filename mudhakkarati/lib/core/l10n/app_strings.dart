@@ -223,6 +223,7 @@ class S {
     'stt_no_speech': 'لم يُلتقط أي كلام — حاول مجددًا.',
     'stt_offline_guide': 'للكتابة بالصوت بدون إنترنت نزّل حزمة اللغة: إعدادات الجهاز ← Google ← الإدخال الصوتي ← التعرّف دون اتصال. أو استخدم مايك لوحة المفاتيح.',
     'stt_system_missing': 'خدمة الإملاء الصوتي غير متوفرة أو غير مفعّلة على هذا الجهاز. فعّل خدمة تحويل الكلام إلى نص من إعدادات النظام، أو ثبّت/فعّل لوحة مفاتيح تدعم الإملاء مثل Gboard أو خدمة Huawei Voice Input.',
+    'stt_continue': 'متابعة',
   };
 
   static const Map<String, String> _en = {
@@ -390,6 +391,7 @@ class S {
     'stt_no_speech': 'No speech detected — try again.',
     'stt_offline_guide': 'For offline voice typing, download the language pack: Settings → Google → Voice → Offline speech recognition. Or use the keyboard mic.',
     'stt_system_missing': 'Voice dictation service is unavailable or disabled on this device. Enable speech-to-text in system settings, or install/enable a keyboard that supports voice typing such as Gboard or Huawei Voice Input.',
+    'stt_continue': 'Continue',
   };
 
   static const Map<String, String> _es = {
@@ -555,6 +557,7 @@ class S {
     'stt_no_speech': 'No se detectó voz — inténtalo de nuevo.',
     'stt_offline_guide': 'Para dictado sin conexión, descarga el paquete de idioma: Ajustes → Google → Voz → Reconocimiento sin conexión. O usa el micrófono del teclado.',
     'stt_system_missing': 'El servicio de dictado por voz no está disponible o está desactivado. Activa la conversión de voz a texto en los ajustes del sistema, o instala un teclado con dictado como Gboard o Huawei Voice Input.',
+    'stt_continue': 'Continuar',
   };
 
   static const Map<String, String> _de = {
@@ -720,6 +723,7 @@ class S {
     'stt_no_speech': 'Keine Sprache erkannt – erneut versuchen.',
     'stt_offline_guide': 'Für Offline-Spracheingabe lade das Sprachpaket: Einstellungen → Google → Sprache → Offline-Spracherkennung. Oder nutze das Tastatur-Mikrofon.',
     'stt_system_missing': 'Der Sprachdiktat-Dienst ist auf diesem Gerät nicht verfügbar oder deaktiviert. Aktiviere die Sprache-zu-Text-Funktion in den Systemeinstellungen oder installiere eine Tastatur mit Spracheingabe wie Gboard oder Huawei Voice Input.',
+    'stt_continue': 'Weiter',
   };
 
   static const Map<String, String> _fil = {
@@ -885,6 +889,7 @@ class S {
     'stt_no_speech': 'Walang narinig na boses — subukan ulit.',
     'stt_offline_guide': 'Para sa offline na voice typing, i-download ang language pack: Settings → Google → Voice → Offline speech recognition. O gamitin ang keyboard mic.',
     'stt_system_missing': 'Hindi available o naka-disable ang voice dictation sa device na ito. I-enable ang speech-to-text sa system settings, o mag-install ng keyboard na may voice typing gaya ng Gboard o Huawei Voice Input.',
+    'stt_continue': 'Magpatuloy',
   };
 
   static const Map<String, String> _fr = {
@@ -1050,6 +1055,7 @@ class S {
     'stt_no_speech': 'Aucune parole détectée — réessayez.',
     'stt_offline_guide': 'Pour la dictée hors ligne, téléchargez le pack de langue : Paramètres → Google → Voix → Reconnaissance hors ligne. Ou utilisez le micro du clavier.',
     'stt_system_missing': 'Le service de dictée vocale est indisponible ou désactivé sur cet appareil. Activez la reconnaissance vocale dans les paramètres système, ou installez un clavier avec dictée comme Gboard ou Huawei Voice Input.',
+    'stt_continue': 'Continuer',
   };
 
   static const Map<String, String> _id = {
@@ -1215,6 +1221,7 @@ class S {
     'stt_no_speech': 'Tidak ada suara terdeteksi — coba lagi.',
     'stt_offline_guide': 'Untuk ketik suara offline, unduh paket bahasa: Pengaturan → Google → Suara → Pengenalan suara offline. Atau gunakan mikrofon keyboard.',
     'stt_system_missing': 'Layanan dikte suara tidak tersedia atau dinonaktifkan di perangkat ini. Aktifkan speech-to-text di pengaturan sistem, atau pasang keyboard dengan ketik suara seperti Gboard atau Huawei Voice Input.',
+    'stt_continue': 'Lanjutkan',
   };
 
   static const Map<String, String> _it = {
@@ -1380,6 +1387,7 @@ class S {
     'stt_no_speech': 'Nessun parlato rilevato — riprova.',
     'stt_offline_guide': 'Per la dettatura offline, scarica il pacchetto lingua: Impostazioni → Google → Voce → Riconoscimento offline. Oppure usa il microfono della tastiera.',
     'stt_system_missing': 'Il servizio di dettatura vocale non è disponibile o è disattivato. Attiva il riconoscimento vocale nelle impostazioni di sistema, oppure installa una tastiera con dettatura come Gboard o Huawei Voice Input.',
+    'stt_continue': 'Continua',
   };
 
   static const Map<String, String> _ms = {
@@ -1545,6 +1553,7 @@ class S {
     'stt_no_speech': 'Tiada suara dikesan — cuba lagi.',
     'stt_offline_guide': 'Untuk taip suara luar talian, muat turun pakej bahasa: Tetapan → Google → Suara → Pengecaman luar talian. Atau guna mikrofon papan kekunci.',
     'stt_system_missing': 'Perkhidmatan imlak suara tidak tersedia atau dimatikan pada peranti ini. Aktifkan tukar suara ke teks dalam tetapan sistem, atau pasang papan kekunci dengan taip suara seperti Gboard atau Huawei Voice Input.',
+    'stt_continue': 'Teruskan',
   };
 
   static const Map<String, String> _hi = {
@@ -1710,6 +1719,7 @@ class S {
     'stt_no_speech': 'कोई आवाज़ नहीं मिली — फिर कोशिश करें।',
     'stt_offline_guide': 'ऑफ़लाइन वॉइस टाइपिंग के लिए भाषा पैक डाउनलोड करें: सेटिंग्स → Google → Voice → ऑफ़लाइन स्पीच पहचान। या कीबोर्ड माइक उपयोग करें।',
     'stt_system_missing': 'इस डिवाइस पर वॉइस डिक्टेशन सेवा उपलब्ध नहीं या बंद है। सिस्टम सेटिंग्स से स्पीच-टू-टेक्स्ट सक्षम करें, या Gboard या Huawei Voice Input जैसा वॉइस टाइपिंग कीबोर्ड इंस्टॉल करें।',
+    'stt_continue': 'जारी रखें',
   };
 
   static const Map<String, String> _bn = {
@@ -1875,6 +1885,7 @@ class S {
     'stt_no_speech': 'কোনো কথা শনাক্ত হয়নি — আবার চেষ্টা করুন।',
     'stt_offline_guide': 'অফলাইন ভয়েস টাইপিংয়ের জন্য ভাষা প্যাক ডাউনলোড করুন: সেটিংস → Google → Voice → অফলাইন স্পিচ রিকগনিশন। বা কীবোর্ড মাইক ব্যবহার করুন।',
     'stt_system_missing': 'এই ডিভাইসে ভয়েস ডিকটেশন সেবা উপলব্ধ নয় বা বন্ধ। সিস্টেম সেটিংস থেকে স্পিচ-টু-টেক্সট চালু করুন, অথবা Gboard বা Huawei Voice Input এর মতো ভয়েস টাইপিং কীবোর্ড ইনস্টল করুন।',
+    'stt_continue': 'চালিয়ে যান',
   };
 
   static const Map<String, String> _fa = {
@@ -2040,6 +2051,7 @@ class S {
     'stt_no_speech': 'گفتاری شنیده نشد — دوباره تلاش کنید.',
     'stt_offline_guide': 'برای تایپ صوتی آفلاین بسته زبان را دانلود کنید: تنظیمات → Google → صدا → تشخیص گفتار آفلاین. یا از میکروفون صفحه‌کلید استفاده کنید.',
     'stt_system_missing': 'سرویس دیکته صوتی روی این دستگاه در دسترس نیست یا غیرفعال است. تبدیل گفتار به متن را در تنظیمات سیستم فعال کنید، یا صفحه‌کلیدی با تایپ صوتی مانند Gboard یا Huawei Voice Input نصب کنید.',
+    'stt_continue': 'ادامه',
   };
 
   static const Map<String, String> _ru = {
@@ -2205,6 +2217,7 @@ class S {
     'stt_no_speech': 'Речь не распознана — попробуйте снова.',
     'stt_offline_guide': 'Для офлайн-ввода голосом скачайте языковой пакет: Настройки → Google → Голос → Офлайн-распознавание. Или используйте микрофон клавиатуры.',
     'stt_system_missing': 'Служба голосового ввода недоступна или отключена на этом устройстве. Включите преобразование речи в текст в настройках системы или установите клавиатуру с голосовым вводом, например Gboard или Huawei Voice Input.',
+    'stt_continue': 'Продолжить',
   };
 }
 

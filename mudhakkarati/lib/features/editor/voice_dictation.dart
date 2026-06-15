@@ -114,7 +114,13 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
     try {
       final t = await SystemDictation.recognize(widget.locale);
       if (t != null && t.trim().isNotEmpty && mounted) {
-        setState(() => _c.text = t.trim());
+        // متابعة الكلام: نُضيف للنصّ الموجود بدل استبداله.
+        final cur = _c.text.trim();
+        final merged = cur.isEmpty ? t.trim() : '$cur ${t.trim()}';
+        setState(() {
+          _c.text = merged;
+          _c.selection = TextSelection.collapsed(offset: merged.length);
+        });
       }
     } catch (_) {}
   }
@@ -166,11 +172,11 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
             const SizedBox(height: 14),
             Row(
               children: [
-                // إعادة التسجيل من نافذة النظام.
-                IconButton.outlined(
+                // متابعة الكلام: يفتح نافذة النظام ويُضيف للنصّ.
+                OutlinedButton.icon(
                   onPressed: _again,
-                  icon: const Icon(Icons.mic),
-                  tooltip: s.t('voice_typing'),
+                  icon: const Icon(Icons.mic, size: 18),
+                  label: Text(s.t('stt_continue')),
                 ),
                 const Spacer(),
                 OutlinedButton(
