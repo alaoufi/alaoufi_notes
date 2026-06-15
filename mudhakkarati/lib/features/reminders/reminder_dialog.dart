@@ -61,6 +61,7 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = ReminderRepeat.once;
   ReminderImportance importance = ReminderImportance.high;
+  final Set<int> preAlerts = {}; // دقائق قبل الموعد
 
   final settings = context.read<SettingsProvider>();
 
@@ -74,6 +75,7 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
     time = TimeOfDay.fromDateTime(existing.time);
     repeat = existing.repeat;
     importance = existing.importance;
+    preAlerts.addAll(existing.preAlerts);
     // عند الأسبوعي بأيام متعددة: اجمع أيام كل تذكيرات الملاحظة.
     if (all.length > 1 || existing.repeat == ReminderRepeat.weekly) {
       weekdays
@@ -199,6 +201,36 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     );
                   }).toList(),
                 ),
+                // تنبيهات مسبقة قبل الموعد (للتذكير لمرّة واحدة).
+                if (repeat == ReminderRepeat.once) ...[
+                  const SizedBox(height: 12),
+                  Text(s.t('pre_alerts'),
+                      style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      for (final (mins, label) in const [
+                        (5, '5د'),
+                        (15, '15د'),
+                        (60, 'ساعة'),
+                        (1440, 'يوم'),
+                      ])
+                        FilterChip(
+                          label: Text(label),
+                          selected: preAlerts.contains(mins),
+                          onSelected: (sel) => setState(() {
+                            if (sel) {
+                              preAlerts.add(mins);
+                            } else {
+                              preAlerts.remove(mins);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 8),
                 // النغمة بجانب إنشاء التنبيه مباشرة.
                 ListTile(
@@ -269,7 +301,8 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                               importance: importance);
                         } else {
                           await provider.setReminder(note, combined(), repeat,
-                              importance: importance);
+                              importance: importance,
+                              preAlerts: preAlerts.toList()..sort());
                         }
                         if (context.mounted) Navigator.pop(context);
                       },

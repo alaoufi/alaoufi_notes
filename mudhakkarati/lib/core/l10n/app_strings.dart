@@ -240,6 +240,7 @@ class S {
     'imp_medium': 'متوسط',
     'imp_high': 'مرتفع',
     'imp_critical': 'حرج',
+    'pre_alerts': 'تنبيهات مسبقة',
   };
 
   static const Map<String, String> _en = {
@@ -424,6 +425,7 @@ class S {
     'imp_medium': 'Medium',
     'imp_high': 'High',
     'imp_critical': 'Critical',
+    'pre_alerts': 'Pre-alerts',
   };
 
   static const Map<String, String> _es = {
@@ -606,6 +608,7 @@ class S {
     'imp_medium': 'Media',
     'imp_high': 'Alta',
     'imp_critical': 'Crítica',
+    'pre_alerts': 'Avisos previos',
   };
 
   static const Map<String, String> _de = {
@@ -788,6 +791,7 @@ class S {
     'imp_medium': 'Mittel',
     'imp_high': 'Hoch',
     'imp_critical': 'Kritisch',
+    'pre_alerts': 'Vorab-Hinweise',
   };
 
   static const Map<String, String> _fil = {
@@ -970,6 +974,7 @@ class S {
     'imp_medium': 'Katamtaman',
     'imp_high': 'Mataas',
     'imp_critical': 'Kritikal',
+    'pre_alerts': 'Maagang alerto',
   };
 
   static const Map<String, String> _fr = {
@@ -1152,6 +1157,7 @@ class S {
     'imp_medium': 'Moyenne',
     'imp_high': 'Élevée',
     'imp_critical': 'Critique',
+    'pre_alerts': 'Pré-alertes',
   };
 
   static const Map<String, String> _id = {
@@ -1334,6 +1340,7 @@ class S {
     'imp_medium': 'Sedang',
     'imp_high': 'Tinggi',
     'imp_critical': 'Kritis',
+    'pre_alerts': 'Pra-peringatan',
   };
 
   static const Map<String, String> _it = {
@@ -1516,6 +1523,7 @@ class S {
     'imp_medium': 'Media',
     'imp_high': 'Alta',
     'imp_critical': 'Critica',
+    'pre_alerts': 'Pre-avvisi',
   };
 
   static const Map<String, String> _ms = {
@@ -1698,6 +1706,7 @@ class S {
     'imp_medium': 'Sederhana',
     'imp_high': 'Tinggi',
     'imp_critical': 'Kritikal',
+    'pre_alerts': 'Pra-amaran',
   };
 
   static const Map<String, String> _hi = {
@@ -1880,6 +1889,7 @@ class S {
     'imp_medium': 'मध्यम',
     'imp_high': 'उच्च',
     'imp_critical': 'गंभीर',
+    'pre_alerts': 'पूर्व-सूचनाएँ',
   };
 
   static const Map<String, String> _bn = {
@@ -2062,6 +2072,7 @@ class S {
     'imp_medium': 'মাঝারি',
     'imp_high': 'উচ্চ',
     'imp_critical': 'সংকটপূর্ণ',
+    'pre_alerts': 'পূর্ব-সতর্কতা',
   };
 
   static const Map<String, String> _fa = {
@@ -2244,6 +2255,7 @@ class S {
     'imp_medium': 'متوسط',
     'imp_high': 'زیاد',
     'imp_critical': 'بحرانی',
+    'pre_alerts': 'هشدارهای پیش‌از موعد',
   };
 
   static const Map<String, String> _ru = {
@@ -2426,6 +2438,7 @@ class S {
     'imp_medium': 'Средняя',
     'imp_high': 'Высокая',
     'imp_critical': 'Критическая',
+    'pre_alerts': 'Предв. оповещения',
   };
 }
 

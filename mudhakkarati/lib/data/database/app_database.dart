@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 11;
+  static const _dbVersion = 12;
 
   Database? _db;
   Future<Database>? _opening;
@@ -249,6 +249,7 @@ class AppDatabase {
         is_active INTEGER NOT NULL DEFAULT 1,
         notification_id INTEGER NOT NULL,
         importance TEXT NOT NULL DEFAULT 'high',
+        pre_alerts TEXT NOT NULL DEFAULT '',
         FOREIGN KEY (note_id) REFERENCES notes (id) ON DELETE CASCADE
       )
     ''');
@@ -336,6 +337,11 @@ class AppDatabase {
       // مستوى أهمية التذكير (low/medium/high/critical). الافتراضي high.
       await db.execute(
           "ALTER TABLE reminders ADD COLUMN importance TEXT NOT NULL DEFAULT 'high'");
+    }
+    if (oldVersion < 12) {
+      // تنبيهات مسبقة قبل الموعد (قائمة دقائق مفصولة بفواصل).
+      await db.execute(
+          "ALTER TABLE reminders ADD COLUMN pre_alerts TEXT NOT NULL DEFAULT ''");
     }
   }
 

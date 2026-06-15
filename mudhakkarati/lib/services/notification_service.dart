@@ -42,9 +42,10 @@ class NotificationService {
   Duration forgetInterval = const Duration(minutes: 3);
   static const int _forgetStride = 1 << 26; // فصل معرّفات الإعادات
 
-  /// يُلغي تذكيرًا مع كل إعادات «عدم النسيان» التابعة له.
+  /// يُلغي تذكيرًا مع كل الإشعارات التابعة (إعادات «عدم النسيان» + التنبيهات
+  /// المسبقة) ضمن كتلة معرّفاته.
   Future<void> _cancelFollowups(int baseId) async {
-    for (var k = 1; k <= 8; k++) {
+    for (var k = 1; k <= 15; k++) {
       await _plugin.cancel(baseId + k * _forgetStride);
     }
   }
@@ -282,6 +283,38 @@ class NotificationService {
         );
       }
     }
+
+    // تنبيهات مسبقة قبل الموعد (للتذكيرات لمرّة واحدة): إشعار متوسّط لكل فارق.
+    if (reminder.repeat == ReminderRepeat.once &&
+        reminder.preAlerts.isNotEmpty &&
+        base < _forgetStride) {
+      final now = tz.TZDateTime.now(tz.local);
+      var i = 0;
+      for (final mins in reminder.preAlerts.take(4)) {
+        final when = scheduled.subtract(Duration(minutes: mins));
+        if (when.isAfter(now)) {
+          await _plugin.zonedSchedule(
+            base + (10 + i) * _forgetStride,
+            '⏳ ${_beforeLabel(mins)} • ${title.trim().isEmpty ? "تذكير" : title.trim()}',
+            safeBody,
+            when,
+            _detailsFor(ReminderImportance.medium),
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
+                '|imp:medium|base:$base',
+          );
+        }
+        i++;
+      }
+    }
+  }
+
+  String _beforeLabel(int mins) {
+    if (mins % 1440 == 0) return 'قبل ${mins ~/ 1440} يوم';
+    if (mins % 60 == 0) return 'قبل ${mins ~/ 60} ساعة';
+    return 'قبل $mins دقيقة';
   }
 
   /// يعالج الضغط على التذكير أو أزراره (إيقاف/غفوة/فتح الملاحظة).

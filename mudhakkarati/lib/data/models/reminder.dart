@@ -12,6 +12,9 @@ class Reminder {
   /// مستوى الأهمية (يحدّد سلوك التنبيه: صوت/اهتزاز/شاشة كاملة/إصرار).
   final ReminderImportance importance;
 
+  /// تنبيهات مسبقة قبل الموعد (بالدقائق): مثل [5, 15, 60, 1440].
+  final List<int> preAlerts;
+
   /// معرّف الإشعار في flutter_local_notifications (لإلغائه لاحقًا).
   final int notificationId;
 
@@ -23,6 +26,7 @@ class Reminder {
     this.repeat = ReminderRepeat.once,
     this.isActive = true,
     this.importance = ReminderImportance.high,
+    this.preAlerts = const [],
     required this.notificationId,
   });
 
@@ -39,6 +43,7 @@ class Reminder {
       'is_active': isActive ? 1 : 0,
       'notification_id': notificationId,
       'importance': importance.dbValue,
+      'pre_alerts': preAlerts.join(','),
     };
   }
 
@@ -52,6 +57,11 @@ class Reminder {
       isActive: (map['is_active'] as int? ?? 1) == 1,
       notificationId: map['notification_id'] as int,
       importance: ReminderImportanceX.fromDb(map['importance'] as String?),
+      preAlerts: ((map['pre_alerts'] as String?) ?? '')
+          .split(',')
+          .map((e) => int.tryParse(e.trim()) ?? -1)
+          .where((e) => e > 0)
+          .toList(),
     );
   }
 
@@ -63,6 +73,7 @@ class Reminder {
     ReminderRepeat? repeat,
     bool? isActive,
     ReminderImportance? importance,
+    List<int>? preAlerts,
     int? notificationId,
   }) {
     return Reminder(
@@ -73,6 +84,7 @@ class Reminder {
       repeat: repeat ?? this.repeat,
       isActive: isActive ?? this.isActive,
       importance: importance ?? this.importance,
+      preAlerts: preAlerts ?? this.preAlerts,
       notificationId: notificationId ?? this.notificationId,
     );
   }

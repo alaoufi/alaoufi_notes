@@ -113,6 +113,7 @@ class RemindersProvider extends ChangeNotifier {
     DateTime time,
     ReminderRepeat repeat, {
     ReminderImportance importance = ReminderImportance.high,
+    List<int> preAlerts = const [],
   }) async {
     // إلغاء القديم إن وُجد.
     final existing = await _repo.getForNote(note.id!);
@@ -127,6 +128,7 @@ class RemindersProvider extends ChangeNotifier {
       time: time,
       repeat: repeat,
       importance: importance,
+      preAlerts: preAlerts,
       notificationId: notifId,
     );
     final id = await _repo.insert(reminder);
