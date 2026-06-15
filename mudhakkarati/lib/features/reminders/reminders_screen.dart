@@ -7,6 +7,9 @@ import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
+import '../sounds/sound_library_screen.dart';
+import 'notification_center_screen.dart';
+import 'reliability_test_screen.dart';
 import 'reminders_provider.dart';
 import 'standalone_reminder_dialog.dart';
 
@@ -33,7 +36,33 @@ class RemindersScreen extends StatelessWidget {
         provider.items.where((v) => !v.reminder.isStandalone).toList();
 
     return Scaffold(
-      appBar: gradientAppBar(context, s.t('reminders')),
+      appBar: gradientAppBar(context, s.t('reminders'), actions: [
+        PopupMenuButton<String>(
+          icon: const Icon(Icons.tune),
+          tooltip: s.t('reminder_tools'),
+          onSelected: (v) {
+            switch (v) {
+              case 'notif_center':
+                _open(context, const NotificationCenterScreen());
+                break;
+              case 'sound_library':
+                _open(context, const SoundLibraryScreen());
+                break;
+              case 'reliability_test':
+                _open(context, const ReliabilityTestScreen());
+                break;
+            }
+          },
+          itemBuilder: (context) => [
+            _menuItem('notif_center', Icons.notifications_active_outlined,
+                s.t('notif_center')),
+            _menuItem('sound_library', Icons.library_music_outlined,
+                s.t('sound_library')),
+            _menuItem('reliability_test', Icons.health_and_safety_outlined,
+                s.t('reliability_test')),
+          ],
+        ),
+      ]),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showStandaloneReminderDialog(context),
         icon: const Icon(Icons.add_alarm),
@@ -57,6 +86,20 @@ class RemindersScreen extends StatelessWidget {
             ),
     );
   }
+
+  void _open(BuildContext context, Widget page) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  PopupMenuItem<String> _menuItem(String value, IconData icon, String label) =>
+      PopupMenuItem<String>(
+        value: value,
+        child: Row(children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+        ]),
+      );
 
   /// لافتة «المنبّه التالي بعد…» لأقرب منبّه مُفعَّل.
   Widget _nextBanner(BuildContext context, List<ReminderView> items) {
