@@ -444,4 +444,57 @@ class NotificationService {
     await init();
     await _plugin.cancelAll();
   }
+
+  // ===== اختبار الموثوقية =====
+  // معرّفات ثابتة للاختبار (> _forgetStride كي لا تُطلَق إعادات «عدم النسيان»).
+  static const int _testNowId = 1900000000;
+  static const int _testAlarmId = 1900000001;
+
+  /// هل الإشعارات مُفعّلة لهذا التطبيق؟ (للتشخيص في شاشة الاختبار).
+  Future<bool?> areNotificationsEnabled() async {
+    await init();
+    final a = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return a?.areNotificationsEnabled();
+  }
+
+  /// هل يُسمح بجدولة المنبّهات الدقيقة (exact alarms)؟ مهمّ لدقّة التذكير.
+  Future<bool?> canScheduleExactAlarms() async {
+    await init();
+    final a = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return a?.canScheduleExactNotifications();
+  }
+
+  /// إشعار اختبار **فوري** (صوت + اهتزاز) للتأكّد أن الإشعارات والنغمة تعمل.
+  Future<void> showTestNotificationNow() async {
+    await init();
+    await _plugin.show(
+      _testNowId,
+      '🔔 اختبار إشعار فوري',
+      'إن سمعت النغمة ورأيت هذا الإشعار فالإشعارات تعمل ✅',
+      _detailsFor(ReminderImportance.high),
+    );
+  }
+
+  /// يجدول **منبّهًا حرجًا تجريبيًّا** بعد [delay]: يختبر التنبيه الدقيق وشاشة
+  /// المنبّه ملء الشاشة (عند الضغط على الإشعار تظهر شاشة المنبّه).
+  Future<void> scheduleTestAlarm(Duration delay) async {
+    await init();
+    final r = Reminder(
+      title: 'اختبار المنبّه',
+      time: DateTime.now().add(delay),
+      repeat: ReminderRepeat.once,
+      importance: ReminderImportance.critical,
+      notificationId: _testAlarmId,
+    );
+    await schedule(r, 'اختبار المنبّه', 'إن رأيت هذه الشاشة فالمنبّه يعمل ✅');
+  }
+
+  /// يُلغي إشعارات/منبّهات الاختبار (الفوري والمجدول).
+  Future<void> cancelTests() async {
+    await init();
+    await _plugin.cancel(_testNowId);
+    await _plugin.cancel(_testAlarmId);
+  }
 }

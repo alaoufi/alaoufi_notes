@@ -13,6 +13,7 @@ import '../features/info/info_list_screen.dart';
 import '../features/meds/medication_screen.dart';
 import '../features/security/info_lock.dart';
 import '../features/reminders/notification_center_screen.dart';
+import '../features/reminders/reliability_test_screen.dart';
 import '../features/reminders/reminders_screen.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
@@ -138,6 +139,9 @@ class AppDrawer extends StatelessWidget {
                 children: [
               _tile(context, Icons.medication_outlined, s.t('med_mode'),
                   () => go(const MedicationScreen())),
+              _tile(context, Icons.health_and_safety_outlined,
+                  s.t('reliability_test'),
+                  () => go(const ReliabilityTestScreen())),
               _tile(context, Icons.library_music_outlined, s.t('sound_library'),
                   () => go(const SoundLibraryScreen())),
               _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
