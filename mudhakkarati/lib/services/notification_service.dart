@@ -36,6 +36,19 @@ class NotificationService {
   /// مدّة الغفوة بالدقائق (0 = بلا غفوة). تُضبط من الإعدادات.
   int snoozeMinutes = 10;
 
+  /// «وضع عدم النسيان» للتذكيرات الحرجة: يُعاد التنبيه تلقائيًّا حتى التأكيد.
+  /// عدد مرّات الإعادة والفاصل بينها (يُضبطان لاحقًا من الإعدادات).
+  int forgetRepeats = 4;
+  Duration forgetInterval = const Duration(minutes: 3);
+  static const int _forgetStride = 1 << 26; // فصل معرّفات الإعادات
+
+  /// يُلغي تذكيرًا مع كل إعادات «عدم النسيان» التابعة له.
+  Future<void> _cancelFollowups(int baseId) async {
+    for (var k = 1; k <= 8; k++) {
+      await _plugin.cancel(baseId + k * _forgetStride);
+    }
+  }
+
   /// يُستدعى عند فتح ملاحظة من التذكير (يضبطه التطبيق).
   void Function(int noteId)? onOpenNote;
 
@@ -243,8 +256,32 @@ class NotificationService {
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: match,
       payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
-          '|imp:${reminder.importance.dbValue}',
+          '|imp:${reminder.importance.dbValue}|base:${reminder.notificationId}',
     );
+
+    // «وضع عدم النسيان»: للتذكيرات الحرجة لمرّة واحدة، أعِد التنبيه تلقائيًّا
+    // عند فواصل متتالية حتى يؤكّد المستخدم (الإلغاء يحذف كل الإعادات).
+    final base = reminder.notificationId;
+    if (reminder.importance == ReminderImportance.critical &&
+        reminder.repeat == ReminderRepeat.once &&
+        base < _forgetStride &&
+        forgetRepeats > 0) {
+      for (var k = 1; k <= forgetRepeats; k++) {
+        final when = scheduled.add(forgetInterval * k);
+        await _plugin.zonedSchedule(
+          base + k * _forgetStride,
+          safeTitle,
+          '$safeBody ⏰',
+          when,
+          _detailsFor(ReminderImportance.critical),
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
+              '|imp:critical|base:$base',
+        );
+      }
+    }
   }
 
   /// يعالج الضغط على التذكير أو أزراره (إيقاف/غفوة/فتح الملاحظة).
@@ -253,11 +290,20 @@ class NotificationService {
     final payload = r.payload ?? '';
     final noteId = _extractInt(payload, 'note:');
 
+    // «تم الإنجاز/إيقاف» أو غفوة ⇒ أكّد الاستلام: ألغِ كل إعادات «عدم النسيان».
+    final base = _extractInt(payload, 'base:') ?? r.id ?? 0;
+
     switch (r.actionId) {
       case _dismissAction:
-        return; // أُلغي الإشعار تلقائيًا.
+        await init();
+        await _plugin.cancel(base);
+        await _cancelFollowups(base); // أوقف إعادة التنبيه نهائيًّا
+        return;
       case _snoozeAction:
-        await _scheduleSnooze(r.id ?? 0, payload);
+        await init();
+        await _plugin.cancel(base);
+        await _cancelFollowups(base); // أوقف الإعادات ثم أجِّل
+        await _scheduleSnooze(base, payload);
         return;
       default:
         // ضغط على جسم الإشعار → افتح الملاحظة.
@@ -314,6 +360,8 @@ class NotificationService {
   Future<void> cancel(int notificationId) async {
     await init();
     await _plugin.cancel(notificationId);
+    // ألغِ أي إعادات «عدم النسيان» تابعة (إن وُجدت).
+    await _cancelFollowups(notificationId);
   }
 
   Future<void> cancelAll() async {

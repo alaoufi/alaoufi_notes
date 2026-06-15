@@ -209,5 +209,7 @@ class RemindersProvider extends ChangeNotifier {
     await refresh();
   }
 
-  int _generateId() => Random().nextInt(1 << 30) + 1;
+  // نطاق مضغوط (<2^26) كي تبقى معرّفات «عدم النسيان» (base + k·2^26) ضمن 32-بت
+  // وبلا تصادم بين التذكيرات (كل تذكير يملك كتلة معرّفات مستقلّة).
+  int _generateId() => Random().nextInt(1 << 26) + 1;
 }
