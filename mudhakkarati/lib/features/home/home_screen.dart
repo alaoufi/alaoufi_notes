@@ -730,25 +730,58 @@ class _HomeScreenState extends State<HomeScreen> {
       WidgetsBinding.instance
           .addPostFrameCallback((_) => _offerRestore());
     }
+    final scheme = Theme.of(context).colorScheme;
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.sticky_note_2_outlined,
-              size: 90, color: Theme.of(context).disabledColor),
-          const SizedBox(height: 16),
-          Text(s.t('empty_notes'),
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Text(s.t('empty_notes_hint'),
-              style: Theme.of(context).textTheme.bodySmall),
-          const SizedBox(height: 18),
-          OutlinedButton.icon(
-            onPressed: () => _offerRestore(manual: true),
-            icon: const Icon(Icons.restore),
-            label: const Text('استعادة من نسخة احتياطية'),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // أيقونة دائرية بتدرّج ناعم — متناسقة مع مظهر التطبيق العصري.
+            Container(
+              padding: const EdgeInsets.all(26),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    scheme.primaryContainer.withOpacity(0.55),
+                    scheme.primaryContainer.withOpacity(0.18),
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                      color: scheme.primary.withOpacity(0.18),
+                      offset: const Offset(0, 10),
+                      blurRadius: 24,
+                      spreadRadius: -6),
+                ],
+              ),
+              child: Icon(Icons.sticky_note_2_outlined,
+                  size: 64, color: scheme.primary),
+            ),
+            const SizedBox(height: 20),
+            Text(s.t('empty_notes'),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text(s.t('empty_notes_hint'),
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Theme.of(context).hintColor)),
+            const SizedBox(height: 18),
+            OutlinedButton.icon(
+              onPressed: () => _offerRestore(manual: true),
+              icon: const Icon(Icons.restore),
+              label: const Text('استعادة من نسخة احتياطية'),
+            ),
+          ],
+        ),
       ),
     );
   }
