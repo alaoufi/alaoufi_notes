@@ -36,6 +36,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchCtrl = TextEditingController();
   bool _restoreChecked = false; // بحث تلقائي عن نسخة احتياطية مرّة واحدة
+  bool _backupReminderChecked = false; // فحص تذكير النسخة الخارجية مرّة واحدة
+  bool _showBackupReminder = false; // إظهار شريط «صدّر نسخة قبل التحديث»
+
+  /// يفحص (مرّة واحدة لكل دخول) إن كان يجب تذكير المستخدم بنسخة خارجية.
+  Future<void> _maybeShowBackupReminder() async {
+    final need = await BackupService.instance.needsExternalBackupReminder();
+    if (mounted && need) setState(() => _showBackupReminder = true);
+  }
 
   /// عند فراغ الملاحظات: يبحث تلقائيًا عن أحدث نسخة محفوظة ويعرض استعادتها.
   /// [manual] = من زرّ المستخدم (يفتح منتقي الملفات إن لم توجد نسخة داخلية).
@@ -302,6 +310,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final settings = context.watch<SettingsProvider>();
     final provider = context.watch<NotesProvider>();
 
+    // عند وجود ملاحظات، نفحص (مرّة) إن حان وقت تذكير النسخة الخارجية.
+    if (!_backupReminderChecked &&
+        !provider.loading &&
+        provider.items.isNotEmpty) {
+      _backupReminderChecked = true;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _maybeShowBackupReminder());
+    }
+
     return Scaffold(
       drawer: const AppDrawer(),
       // زر + يفتح قائمة الخيارات (ملاحظة/قائمة مهام/صوت/صورة...).
@@ -316,6 +333,8 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverToBoxAdapter(child: _header(context, s, settings, provider)),
               SliverToBoxAdapter(child: _syncBanner(context)),
+              if (_showBackupReminder)
+                SliverToBoxAdapter(child: _backupReminderBanner(context)),
               if (provider.loading)
                 const SliverFillRemaining(
                   hasScrollBody: false,
@@ -414,6 +433,64 @@ class _HomeScreenState extends State<HomeScreen> {
           child: child,
         );
       },
+    );
+  }
+
+  /// شريط بارز يُذكّر بأخذ نسخة احتياطية خارجية قبل التحديث (يحمي من فقدان
+  /// الملاحظات عند إلغاء التثبيت/فقدان الجهاز). يظهر فقط عند الحاجة.
+  Widget _backupReminderBanner(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 2, 12, 6),
+      padding: const EdgeInsetsDirectional.fromSTEB(12, 8, 4, 8),
+      decoration: BoxDecoration(
+        color: scheme.tertiaryContainer,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.shield_outlined, color: scheme.onTertiaryContainer),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('احمِ ملاحظاتك',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: scheme.onTertiaryContainer)),
+                Text('صدّر نسخة احتياطية (سحابة/ملف) قبل أي تحديث.',
+                    style: TextStyle(
+                        fontSize: 12,
+                        color: scheme.onTertiaryContainer.withOpacity(0.85))),
+              ],
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              await Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const BackupScreen()));
+              // قد يكون صدّر نسخة — أعد الفحص فإن لم تَعُد هناك حاجة نُخفي الشريط.
+              if (!mounted) return;
+              final need =
+                  await BackupService.instance.needsExternalBackupReminder();
+              if (mounted) setState(() => _showBackupReminder = need);
+            },
+            child: const Text('صدّر الآن'),
+          ),
+          IconButton(
+            tooltip: 'لاحقًا',
+            visualDensity: VisualDensity.compact,
+            icon: Icon(Icons.close,
+                size: 20, color: scheme.onTertiaryContainer),
+            onPressed: () async {
+              await BackupService.instance.snoozeExternalBackupReminder();
+              if (mounted) setState(() => _showBackupReminder = false);
+            },
+          ),
+        ],
+      ),
     );
   }
 

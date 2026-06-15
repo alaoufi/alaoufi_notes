@@ -72,6 +72,40 @@ class BackupService {
   Future<DateTime?> lastRestore() => _readStamp(_kLastRestore);
   Future<DateTime?> lastAutoBackup() => _readStamp(_kLastAuto);
 
+  // ---- تذكير النسخة الخارجية (سحابة/ملف) قبل التحديثات ----
+  static const _kExtReminderSnooze = 'ext_backup_reminder_snooze';
+
+  /// آخر نسخة **خارجية** (حفظ محلي بمنتقي الملفات أو مشاركة سحابية) — الأحدث
+  /// بينهما. النسخة الخارجية وحدها تنجو من إلغاء التثبيت/فقدان الجهاز.
+  Future<DateTime?> lastExternalBackup() async {
+    final a = await lastLocalBackup();
+    final b = await lastShareBackup();
+    if (a == null) return b;
+    if (b == null) return a;
+    return a.isAfter(b) ? a : b;
+  }
+
+  /// هل نُذكّر المستخدم بأخذ نسخة خارجية؟ (لم يأخذ نسخة خارجية منذ ≥ 7 أيام،
+  /// ولم يؤجّل التذكير مؤخّرًا).
+  Future<bool> needsExternalBackupReminder() async {
+    final prefs = await SharedPreferences.getInstance();
+    final snoozeMs = prefs.getInt(_kExtReminderSnooze);
+    if (snoozeMs != null &&
+        DateTime.now().isBefore(DateTime.fromMillisecondsSinceEpoch(snoozeMs))) {
+      return false;
+    }
+    final last = await lastExternalBackup();
+    if (last == null) return true;
+    return DateTime.now().difference(last) >= const Duration(days: 7);
+  }
+
+  /// يؤجّل تذكير النسخة الخارجية [days] يومًا (افتراضي 3).
+  Future<void> snoozeExternalBackupReminder({int days = 3}) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kExtReminderSnooze,
+        DateTime.now().add(Duration(days: days)).millisecondsSinceEpoch);
+  }
+
   // ---- قراءة/ضبط إعدادات النسخ التلقائي ----
 
   Future<bool> autoBackupEnabled() async {
