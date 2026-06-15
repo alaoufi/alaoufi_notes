@@ -75,6 +75,8 @@ class RemindersProvider extends ChangeNotifier {
     DateTime time,
     ReminderRepeat repeat,
     String title, {
+    ReminderImportance importance = ReminderImportance.high,
+    List<int> preAlerts = const [],
     Reminder? existing,
   }) async {
     if (existing != null) {
@@ -86,6 +88,8 @@ class RemindersProvider extends ChangeNotifier {
       title: title.trim().isEmpty ? 'تنبيه' : title.trim(),
       time: time,
       repeat: repeat,
+      importance: importance,
+      preAlerts: preAlerts,
       notificationId: notifId,
     );
     final id = await _repo.insert(reminder);

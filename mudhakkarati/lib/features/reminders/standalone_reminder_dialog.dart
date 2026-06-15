@@ -8,7 +8,37 @@ import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
 import '../../widgets/time_wheel.dart';
 import '../settings/settings_provider.dart';
+import '../sounds/sound_catalog.dart';
 import 'reminders_provider.dart';
+
+String _impLabel(S s, ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => s.t('imp_low'),
+      ReminderImportance.medium => s.t('imp_medium'),
+      ReminderImportance.high => s.t('imp_high'),
+      ReminderImportance.critical => s.t('imp_critical'),
+    };
+
+IconData _impIcon(ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => Icons.notifications_none,
+      ReminderImportance.medium => Icons.notifications_active_outlined,
+      ReminderImportance.high => Icons.vibration,
+      ReminderImportance.critical => Icons.crisis_alert,
+    };
+
+Color _impColor(ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => const Color(0xFF78909C),
+      ReminderImportance.medium => const Color(0xFF42A5F5),
+      ReminderImportance.high => const Color(0xFFEF6C00),
+      ReminderImportance.critical => const Color(0xFFE53935),
+    };
+
+/// اسم النغمة للعرض من مكتبة الأصوات (يشمل كل النغمات الـ23).
+String _toneName(String id) {
+  for (final t in soundCatalog) {
+    if (t.id == id) return t.name;
+  }
+  return id;
+}
 
 /// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
 const List<(int, String)> _weekdayDefs = [
@@ -21,17 +51,6 @@ const List<(int, String)> _weekdayDefs = [
   (5, 'الجمعة'),
 ];
 
-const _toneNames = {
-  'alarm': 'إنذار',
-  'chime': 'لطيفة',
-  'bell': 'جرس',
-  'forest': 'غابة 🌳',
-  'birds': 'طيور 🐦',
-  'water': 'ماء 💧',
-  'rain': 'مطر 🌧️',
-  'ocean': 'محيط 🌊',
-};
-
 /// حوار إنشاء/تعديل **تنبيه مستقلّ** (غير مرتبط بملاحظة): عنوان + وقت + تكرار + نغمة.
 Future<void> showStandaloneReminderDialog(BuildContext context,
     {Reminder? existing}) async {
@@ -42,6 +61,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   DateTime date = existing?.time ?? DateTime.now().add(const Duration(hours: 1));
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = existing?.repeat ?? ReminderRepeat.once;
+  ReminderImportance importance = existing?.importance ?? ReminderImportance.high;
+  final Set<int> preAlerts = {...?existing?.preAlerts};
   final Set<int> weekdays = {date.weekday};
 
   await showModalBottomSheet(
@@ -208,6 +229,49 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               ],
                             ),
                           ],
+                          const SizedBox(height: 14),
+                          label(s.t('importance')),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: ReminderImportance.values.map((imp) {
+                              return ChoiceChip(
+                                avatar: Icon(_impIcon(imp),
+                                    size: 18, color: _impColor(imp)),
+                                label: Text(_impLabel(s, imp)),
+                                selected: importance == imp,
+                                onSelected: (_) =>
+                                    setState(() => importance = imp),
+                              );
+                            }).toList(),
+                          ),
+                          if (repeat == ReminderRepeat.once) ...[
+                            const SizedBox(height: 14),
+                            label(s.t('pre_alerts')),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [
+                                for (final (mins, lbl) in const [
+                                  (5, '5د'),
+                                  (15, '15د'),
+                                  (60, 'ساعة'),
+                                  (1440, 'يوم'),
+                                ])
+                                  FilterChip(
+                                    label: Text(lbl),
+                                    selected: preAlerts.contains(mins),
+                                    onSelected: (sel) => setState(() {
+                                      if (sel) {
+                                        preAlerts.add(mins);
+                                      } else {
+                                        preAlerts.remove(mins);
+                                      }
+                                    }),
+                                  ),
+                              ],
+                            ),
+                          ],
                           const SizedBox(height: 10),
                           label('النغمة'),
                           ListTile(
@@ -223,16 +287,18 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             ),
                             title: Text(settings.alarmTone == 'custom'
                                 ? (settings.customToneTitle ?? 'نغمة مخصّصة')
-                                : (_toneNames[settings.alarmTone] ?? 'إنذار')),
+                                : _toneName(settings.alarmTone)),
                             trailing: DropdownButton<String>(
-                              value: _toneNames.containsKey(settings.alarmTone)
+                              value: soundCatalog
+                                      .any((t) => t.id == settings.alarmTone)
                                   ? settings.alarmTone
                                   : 'custom',
+                              isDense: true,
                               underline: const SizedBox.shrink(),
                               items: [
-                                for (final e in _toneNames.entries)
+                                for (final t in soundCatalog)
                                   DropdownMenuItem(
-                                      value: e.key, child: Text(e.value)),
+                                      value: t.id, child: Text(t.name)),
                                 if (settings.alarmTone == 'custom')
                                   DropdownMenuItem(
                                       value: 'custom',
@@ -326,6 +392,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               } else {
                                 await provider.setStandalone(
                                     combined(), repeat, titleCtrl.text,
+                                    importance: importance,
+                                    preAlerts: preAlerts.toList()..sort(),
                                     existing: existing);
                               }
                               if (context.mounted) Navigator.pop(context);
