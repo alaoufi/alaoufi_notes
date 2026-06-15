@@ -29,8 +29,11 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotesProvider>().init();
       context.read<RemindersProvider>().refresh();
-      // نسخة احتياطية تلقائية إن حان موعدها (بلا انتظار حتى لا تُعيق الواجهة).
-      BackupService.instance.maybeRunAutoBackup();
+      // شبكة أمان ضدّ فقدان الملاحظات: نُفعّل النسخ التلقائي اليومي افتراضيًا عند
+      // أول تشغيل (مرّة واحدة)، ثم ننشئ نسخة إن حان موعدها — كلّه في الخلفية.
+      BackupService.instance
+          .ensureDefaultAutoBackup()
+          .then((_) => BackupService.instance.maybeRunAutoBackup());
       // مزامنة أولى عند الإقلاع.
       _autoSync();
     });

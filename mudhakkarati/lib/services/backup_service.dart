@@ -46,6 +46,8 @@ class BackupService {
   static const _kAutoKeep = 'auto_backup_keep';
   static const _kLastAuto = 'last_auto_backup';
   static const _kAutoDir = 'auto_backup_dir'; // مجلّد مخصّص يختاره المستخدم
+  // علامة تفعيل النسخ التلقائي افتراضيًا عند أول تشغيل (مرّة واحدة فقط).
+  static const _kBootstrapped = 'auto_backup_bootstrapped';
   // كلمة مرور النسخ التلقائي تُحفظ في التخزين الآمن (Keystore) حتى تعمل
   // النسخة دون تدخّل المستخدم.
   static const _kAutoPwd = 'auto_backup_password';
@@ -186,6 +188,19 @@ class BackupService {
     }
     await setAutoBackupEnabled(true);
     await runAutoBackup(); // نسخة فورية أولى.
+  }
+
+  /// يُفعّل النسخ الاحتياطي اليومي التلقائي **افتراضيًا عند أول تشغيل** (مرّة
+  /// واحدة فقط) ليضمن وجود نسخة قابلة للاستعادة دائمًا — شبكة أمان ضدّ فقدان
+  /// الملاحظات. لا يتطلّب أي تدخّل من المستخدم (كلمة مرور عشوائية محفوظة بأمان)،
+  /// ويحترم قراره لاحقًا: إن أوقفه يدويًا لا نُعيد تفعيله.
+  Future<void> ensureDefaultAutoBackup() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kBootstrapped) ?? false) return;
+    await prefs.setBool(_kBootstrapped, true);
+    try {
+      await enableDailyAutoBackup();
+    } catch (_) {/* لا يجب أن يُعطّل الإقلاع */}
   }
 
   /// أحدث نسخة تلقائية محفوظة (أو null إن لم توجد).
