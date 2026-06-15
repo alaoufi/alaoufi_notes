@@ -40,6 +40,37 @@ String _toneName(String id) {
   return id;
 }
 
+/// نوع المنبّه — يُغيّر الحقول الظاهرة والإعدادات الافتراضية.
+enum ReminderKind { general, medication, appointment, occasion }
+
+String _kindLabel(ReminderKind k) => switch (k) {
+      ReminderKind.general => 'عام',
+      ReminderKind.medication => 'دواء',
+      ReminderKind.appointment => 'موعد',
+      ReminderKind.occasion => 'مناسبة',
+    };
+
+IconData _kindIcon(ReminderKind k) => switch (k) {
+      ReminderKind.general => Icons.notifications_active_outlined,
+      ReminderKind.medication => Icons.medication_outlined,
+      ReminderKind.appointment => Icons.event_outlined,
+      ReminderKind.occasion => Icons.celebration_outlined,
+    };
+
+String _kindEmoji(ReminderKind k) => switch (k) {
+      ReminderKind.general => '',
+      ReminderKind.medication => '💊 ',
+      ReminderKind.appointment => '📅 ',
+      ReminderKind.occasion => '🎉 ',
+    };
+
+String _titleLabelFor(ReminderKind k) => switch (k) {
+      ReminderKind.general => 'عنوان التنبيه',
+      ReminderKind.medication => 'اسم الدواء',
+      ReminderKind.appointment => 'عنوان الموعد',
+      ReminderKind.occasion => 'المناسبة',
+    };
+
 /// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
 const List<(int, String)> _weekdayDefs = [
   (6, 'السبت'),
@@ -64,6 +95,10 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   ReminderImportance importance = existing?.importance ?? ReminderImportance.high;
   final Set<int> preAlerts = {...?existing?.preAlerts};
   final Set<int> weekdays = {date.weekday};
+  // نوع المنبّه + حقول خاصّة بكل نوع (جرعة الدواء / مكان الموعد).
+  ReminderKind kind = ReminderKind.general;
+  final doseCtrl = TextEditingController();
+  final placeCtrl = TextEditingController();
 
   await showModalBottomSheet(
     context: context,
@@ -83,6 +118,49 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                 ReminderRepeat.monthly => s.t('repeat_monthly'),
                 ReminderRepeat.yearly => s.t('repeat_yearly'),
               };
+
+          // إعدادات افتراضية ذكية عند اختيار نوع المنبّه.
+          void applyKindDefaults(ReminderKind k) {
+            switch (k) {
+              case ReminderKind.general:
+                break;
+              case ReminderKind.medication:
+                repeat = ReminderRepeat.daily; // الدواء يوميّ غالبًا
+                importance = ReminderImportance.critical; // لا يُفوَّت
+                preAlerts.clear();
+                break;
+              case ReminderKind.appointment:
+                repeat = ReminderRepeat.once;
+                importance = ReminderImportance.high;
+                preAlerts
+                  ..clear()
+                  ..add(60); // تذكير قبل ساعة
+                break;
+              case ReminderKind.occasion:
+                repeat = ReminderRepeat.yearly; // ذكرى سنويّة
+                importance = ReminderImportance.medium;
+                preAlerts.clear();
+                break;
+            }
+          }
+
+          // يُركّب العنوان النهائي من الاسم + الحقول الخاصّة بالنوع + رمز مميّز.
+          String composeTitle() {
+            var name = titleCtrl.text.trim();
+            if (name.isEmpty) name = _kindLabel(kind);
+            switch (kind) {
+              case ReminderKind.medication:
+                final d = doseCtrl.text.trim();
+                return '${_kindEmoji(kind)}$name${d.isEmpty ? '' : ' — $d'}';
+              case ReminderKind.appointment:
+                final pl = placeCtrl.text.trim();
+                return '${_kindEmoji(kind)}$name${pl.isEmpty ? '' : ' @ $pl'}';
+              case ReminderKind.occasion:
+                return '${_kindEmoji(kind)}$name';
+              case ReminderKind.general:
+                return name;
+            }
+          }
 
           Widget label(String t) => Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -173,14 +251,56 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // نوع المنبّه (فوق العنوان) — يُكيّف الحقول والإعدادات.
+                          label('نوع المنبّه'),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 6,
+                            children: ReminderKind.values.map((k) {
+                              return ChoiceChip(
+                                avatar: Icon(_kindIcon(k),
+                                    size: 18,
+                                    color: kind == k ? scheme.primary : null),
+                                label: Text(_kindLabel(k)),
+                                selected: kind == k,
+                                onSelected: (_) => setState(() {
+                                  kind = k;
+                                  applyKindDefaults(k);
+                                }),
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 12),
                           TextField(
                             controller: titleCtrl,
                             textInputAction: TextInputAction.done,
-                            decoration: const InputDecoration(
-                              labelText: 'عنوان التنبيه',
-                              prefixIcon: Icon(Icons.title),
+                            decoration: InputDecoration(
+                              labelText: _titleLabelFor(kind),
+                              prefixIcon: Icon(_kindIcon(kind)),
                             ),
                           ),
+                          // حقل خاصّ بالدواء: الجرعة.
+                          if (kind == ReminderKind.medication) ...[
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: doseCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'الجرعة (اختياري)',
+                                prefixIcon: Icon(Icons.science_outlined),
+                              ),
+                            ),
+                          ],
+                          // حقل خاصّ بالموعد: المكان.
+                          if (kind == ReminderKind.appointment) ...[
+                            const SizedBox(height: 10),
+                            TextField(
+                              controller: placeCtrl,
+                              decoration: const InputDecoration(
+                                labelText: 'المكان (اختياري)',
+                                prefixIcon: Icon(Icons.place_outlined),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 12),
                           Row(children: [
                             if (showDate) ...[
@@ -384,14 +504,15 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             style: FilledButton.styleFrom(
                                 minimumSize: const Size(130, 48)),
                             onPressed: () async {
+                              final finalTitle = composeTitle();
                               if (repeat == ReminderRepeat.weekly &&
                                   weekdays.isNotEmpty) {
                                 await provider.setStandaloneWeekly(
-                                    titleCtrl.text, time, weekdays,
+                                    finalTitle, time, weekdays,
                                     existing: existing);
                               } else {
                                 await provider.setStandalone(
-                                    combined(), repeat, titleCtrl.text,
+                                    combined(), repeat, finalTitle,
                                     importance: importance,
                                     preAlerts: preAlerts.toList()..sort(),
                                     existing: existing);
