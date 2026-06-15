@@ -36,7 +36,14 @@ class AlarmScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const SizedBox(height: 12),
+                // سهم رجوع: يُغلق شاشة المنبّه دون إنجاز/تأجيل (يبقى التذكير).
+                Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: BackButton(
+                    color: Colors.white,
+                    onPressed: () => Navigator.maybePop(context),
+                  ),
+                ),
                 const Icon(Icons.crisis_alert, color: Colors.white, size: 56),
                 const Spacer(),
                 // الوقت الكبير.
