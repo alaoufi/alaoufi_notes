@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 10;
+  static const _dbVersion = 11;
 
   Database? _db;
   Future<Database>? _opening;
@@ -248,6 +248,7 @@ class AppDatabase {
         repeat TEXT NOT NULL DEFAULT 'once',
         is_active INTEGER NOT NULL DEFAULT 1,
         notification_id INTEGER NOT NULL,
+        importance TEXT NOT NULL DEFAULT 'high',
         FOREIGN KEY (note_id) REFERENCES notes (id) ON DELETE CASCADE
       )
     ''');
@@ -330,6 +331,11 @@ class AppDatabase {
       // سطر مهمة (بمربع) أو نصّ عادي. الافتراضي مهمة (توافقًا مع القوائم القديمة).
       await db.execute(
           'ALTER TABLE checklist_items ADD COLUMN is_task INTEGER NOT NULL DEFAULT 1');
+    }
+    if (oldVersion < 11) {
+      // مستوى أهمية التذكير (low/medium/high/critical). الافتراضي high.
+      await db.execute(
+          "ALTER TABLE reminders ADD COLUMN importance TEXT NOT NULL DEFAULT 'high'");
     }
   }
 

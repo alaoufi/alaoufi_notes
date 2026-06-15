@@ -235,6 +235,11 @@ class S {
     'import_tone': 'إضافة نغمة من الجهاز',
     'calm_level': 'الهدوء',
     'preview': 'معاينة',
+    'importance': 'الأهمية',
+    'imp_low': 'منخفض',
+    'imp_medium': 'متوسط',
+    'imp_high': 'مرتفع',
+    'imp_critical': 'حرج',
   };
 
   static const Map<String, String> _en = {
@@ -414,6 +419,11 @@ class S {
     'import_tone': 'Add tone from device',
     'calm_level': 'Calm',
     'preview': 'Preview',
+    'importance': 'Importance',
+    'imp_low': 'Low',
+    'imp_medium': 'Medium',
+    'imp_high': 'High',
+    'imp_critical': 'Critical',
   };
 
   static const Map<String, String> _es = {
@@ -591,6 +601,11 @@ class S {
     'import_tone': 'Añadir tono del dispositivo',
     'calm_level': 'Calma',
     'preview': 'Vista previa',
+    'importance': 'Importancia',
+    'imp_low': 'Baja',
+    'imp_medium': 'Media',
+    'imp_high': 'Alta',
+    'imp_critical': 'Crítica',
   };
 
   static const Map<String, String> _de = {
@@ -768,6 +783,11 @@ class S {
     'import_tone': 'Ton vom Gerät',
     'calm_level': 'Ruhe',
     'preview': 'Vorschau',
+    'importance': 'Wichtigkeit',
+    'imp_low': 'Niedrig',
+    'imp_medium': 'Mittel',
+    'imp_high': 'Hoch',
+    'imp_critical': 'Kritisch',
   };
 
   static const Map<String, String> _fil = {
@@ -945,6 +965,11 @@ class S {
     'import_tone': 'Magdagdag mula sa device',
     'calm_level': 'Kalmado',
     'preview': 'Preview',
+    'importance': 'Kahalagahan',
+    'imp_low': 'Mababa',
+    'imp_medium': 'Katamtaman',
+    'imp_high': 'Mataas',
+    'imp_critical': 'Kritikal',
   };
 
   static const Map<String, String> _fr = {
@@ -1122,6 +1147,11 @@ class S {
     'import_tone': 'Ajouter depuis l’appareil',
     'calm_level': 'Calme',
     'preview': 'Aperçu',
+    'importance': 'Importance',
+    'imp_low': 'Faible',
+    'imp_medium': 'Moyenne',
+    'imp_high': 'Élevée',
+    'imp_critical': 'Critique',
   };
 
   static const Map<String, String> _id = {
@@ -1299,6 +1329,11 @@ class S {
     'import_tone': 'Tambah dari perangkat',
     'calm_level': 'Tenang',
     'preview': 'Pratinjau',
+    'importance': 'Kepentingan',
+    'imp_low': 'Rendah',
+    'imp_medium': 'Sedang',
+    'imp_high': 'Tinggi',
+    'imp_critical': 'Kritis',
   };
 
   static const Map<String, String> _it = {
@@ -1476,6 +1511,11 @@ class S {
     'import_tone': 'Aggiungi dal dispositivo',
     'calm_level': 'Calma',
     'preview': 'Anteprima',
+    'importance': 'Importanza',
+    'imp_low': 'Bassa',
+    'imp_medium': 'Media',
+    'imp_high': 'Alta',
+    'imp_critical': 'Critica',
   };
 
   static const Map<String, String> _ms = {
@@ -1653,6 +1693,11 @@ class S {
     'import_tone': 'Tambah dari peranti',
     'calm_level': 'Tenang',
     'preview': 'Pratonton',
+    'importance': 'Kepentingan',
+    'imp_low': 'Rendah',
+    'imp_medium': 'Sederhana',
+    'imp_high': 'Tinggi',
+    'imp_critical': 'Kritikal',
   };
 
   static const Map<String, String> _hi = {
@@ -1830,6 +1875,11 @@ class S {
     'import_tone': 'डिवाइस से जोड़ें',
     'calm_level': 'शांति',
     'preview': 'पूर्वावलोकन',
+    'importance': 'महत्व',
+    'imp_low': 'कम',
+    'imp_medium': 'मध्यम',
+    'imp_high': 'उच्च',
+    'imp_critical': 'गंभीर',
   };
 
   static const Map<String, String> _bn = {
@@ -2007,6 +2057,11 @@ class S {
     'import_tone': 'ডিভাইস থেকে যোগ',
     'calm_level': 'প্রশান্তি',
     'preview': 'প্রিভিউ',
+    'importance': 'গুরুত্ব',
+    'imp_low': 'নিম্ন',
+    'imp_medium': 'মাঝারি',
+    'imp_high': 'উচ্চ',
+    'imp_critical': 'সংকটপূর্ণ',
   };
 
   static const Map<String, String> _fa = {
@@ -2184,6 +2239,11 @@ class S {
     'import_tone': 'افزودن از دستگاه',
     'calm_level': 'آرامش',
     'preview': 'پیش‌نمایش',
+    'importance': 'اهمیت',
+    'imp_low': 'کم',
+    'imp_medium': 'متوسط',
+    'imp_high': 'زیاد',
+    'imp_critical': 'بحرانی',
   };
 
   static const Map<String, String> _ru = {
@@ -2361,6 +2421,11 @@ class S {
     'import_tone': 'Добавить с устройства',
     'calm_level': 'Спокойствие',
     'preview': 'Прослушать',
+    'importance': 'Важность',
+    'imp_low': 'Низкая',
+    'imp_medium': 'Средняя',
+    'imp_high': 'Высокая',
+    'imp_critical': 'Критическая',
   };
 }
 

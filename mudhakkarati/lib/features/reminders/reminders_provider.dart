@@ -80,8 +80,9 @@ class RemindersProvider extends ChangeNotifier {
   Future<void> setNoteWeekly(
     Note note,
     TimeOfDay tod,
-    Set<int> weekdays,
-  ) async {
+    Set<int> weekdays, {
+    ReminderImportance importance = ReminderImportance.high,
+  }) async {
     // إلغاء وحذف كل تذكيرات الملاحظة الحالية.
     final existing = await _repo.getAllForNote(note.id!);
     for (final r in existing) {
@@ -96,6 +97,7 @@ class RemindersProvider extends ChangeNotifier {
         noteId: note.id!,
         time: when,
         repeat: ReminderRepeat.weekly,
+        importance: importance,
         notificationId: _generateId(),
       );
       final id = await _repo.insert(reminder);
@@ -109,8 +111,9 @@ class RemindersProvider extends ChangeNotifier {
   Future<void> setReminder(
     Note note,
     DateTime time,
-    ReminderRepeat repeat,
-  ) async {
+    ReminderRepeat repeat, {
+    ReminderImportance importance = ReminderImportance.high,
+  }) async {
     // إلغاء القديم إن وُجد.
     final existing = await _repo.getForNote(note.id!);
     if (existing != null) {
@@ -123,6 +126,7 @@ class RemindersProvider extends ChangeNotifier {
       noteId: note.id!,
       time: time,
       repeat: repeat,
+      importance: importance,
       notificationId: notifId,
     );
     final id = await _repo.insert(reminder);

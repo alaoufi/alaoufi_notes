@@ -33,12 +33,34 @@ const _toneNames = {
   'ocean': 'محيط 🌊',
 };
 
+String _impLabel(S s, ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => s.t('imp_low'),
+      ReminderImportance.medium => s.t('imp_medium'),
+      ReminderImportance.high => s.t('imp_high'),
+      ReminderImportance.critical => s.t('imp_critical'),
+    };
+
+IconData _impIcon(ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => Icons.notifications_none,
+      ReminderImportance.medium => Icons.notifications_active_outlined,
+      ReminderImportance.high => Icons.vibration,
+      ReminderImportance.critical => Icons.crisis_alert,
+    };
+
+Color _impColor(ReminderImportance imp) => switch (imp) {
+      ReminderImportance.low => const Color(0xFF78909C),
+      ReminderImportance.medium => const Color(0xFF42A5F5),
+      ReminderImportance.high => const Color(0xFFEF6C00),
+      ReminderImportance.critical => const Color(0xFFE53935),
+    };
+
 /// حوار لإضافة/تعديل تذكير لملاحظة (تاريخ + وقت + تكرار).
 Future<void> showReminderDialog(BuildContext context, Note note) async {
   final s = S.of(context);
   DateTime date = DateTime.now().add(const Duration(hours: 1));
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = ReminderRepeat.once;
+  ReminderImportance importance = ReminderImportance.high;
 
   final settings = context.read<SettingsProvider>();
 
@@ -51,6 +73,7 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
     date = existing.time;
     time = TimeOfDay.fromDateTime(existing.time);
     repeat = existing.repeat;
+    importance = existing.importance;
     // عند الأسبوعي بأيام متعددة: اجمع أيام كل تذكيرات الملاحظة.
     if (all.length > 1 || existing.repeat == ReminderRepeat.weekly) {
       weekdays
@@ -160,6 +183,22 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                     ],
                   ),
                 ],
+                const SizedBox(height: 12),
+                // مستوى الأهمية (يحدّد سلوك التنبيه).
+                Text(s.t('importance'),
+                    style: Theme.of(context).textTheme.labelLarge),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  children: ReminderImportance.values.map((imp) {
+                    return ChoiceChip(
+                      avatar: Icon(_impIcon(imp), size: 18, color: _impColor(imp)),
+                      label: Text(_impLabel(s, imp)),
+                      selected: importance == imp,
+                      onSelected: (_) => setState(() => importance = imp),
+                    );
+                  }).toList(),
+                ),
                 const SizedBox(height: 8),
                 // النغمة بجانب إنشاء التنبيه مباشرة.
                 ListTile(
@@ -226,9 +265,11 @@ Future<void> showReminderDialog(BuildContext context, Note note) async {
                       onPressed: () async {
                         if (repeat == ReminderRepeat.weekly &&
                             weekdays.isNotEmpty) {
-                          await provider.setNoteWeekly(note, time, weekdays);
+                          await provider.setNoteWeekly(note, time, weekdays,
+                              importance: importance);
                         } else {
-                          await provider.setReminder(note, combined(), repeat);
+                          await provider.setReminder(note, combined(), repeat,
+                              importance: importance);
                         }
                         if (context.mounted) Navigator.pop(context);
                       },

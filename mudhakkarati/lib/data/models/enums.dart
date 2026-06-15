@@ -40,6 +40,25 @@ extension ReminderRepeatX on ReminderRepeat {
   }
 }
 
+/// مستوى أهمية التذكير — يحدّد سلوك التنبيه (صوت/اهتزاز/شاشة كاملة/إصرار).
+enum ReminderImportance {
+  low, // إشعار عادي (بلا صوت)
+  medium, // إشعار + صوت
+  high, // إشعار + صوت + اهتزاز
+  critical, // منبّه حقيقي: شاشة كاملة + إصرار حتى التفاعل
+}
+
+extension ReminderImportanceX on ReminderImportance {
+  String get dbValue => name;
+
+  static ReminderImportance fromDb(String? value) {
+    return ReminderImportance.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => ReminderImportance.high,
+    );
+  }
+}
+
 /// طريقة عرض الملاحظات في الصفحة الرئيسية.
 enum NoteLayout { grid, list }
 

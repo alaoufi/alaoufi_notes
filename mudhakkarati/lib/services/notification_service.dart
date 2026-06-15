@@ -74,6 +74,18 @@ class NotificationService {
       );
     }
 
+    // قناة هادئة للتذكيرات منخفضة الأهمية (بلا صوت).
+    await androidImpl?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'alaoufi_quiet',
+        'تنبيهات هادئة',
+        description: 'إشعارات بلا صوت',
+        importance: Importance.defaultImportance,
+        playSound: false,
+        enableVibration: false,
+      ),
+    );
+
     _initialized = true;
   }
 
@@ -140,38 +152,57 @@ class NotificationService {
     await androidImpl?.requestExactAlarmsPermission();
   }
 
-  AndroidNotificationDetails get _alarmDetails {
-    final isCustom = _tone == 'custom' && _customUri != null;
-    return AndroidNotificationDetails(
-        isCustom ? _customChannelId : 'alaoufi_alarm_$_tone',
-        isCustom ? 'المنبّه (نغمة مخصّصة)' : 'المنبّه ($_tone)',
-        channelDescription: 'تنبيهات المنبّه والتذكيرات',
-        importance: Importance.max,
-        priority: Priority.max,
-        category: AndroidNotificationCategory.alarm,
-        fullScreenIntent: true,
-        playSound: true,
-        sound: isCustom
-            ? UriAndroidNotificationSound(_customUri!)
-            : RawResourceAndroidNotificationSound(_tone),
-        audioAttributesUsage: AudioAttributesUsage.alarm,
-        enableVibration: true,
-        vibrationPattern: Int64List.fromList([0, 600, 300, 600, 300, 600]),
-        // FLAG_INSISTENT: يُكرّر الصوت حتى يوقفه المستخدم.
-        additionalFlags: Int32List.fromList([4]),
-        // زرّ غفوة (إن فُعّلت) + زرّ إيقاف.
-        actions: [
-          if (snoozeMinutes > 0)
-            AndroidNotificationAction(_snoozeAction, 'غفوة',
-                showsUserInterface: false, cancelNotification: true),
-          const AndroidNotificationAction(_dismissAction, 'إيقاف',
-              showsUserInterface: false, cancelNotification: true),
-        ],
+  /// تفاصيل الإشعار حسب **مستوى الأهمية**:
+  /// - low: إشعار هادئ بلا صوت/اهتزاز (قناة منفصلة).
+  /// - medium: صوت فقط.
+  /// - high: صوت + اهتزاز.
+  /// - critical: شاشة كاملة + إصرار (تكرار الصوت) حتى تفاعل المستخدم.
+  AndroidNotificationDetails _alarmDetails(ReminderImportance imp) {
+    if (imp == ReminderImportance.low) {
+      return const AndroidNotificationDetails(
+        'alaoufi_quiet',
+        'تنبيهات هادئة',
+        channelDescription: 'إشعارات بلا صوت',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        playSound: false,
+        enableVibration: false,
       );
+    }
+    final isCustom = _tone == 'custom' && _customUri != null;
+    final critical = imp == ReminderImportance.critical;
+    final vibrate = imp == ReminderImportance.high || critical;
+    return AndroidNotificationDetails(
+      isCustom ? _customChannelId : 'alaoufi_alarm_$_tone',
+      isCustom ? 'المنبّه (نغمة مخصّصة)' : 'المنبّه ($_tone)',
+      channelDescription: 'تنبيهات المنبّه والتذكيرات',
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.alarm,
+      // شاشة كاملة للتذكيرات الحرجة فقط.
+      fullScreenIntent: critical,
+      playSound: true,
+      sound: isCustom
+          ? UriAndroidNotificationSound(_customUri!)
+          : RawResourceAndroidNotificationSound(_tone),
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      enableVibration: vibrate,
+      vibrationPattern:
+          vibrate ? Int64List.fromList([0, 600, 300, 600, 300, 600]) : null,
+      // FLAG_INSISTENT (تكرار الصوت حتى التفاعل) للحرجة فقط.
+      additionalFlags: critical ? Int32List.fromList([4]) : null,
+      actions: [
+        if (snoozeMinutes > 0)
+          AndroidNotificationAction(_snoozeAction, 'غفوة',
+              showsUserInterface: false, cancelNotification: true),
+        const AndroidNotificationAction(_dismissAction, 'إيقاف',
+            showsUserInterface: false, cancelNotification: true),
+      ],
+    );
   }
 
-  NotificationDetails get _details =>
-      NotificationDetails(android: _alarmDetails);
+  NotificationDetails _detailsFor(ReminderImportance imp) =>
+      NotificationDetails(android: _alarmDetails(imp));
 
   /// جدولة تذكير. يدعم التكرار يومي/أسبوعي/شهري/سنوي/مرة واحدة.
   Future<void> schedule(Reminder reminder, String title, String body) async {
@@ -206,12 +237,13 @@ class NotificationService {
       safeTitle,
       safeBody,
       scheduled,
-      _details,
+      _detailsFor(reminder.importance),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: match,
-      payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody',
+      payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
+          '|imp:${reminder.importance.dbValue}',
     );
   }
 
@@ -241,6 +273,7 @@ class NotificationService {
     await init();
     final title = _extractStr(payload, 'title:') ?? '⏰ تذكير';
     final body = _extractStr(payload, 'body:') ?? 'تذكير مؤجَّل';
+    final imp = ReminderImportanceX.fromDb(_extractStr(payload, 'imp:'));
     final when = tz.TZDateTime.now(tz.local)
         .add(Duration(minutes: snoozeMinutes > 0 ? snoozeMinutes : 10));
     await _plugin.zonedSchedule(
@@ -248,7 +281,7 @@ class NotificationService {
       title,
       body,
       when,
-      _details,
+      _detailsFor(imp),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
