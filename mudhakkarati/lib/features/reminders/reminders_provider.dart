@@ -25,6 +25,32 @@ class RemindersProvider extends ChangeNotifier {
   List<ReminderView> _items = [];
   List<ReminderView> get items => _items;
 
+  /// إعادة جدولة ذاتية عند فتح التطبيق: تضمن أن كل تذكير نشط ما زال مجدولًا في
+  /// النظام (تُعيد جدولة ما قد يكون أُسقط بسبب تقييد البطارية/إيقاف التطبيق).
+  /// آمنة وعديمة الأثر الجانبيّ (نفس المعرّف يَستبدل الجدولة القائمة).
+  Future<void> ensureScheduled() async {
+    try {
+      final all = await _repo.getAll();
+      final now = DateTime.now();
+      for (final r in all) {
+        if (!r.isActive) continue;
+        // تذكيرات «مرّة واحدة» الفائتة لا يُعاد جدولتها (انتهت).
+        if (r.repeat == ReminderRepeat.once && r.time.isBefore(now)) continue;
+        String title = r.title ?? 'تذكير';
+        String body = '';
+        if (r.noteId != null) {
+          final note = await _notes.getNote(r.noteId!);
+          if (note == null || note.isDeleted) continue;
+          if (note.title.trim().isNotEmpty) title = note.title;
+          body = note.content;
+        }
+        await NotificationService.instance.schedule(r, title, body);
+      }
+    } catch (_) {
+      // لا يجب أن تُعطّل بدء التطبيق.
+    }
+  }
+
   Future<void> refresh() async {
     final reminders = await _repo.getAll();
     final views = <ReminderView>[];

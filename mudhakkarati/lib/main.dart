@@ -103,6 +103,9 @@ Future<void> main() async {
     final notesProvider = NotesProvider(noteRepo, categoryRepo);
     final remindersProvider = RemindersProvider(reminderRepo, noteRepo);
 
+    // إعادة جدولة ذاتية: تضمن بقاء كل تذكير نشط مجدولًا (لا تضيع التذكيرات).
+    await _safe('reschedule', () => remindersProvider.ensureScheduled());
+
     runApp(
       MultiProvider(
         providers: [
