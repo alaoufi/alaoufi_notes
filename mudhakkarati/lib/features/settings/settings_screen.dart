@@ -627,6 +627,23 @@ class SettingsScreen extends StatelessWidget {
             : const Icon(Icons.chevron_left),
         onTap: pickDevice,
       ),
+      const Divider(height: 1),
+      _miniHeader(context, S.of(context).t('sound_options')),
+      SwitchListTile(
+        secondary: const Icon(Icons.volume_up_outlined),
+        title: Text(S.of(context).t('auto_raise_volume')),
+        subtitle: Text(S.of(context).t('auto_raise_volume_desc')),
+        value: st.autoRaiseVolume,
+        onChanged: (v) => st.setAutoRaiseVolume(v),
+      ),
+      SwitchListTile(
+        secondary: const Icon(Icons.trending_up),
+        title: Text(S.of(context).t('gradual_volume')),
+        subtitle: Text(S.of(context).t('gradual_volume_desc')),
+        value: st.gradualVolume,
+        onChanged:
+            st.autoRaiseVolume ? (v) => st.setGradualVolume(v) : null,
+      ),
     ];
   }
 

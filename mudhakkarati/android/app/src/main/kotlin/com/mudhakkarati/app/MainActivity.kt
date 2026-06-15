@@ -2,9 +2,13 @@ package com.mudhakkarati.app
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import io.flutter.embedding.android.FlutterFragmentActivity
@@ -15,10 +19,16 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterFragmentActivity() {
     private val channelName = "com.mudhakkarati.app/ringtone"
     private val dictationChannel = "com.mudhakkarati.app/dictation"
+    private val volumeChannel = "com.mudhakkarati.app/alarm_volume"
     private val pickRequest = 4201
     private val speechRequest = 4711
     private var pendingResult: MethodChannel.Result? = null
     private var pendingSpeech: MethodChannel.Result? = null
+
+    // رفع/استعادة مستوى صوت تيّار المنبّه (STREAM_ALARM) — يعمل حتى مع الصامت.
+    private var savedAlarmVolume: Int? = null
+    private var volumeRamp: Runnable? = null
+    private val rampHandler = Handler(Looper.getMainLooper())
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -40,6 +50,75 @@ class MainActivity : FlutterFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // قناة رفع صوت المنبّه (تيّار STREAM_ALARM) — رفع فوري أو تدرّجيّ + استعادة.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, volumeChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "raise" -> {
+                        val target = call.argument<Int>("targetPercent") ?: 100
+                        val ramp = call.argument<Int>("rampSeconds") ?: 0
+                        raiseAlarmVolume(target, ramp)
+                        result.success(true)
+                    }
+                    "restore" -> {
+                        restoreAlarmVolume()
+                        result.success(true)
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    /// يرفع صوت تيّار المنبّه إلى [targetPercent]٪ — فورًا أو بالتدرّج خلال
+    /// [rampSeconds] ثانية. يحفظ المستوى الأصليّ لاستعادته لاحقًا.
+    private fun raiseAlarmVolume(targetPercent: Int, rampSeconds: Int) {
+        try {
+            val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            if (max <= 0) return
+            if (savedAlarmVolume == null) {
+                savedAlarmVolume = am.getStreamVolume(AudioManager.STREAM_ALARM)
+            }
+            val pct = targetPercent.coerceIn(0, 100)
+            val target = (max * pct / 100).coerceIn(1, max)
+            volumeRamp?.let { rampHandler.removeCallbacks(it) }
+            volumeRamp = null
+            if (rampSeconds <= 0) {
+                am.setStreamVolume(AudioManager.STREAM_ALARM, target, 0)
+                return
+            }
+            // تدرّج: نبدأ من 1 ونزيد خطوة كل فترة حتى الهدف.
+            var current = 1
+            am.setStreamVolume(AudioManager.STREAM_ALARM, current, 0)
+            val steps = (target - current).coerceAtLeast(1)
+            val interval = (rampSeconds * 1000L / steps).coerceAtLeast(150L)
+            val r = object : Runnable {
+                override fun run() {
+                    current += 1
+                    am.setStreamVolume(
+                        AudioManager.STREAM_ALARM, current.coerceAtMost(target), 0)
+                    if (current < target) rampHandler.postDelayed(this, interval)
+                }
+            }
+            volumeRamp = r
+            rampHandler.postDelayed(r, interval)
+        } catch (e: Exception) {
+            // قد تمنع بعض الأجهزة/سياسات DND تغيير الصوت — نتجاهل بأمان.
+        }
+    }
+
+    /// يستعيد مستوى صوت المنبّه الأصليّ (ويُلغي أيّ تدرّج جارٍ).
+    private fun restoreAlarmVolume() {
+        try {
+            volumeRamp?.let { rampHandler.removeCallbacks(it) }
+            volumeRamp = null
+            val saved = savedAlarmVolume ?: return
+            savedAlarmVolume = null
+            val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            am.setStreamVolume(AudioManager.STREAM_ALARM, saved, 0)
+        } catch (e: Exception) {
+        }
     }
 
     // (6) فحص توفّر الخدمة: محرّك تعرّف أو Activity يستقبل ACTION_RECOGNIZE_SPEECH.

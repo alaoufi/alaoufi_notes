@@ -1,23 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../services/alarm_volume.dart';
 import '../../services/notification_service.dart';
+import '../settings/settings_provider.dart';
 
 /// شاشة المنبّه داخل التطبيق — تظهر عند الضغط على تذكير حرج: عنوان/وصف/وقت
 /// مع زرّ «تم الإنجاز» وزرّ «تأجيل» (خيارات 5/10/15/30/60 دقيقة).
-class AlarmScreen extends StatelessWidget {
+///
+/// عند ظهورها ترفع صوت المنبّه تلقائيًّا (إن فُعِّل) ليُسمَع حتى مع الصامت/المنخفض،
+/// بالتدرّج إن طُلب، وتستعيد المستوى الأصليّ عند إغلاقها.
+class AlarmScreen extends StatefulWidget {
   final Map<String, String> info;
   const AlarmScreen({super.key, required this.info});
 
-  int get _base => int.tryParse(info['base'] ?? '') ?? 0;
+  @override
+  State<AlarmScreen> createState() => _AlarmScreenState();
+}
+
+class _AlarmScreenState extends State<AlarmScreen> {
+  bool _raised = false;
+
+  int get _base => int.tryParse(widget.info['base'] ?? '') ?? 0;
   int? get _noteId {
-    final n = int.tryParse(info['note'] ?? '');
+    final n = int.tryParse(widget.info['note'] ?? '');
     return (n == null || n < 0) ? null : n;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // رفع صوت المنبّه إن فُعِّل (يقرأ تفضيلات المستخدم).
+    final settings = context.read<SettingsProvider>();
+    if (settings.autoRaiseVolume) {
+      _raised = true;
+      AlarmVolume.raise(
+        targetPercent: 100,
+        rampSeconds: settings.gradualVolume ? 15 : 0,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    // نستعيد مستوى الصوت الأصليّ مهما كانت طريقة الإغلاق (إنجاز/تأجيل/رجوع).
+    if (_raised) AlarmVolume.restore();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
+    final info = widget.info;
     final now = TimeOfDay.now();
     final date = DateTime.now();
     String two(int n) => n.toString().padLeft(2, '0');
@@ -131,8 +166,8 @@ class AlarmScreen extends StatelessWidget {
     if (mins == null) return;
     await NotificationService.instance.snoozeAlarm(
       _base,
-      info['title'] ?? '⏰',
-      info['body'] ?? '',
+      widget.info['title'] ?? '⏰',
+      widget.info['body'] ?? '',
       mins,
       _noteId,
     );

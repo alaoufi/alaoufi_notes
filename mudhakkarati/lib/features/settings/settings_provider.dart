@@ -20,6 +20,8 @@ class SettingsProvider extends ChangeNotifier {
   Locale _locale = const Locale('en');
   String _alarmTone = 'ocean'; // Calm Tide افتراضيًّا
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
+  bool _autoRaiseVolume = true; // رفع صوت المنبّه تلقائيًّا عند الصامت/المنخفض
+  bool _gradualVolume = false; // رفع صوت المنبّه بالتدرّج
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
   String? _customToneTitle; // اسم النغمة المخصّصة للعرض
   int _customToneSeq = 0; // معرّف متزايد لقناة النغمة المخصّصة
@@ -49,6 +51,8 @@ class SettingsProvider extends ChangeNotifier {
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
   int get snoozeMinutes => _snoozeMinutes;
+  bool get autoRaiseVolume => _autoRaiseVolume;
+  bool get gradualVolume => _gradualVolume;
   String? get customToneUri => _customToneUri;
   String? get customToneTitle => _customToneTitle;
   Set<String> get favoriteTones => _favoriteTones;
@@ -158,6 +162,8 @@ class SettingsProvider extends ChangeNotifier {
     _alarmTone = prefs.getString(_kTone) ?? 'ocean';
     _favoriteTones = (prefs.getStringList('favorite_tones') ?? const []).toSet();
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
+    _autoRaiseVolume = prefs.getBool('auto_raise_volume') ?? true;
+    _gradualVolume = prefs.getBool('gradual_volume') ?? false;
     NotificationService.instance.snoozeMinutes = _snoozeMinutes;
     _customToneUri = prefs.getString(_kCustomToneUri);
     _customToneTitle = prefs.getString(_kCustomToneTitle);
@@ -285,6 +291,22 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt('snooze_minutes', minutes);
+  }
+
+  /// رفع صوت المنبّه تلقائيًّا عند ظهوره (يتجاوز الصامت/الصوت المنخفض).
+  Future<void> setAutoRaiseVolume(bool v) async {
+    _autoRaiseVolume = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('auto_raise_volume', v);
+  }
+
+  /// رفع صوت المنبّه بالتدرّج (يبدأ منخفضًا ويعلو تدريجيًّا).
+  Future<void> setGradualVolume(bool v) async {
+    _gradualVolume = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('gradual_volume', v);
   }
 
   /// يضبط نغمة مخصّصة مختارة من نغمات الجهاز ([uri] رابطها، [title] اسمها).

@@ -495,6 +495,34 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             ),
                           ),
                           const SizedBox(height: 10),
+                          label(s.t('sound_options')),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: const Icon(Icons.volume_up_outlined),
+                            title: Text(s.t('auto_raise_volume')),
+                            subtitle: Text(s.t('auto_raise_volume_desc'),
+                                style: const TextStyle(fontSize: 11.5)),
+                            value: settings.autoRaiseVolume,
+                            onChanged: (v) async {
+                              await settings.setAutoRaiseVolume(v);
+                              setState(() {});
+                            },
+                          ),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            secondary: const Icon(Icons.trending_up),
+                            title: Text(s.t('gradual_volume')),
+                            subtitle: Text(s.t('gradual_volume_desc'),
+                                style: const TextStyle(fontSize: 11.5)),
+                            value: settings.gradualVolume,
+                            onChanged: settings.autoRaiseVolume
+                                ? (v) async {
+                                    await settings.setGradualVolume(v);
+                                    setState(() {});
+                                  }
+                                : null,
+                          ),
+                          const SizedBox(height: 10),
                           label('الغفوة'),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
