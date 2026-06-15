@@ -154,11 +154,12 @@ void main() {
       expect(MedDose.fromMap(missed).taken, false);
     });
 
-    test('missing status defaults to taken; missing name to empty', () {
-      final d = MedDose.fromMap({'name': null, 'at': 0});
+    test('missing status/name/at do not crash (corrupt/partial rows)', () {
+      final d = MedDose.fromMap({'name': null}); // no 'at' column at all
       expect(d.taken, true);
       expect(d.name, '');
       expect(d.dose, isNull);
+      expect(d.at.millisecondsSinceEpoch, 0);
     });
   });
 

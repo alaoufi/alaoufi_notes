@@ -30,6 +30,9 @@ Future<void> _safe(String name, Future<void> Function() step) async {
 }
 
 Future<void> main() async {
+  // هل أقلع التطبيق فعلًا؟ بعد الإقلاع لا نهدم الواجهة الحيّة بسبب خطأ غير
+  // متوقّع أثناء الاستخدام (نكتفي بتسجيله) — وإلا يفقد المستخدم شاشته بالكامل.
+  var appStarted = false;
   // نلتقط أي خطأ غير متوقع بدل أن يتعطّل التطبيق بصمت.
   await runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -116,10 +119,15 @@ Future<void> main() async {
         child: const MudhakkaratiApp(),
       ),
     );
+    appStarted = true;
   }, (error, stack) {
     startupErrors.add('Uncaught: $error');
-    // إن تعطّل قبل عرض أي شيء، نعرض شاشة الخطأ بدل توقّف التطبيق.
-    runApp(_StartupErrorApp(error: '$error\n\n$stack'));
+    // إن تعطّل **قبل** عرض أي شيء، نعرض شاشة الخطأ بدل توقّف التطبيق. أمّا بعد
+    // الإقلاع فلا نهدم الواجهة الحيّة بسبب خطأ غير متوقّع في إجراء واحد (نسجّله
+    // فقط) كي لا يفقد المستخدم شاشته بالكامل.
+    if (!appStarted) {
+      runApp(_StartupErrorApp(error: '$error\n\n$stack'));
+    }
   });
 }
 

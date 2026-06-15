@@ -25,6 +25,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return; // قد تُستدعى بعد إغلاق الشاشة (عند العودة من المحرّر)
     final items = await context.read<NotesProvider>().getArchived();
     if (mounted) {
       setState(() {

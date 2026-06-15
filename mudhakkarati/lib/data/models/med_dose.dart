@@ -27,6 +27,6 @@ class MedDose {
         name: (map['name'] as String?) ?? '',
         dose: map['dose'] as String?,
         taken: ((map['status'] as String?) ?? 'taken') == 'taken',
-        at: DateTime.fromMillisecondsSinceEpoch(map['at'] as int),
+        at: DateTime.fromMillisecondsSinceEpoch((map['at'] as int?) ?? 0),
       );
 }

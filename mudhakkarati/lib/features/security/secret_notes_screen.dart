@@ -37,6 +37,7 @@ class _SecretNotesScreenState extends State<SecretNotesScreen> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return; // قد تُستدعى بعد إغلاق الشاشة (عند العودة من المحرّر)
     final items = await context.read<NotesProvider>().getLocked();
     if (mounted) setState(() { _items = items; _loading = false; });
   }

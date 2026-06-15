@@ -27,6 +27,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return; // قد تُستدعى بعد إغلاق الشاشة (عند العودة من المحرّر)
     final items = await context.read<NotesProvider>().getFavorites();
     if (mounted) setState(() { _items = items; _loading = false; });
   }
