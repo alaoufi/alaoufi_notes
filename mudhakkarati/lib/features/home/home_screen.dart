@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/text/line_direction.dart';
+import '../../data/database/app_database.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/note.dart';
 import '../../widgets/app_drawer.dart';
@@ -413,6 +414,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   hasScrollBody: false,
                   child: Center(child: CircularProgressIndicator()),
                 )
+              else if (provider.dbError)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _readError(context),
+                )
               else if (provider.items.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -703,6 +709,52 @@ class _HomeScreenState extends State<HomeScreen> {
         avatar: color == null
             ? null
             : CircleAvatar(backgroundColor: color, radius: 6),
+      ),
+    );
+  }
+
+  /// حالة «تعذّر فتح البيانات» (غالبًا مؤقّت) — **لا** نعرضها كفارغة ولا نقترح
+  /// الاستعادة (حماية من قرار خاطئ). نطمئن المستخدم ونتيح إعادة المحاولة.
+  Widget _readError(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: scheme.errorContainer.withOpacity(0.5),
+              ),
+              child: Icon(Icons.lock_clock_outlined,
+                  size: 56, color: scheme.error),
+            ),
+            const SizedBox(height: 18),
+            const Text('تعذّر فتح بياناتك مؤقّتًا',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17)),
+            const SizedBox(height: 8),
+            Text(
+              'ملاحظاتك محفوظة ولم تُحذف — حدث تعذّر مؤقّت في قراءة بياناتك '
+              'المشفّرة. أعد فتح التطبيق أو اضغط «إعادة المحاولة».',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  color: Theme.of(context).hintColor, fontSize: 13, height: 1.5),
+            ),
+            const SizedBox(height: 18),
+            FilledButton.icon(
+              onPressed: () async {
+                await AppDatabase.instance.reopen();
+                if (mounted) await context.read<NotesProvider>().init();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('إعادة المحاولة'),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -23,6 +23,7 @@ class NotesProvider extends ChangeNotifier {
   List<Note> _items = [];
   List<Category> _categories = [];
   bool _loading = true;
+  bool _dbError = false; // تعذّر فتح القاعدة (لا تُعرض كفارغة)
 
   int? _filterCategoryId; // null = الكل
   String? _filterTag;
@@ -65,6 +66,7 @@ class NotesProvider extends ChangeNotifier {
   List<Note> get items => _items;
   List<Category> get categories => _categories;
   bool get loading => _loading;
+  bool get dbError => _dbError;
   int? get filterCategoryId => _filterCategoryId;
   String? get filterTag => _filterTag;
   String get search => _search;
@@ -118,32 +120,41 @@ class NotesProvider extends ChangeNotifier {
   }
 
   Future<void> loadCategories() async {
-    _categories = await categoriesRepo.getAll();
+    try {
+      _categories = await categoriesRepo.getAll();
+    } catch (_) {/* تعذّر فتح القاعدة مؤقّتًا — لا نمسح القائمة القديمة */}
     notifyListeners();
   }
 
   Future<void> refresh() async {
     _loading = true;
     notifyListeners();
-    _items = await notes.getNotes(
-      categoryId: _filterCategoryId,
-      tag: _filterTag,
-      search: _search,
-      sort: _sort,
-      onlyFavorites: fFav,
-      type: fType,
-      onlyPinned: fPinned,
-      onlyLocked: fLocked,
-      hasImage: fImage,
-      hasAudio: fAudio,
-      hasPdf: fPdf,
-      from: fFrom,
-      to: fTo,
-    );
+    try {
+      _items = await notes.getNotes(
+        categoryId: _filterCategoryId,
+        tag: _filterTag,
+        search: _search,
+        sort: _sort,
+        onlyFavorites: fFav,
+        type: fType,
+        onlyPinned: fPinned,
+        onlyLocked: fLocked,
+        hasImage: fImage,
+        hasAudio: fAudio,
+        hasPdf: fPdf,
+        from: fFrom,
+        to: fTo,
+      );
+      _dbError = false;
+    } catch (_) {
+      // **حماية:** تعذّر فتح القاعدة (غالبًا مؤقّت — مفتاح/تخزين). لا نعرضها
+      // كـ«فارغة» (يُربك ويخاطر بقرار حذف/استعادة خاطئ)، ولا نمسح القائمة القديمة.
+      _dbError = true;
+    }
     _loading = false;
     notifyListeners();
-    // تحديث الويدجت بآخر/أهم ملاحظة.
-    WidgetService.instance.update(_items);
+    // تحديث الويدجت بآخر/أهم ملاحظة (فقط عند نجاح القراءة).
+    if (!_dbError) WidgetService.instance.update(_items);
   }
 
   Future<void> setCategoryFilter(int? categoryId) async {
