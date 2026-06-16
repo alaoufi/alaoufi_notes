@@ -82,7 +82,10 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   DateTime date = existing?.time ?? DateTime.now().add(const Duration(hours: 1));
   TimeOfDay time = TimeOfDay.fromDateTime(date);
   ReminderRepeat repeat = existing?.repeat ?? ReminderRepeat.once;
-  ReminderImportance importance = existing?.importance ?? ReminderImportance.high;
+  // التنبيه المستقلّ منبّه «حقيقيّ» ⇒ نجعله حرجًا افتراضيًّا (شاشة كاملة +
+  // أعلى موثوقية + إصرار حتى التأكيد). يمكن للمستخدم خفض المستوى إن أراد.
+  ReminderImportance importance =
+      existing?.importance ?? ReminderImportance.critical;
   final Set<int> preAlerts = {...?existing?.preAlerts};
   final Set<int> weekdays = {date.weekday};
   // نوع المنبّه + حقول خاصّة بكل نوع (جرعة الدواء / مكان الموعد + رابط خرائط).

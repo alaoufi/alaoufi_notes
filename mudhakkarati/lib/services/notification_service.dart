@@ -174,6 +174,10 @@ class NotificationService {
         AndroidFlutterLocalNotificationsPlugin>();
     await androidImpl?.requestNotificationsPermission();
     await androidImpl?.requestExactAlarmsPermission();
+    // إذن الشاشة الكاملة (أندرويد 14+) — كي يظهر المنبّه ملء الشاشة فوق القفل.
+    try {
+      await androidImpl?.requestFullScreenIntentPermission();
+    } catch (_) {/* قد لا يتوفّر على بعض الإصدارات */}
   }
 
   /// تفاصيل الإشعار حسب **مستوى الأهمية**:
