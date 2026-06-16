@@ -122,36 +122,41 @@ class AppDrawer extends StatelessWidget {
               onTap: () => go(const HelpGuideScreen()),
             ),
             const Divider(height: 1),
-            // مجموعات قابلة للطيّ (تمدّد/انكماش) لتنظيم أوضح.
-            _group(context, Icons.explore_outlined, s.t('group_quick'),
+            // مجموعات مرتّبة حسب التخصّص والهدف.
+            // 1) التنبيهات والتقويم (كل ما يتعلّق بالوقت والمنبّه).
+            _group(context, Icons.notifications_active_outlined,
+                s.t('group_reminders'),
                 initiallyExpanded: true, children: [
-              _tile(context, Icons.calendar_month, s.t('calendar'),
-                  () => go(const CalendarScreen())),
               _tile(context, Icons.alarm, s.t('reminders'),
                   () => go(const RemindersScreen())),
+              _tile(context, Icons.calendar_month, s.t('calendar'),
+                  () => go(const CalendarScreen())),
+            ]),
+            // 2) التنظيم (المفضّلة/الوسوم/التصنيفات/المعلومات/الملخّص/التنظيف).
+            _group(context, Icons.folder_outlined, s.t('group_organize'),
+                initiallyExpanded: true, children: [
               _tile(context, Icons.star, s.t('favorites'),
                   () => go(const FavoritesScreen())),
               _tile(context, Icons.tag, s.t('tags_page'),
                   () => go(const TagsScreen())),
+              _tile(context, Icons.category_outlined, s.t('manage_categories'),
+                  () => go(const ManageCategoriesScreen())),
               _tile(context, Icons.menu_book_outlined, s.t('info'), goInfo),
+              _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
+                  () => go(const WeeklySummaryScreen())),
+              _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),
+                  () => go(const CleanupScreen())),
             ]),
+            // 3) الأمان.
             _group(context, Icons.shield_outlined, s.t('security'),
                 children: [
               _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
               _tile(context, Icons.security, s.t('security_lock'),
                   () => go(const SecuritySettingsScreen())),
             ]),
-            _group(context, Icons.handyman_outlined, s.t('group_tools'),
-                children: [
-              _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),
-                  () => go(const CleanupScreen())),
-              _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
-                  () => go(const WeeklySummaryScreen())),
-              _tile(context, Icons.category_outlined, s.t('manage_categories'),
-                  () => go(const ManageCategoriesScreen())),
-            ]),
+            // 4) النسخ والأرشيف.
             _group(context, Icons.backup_outlined, s.t('group_backup'),
-                initiallyExpanded: true, children: [
+                children: [
               _tile(context, Icons.archive_outlined, s.t('archived'),
                   () => go(const ArchiveScreen())),
               _tile(context, Icons.delete_outline, s.t('trash'),
