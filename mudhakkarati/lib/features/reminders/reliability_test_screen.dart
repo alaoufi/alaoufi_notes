@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../services/alarm_volume.dart';
 import '../../services/notification_service.dart';
 
 /// شاشة «اختبار الموثوقية»: تتأكّد من أن الإشعارات والمنبّه يعملان فعليًّا على
@@ -18,6 +19,7 @@ class _ReliabilityTestScreenState extends State<ReliabilityTestScreen> {
 
   bool? _notifEnabled;
   bool? _exactAllowed;
+  bool? _batteryOk; // غير مقيّد بتوفير البطارية (مهمّ ليعمل المنبّه مغلقًا)
   bool _checking = true;
 
   static const _delays = <(String, Duration)>[
@@ -37,10 +39,12 @@ class _ReliabilityTestScreenState extends State<ReliabilityTestScreen> {
     setState(() => _checking = true);
     final notif = await _ns.areNotificationsEnabled();
     final exact = await _ns.canScheduleExactAlarms();
+    final battery = await AlarmVolume.isBatteryUnrestricted();
     if (!mounted) return;
     setState(() {
       _notifEnabled = notif;
       _exactAllowed = exact;
+      _batteryOk = battery;
       _checking = false;
     });
   }
@@ -104,6 +108,7 @@ class _ReliabilityTestScreenState extends State<ReliabilityTestScreen> {
                   else ...[
                     _statusRow('الإشعارات مُفعّلة', _notifEnabled),
                     _statusRow('المنبّه الدقيق مسموح', _exactAllowed),
+                    _statusRow('غير مقيّد بتوفير البطارية', _batteryOk),
                     if (_notifEnabled == false || _exactAllowed == false) ...[
                       const SizedBox(height: 8),
                       Text(
@@ -119,6 +124,23 @@ class _ReliabilityTestScreenState extends State<ReliabilityTestScreen> {
                         },
                         icon: const Icon(Icons.lock_open_outlined),
                         label: const Text('طلب الأذونات'),
+                      ),
+                    ],
+                    if (_batteryOk == false) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'توفير البطارية قد يُوقف المنبّه عندما يكون التطبيق مغلقًا — '
+                        'استثنِ التطبيق ليعمل المنبّه بموثوقية.',
+                        style: TextStyle(fontSize: 12.5, color: scheme.error),
+                      ),
+                      const SizedBox(height: 6),
+                      OutlinedButton.icon(
+                        onPressed: () async {
+                          await AlarmVolume.requestBatteryUnrestricted();
+                          await _refreshDiagnostics();
+                        },
+                        icon: const Icon(Icons.battery_saver_outlined),
+                        label: const Text('استثناء من توفير البطارية'),
                       ),
                     ],
                   ],

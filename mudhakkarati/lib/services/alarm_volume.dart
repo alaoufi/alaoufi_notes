@@ -23,4 +23,22 @@ class AlarmVolume {
       await _ch.invokeMethod('restore');
     } catch (_) {}
   }
+
+  /// هل التطبيق مُستثنى من توفير البطارية؟ (إن لم يكن، قد يُقتل المنبّه المجدول).
+  /// يعيد true عند التعذّر كي لا نُزعج المستخدم بلا داعٍ.
+  static Future<bool> isBatteryUnrestricted() async {
+    try {
+      return await _ch.invokeMethod<bool>('isBatteryUnrestricted') ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// يطلب استثناء التطبيق من توفير البطارية (نافذة النظام) — لضمان عمل المنبّه
+  /// حتى لو كان التطبيق مغلقًا على أجهزة بإدارة طاقة صارمة (شاومي/هواوي…).
+  static Future<void> requestBatteryUnrestricted() async {
+    try {
+      await _ch.invokeMethod('requestBatteryUnrestricted');
+    } catch (_) {}
+  }
 }

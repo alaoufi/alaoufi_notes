@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/backup_service.dart';
+import '../../services/notification_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../reminders/reminders_provider.dart';
 import 'home_screen.dart';
@@ -29,6 +30,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotesProvider>().init();
       context.read<RemindersProvider>().refresh();
+      // إن أُقلع التطبيق من منبّه حرج (وهو مغلق) ⇒ أظهر شاشة المنبّه فورًا.
+      NotificationService.instance.handleLaunch();
       // شبكة أمان ضدّ فقدان الملاحظات: نُفعّل النسخ التلقائي اليومي افتراضيًا عند
       // أول تشغيل (مرّة واحدة)، ثم ننشئ نسخة إن حان موعدها — كلّه في الخلفية.
       BackupService.instance

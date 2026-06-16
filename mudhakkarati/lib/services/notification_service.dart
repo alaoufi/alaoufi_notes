@@ -228,6 +228,14 @@ class NotificationService {
   NotificationDetails _detailsFor(ReminderImportance imp) =>
       NotificationDetails(android: _alarmDetails(imp));
 
+  /// وضع الجدولة: المنبّهات **الحرجة** تستخدم `alarmClock` (أعلى أولوية، تتجاوز
+  /// وضع توفير الطاقة/Doze وتعمل حتى لو كان التطبيق مغلقًا) — وهو الأكثر موثوقية
+  /// على أجهزة مثل شاومي/هواوي. غير الحرجة تستخدم `exactAllowWhileIdle`.
+  AndroidScheduleMode _mode(ReminderImportance imp) =>
+      imp == ReminderImportance.critical
+          ? AndroidScheduleMode.alarmClock
+          : AndroidScheduleMode.exactAllowWhileIdle;
+
   /// جدولة تذكير. يدعم التكرار يومي/أسبوعي/شهري/سنوي/مرة واحدة.
   Future<void> schedule(Reminder reminder, String title, String body) async {
     await init();
@@ -262,7 +270,7 @@ class NotificationService {
       safeBody,
       scheduled,
       _detailsFor(reminder.importance),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: _mode(reminder.importance),
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: match,
@@ -285,7 +293,7 @@ class NotificationService {
           '$safeBody ⏰',
           when,
           _detailsFor(ReminderImportance.critical),
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.alarmClock,
           uiLocalNotificationDateInterpretation:
               UILocalNotificationDateInterpretation.absoluteTime,
           payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
@@ -389,7 +397,7 @@ class NotificationService {
       body,
       when,
       _detailsFor(ReminderImportance.critical),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.alarmClock,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'note:${noteId ?? -1}|title:$title|body:$body'
@@ -410,7 +418,7 @@ class NotificationService {
       body,
       when,
       _detailsFor(imp),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: _mode(imp),
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       payload: payload,
@@ -437,6 +445,15 @@ class NotificationService {
       return _extractInt(payload, 'note:');
     }
     return null;
+  }
+
+  /// إن أُقلع التطبيق **من المنبّه** (تطبيق مغلق + شاشة كاملة/نقرة): نعالج الإطلاق
+  /// لإظهار شاشة المنبّه الحرج فورًا (أو فتح الملاحظة). يُستدعى بعد جهوز الواجهة.
+  Future<void> handleLaunch() async {
+    final details = await _plugin.getNotificationAppLaunchDetails();
+    if (details == null || !details.didNotificationLaunchApp) return;
+    final resp = details.notificationResponse;
+    if (resp != null) await handleAction(resp);
   }
 
   Future<void> cancel(int notificationId) async {

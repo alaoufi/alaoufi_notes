@@ -65,6 +65,10 @@ class MainActivity : FlutterFragmentActivity() {
                         restoreAlarmVolume()
                         result.success(true)
                     }
+                    "isBatteryUnrestricted" -> result.success(isBatteryUnrestricted())
+                    "requestBatteryUnrestricted" -> {
+                        requestBatteryUnrestricted(); result.success(true)
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -118,6 +122,38 @@ class MainActivity : FlutterFragmentActivity() {
             val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
             am.setStreamVolume(AudioManager.STREAM_ALARM, saved, 0)
         } catch (e: Exception) {
+        }
+    }
+
+    /// هل التطبيق مُستثنى من توفير البطارية؟ (مهمّ كي لا يُقتل المنبّه المجدول).
+    private fun isBatteryUnrestricted(): Boolean {
+        return try {
+            val pm = getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            pm.isIgnoringBatteryOptimizations(packageName)
+        } catch (e: Exception) {
+            true // عند التعذّر لا نُزعج المستخدم
+        }
+    }
+
+    /// يطلب من المستخدم استثناء التطبيق من توفير البطارية (نافذة النظام).
+    private fun requestBatteryUnrestricted() {
+        try {
+            val intent = Intent(
+                android.provider.Settings
+                    .ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            ).apply { data = Uri.parse("package:$packageName") }
+            startActivity(intent)
+        } catch (e: Exception) {
+            // بديل: نفتح إعدادات توفير البطارية العامّة.
+            try {
+                startActivity(
+                    Intent(
+                        android.provider.Settings
+                            .ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+                    )
+                )
+            } catch (_: Exception) {
+            }
         }
     }
 
