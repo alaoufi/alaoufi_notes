@@ -7,6 +7,7 @@ import '../../data/models/note.dart';
 import '../../data/models/reminder.dart';
 import '../../data/repositories/note_repository.dart';
 import '../../data/repositories/reminder_repository.dart';
+import '../../services/file_service.dart';
 import '../../services/notification_service.dart';
 
 /// عنصر عرض يجمع التذكير مع ملاحظته.
@@ -78,6 +79,7 @@ class RemindersProvider extends ChangeNotifier {
     ReminderImportance importance = ReminderImportance.high,
     List<int> preAlerts = const [],
     String location = '',
+    String attachmentPath = '',
     Reminder? existing,
   }) async {
     if (existing != null) {
@@ -92,6 +94,7 @@ class RemindersProvider extends ChangeNotifier {
       importance: importance,
       preAlerts: preAlerts,
       location: location,
+      attachmentPath: attachmentPath,
       notificationId: notifId,
     );
     final id = await _repo.insert(reminder);
@@ -231,6 +234,10 @@ class RemindersProvider extends ChangeNotifier {
 
   Future<void> removeReminder(Reminder reminder) async {
     await NotificationService.instance.cancel(reminder.notificationId);
+    // احذف مرفق الدعوة المرتبط (إن وُجد) من القرص.
+    if (reminder.attachmentPath.isNotEmpty) {
+      await FileService.instance.deleteIfExists(reminder.attachmentPath);
+    }
     await _repo.delete(reminder.id!);
     await refresh();
   }

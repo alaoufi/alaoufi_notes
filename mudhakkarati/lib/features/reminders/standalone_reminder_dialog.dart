@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -6,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../data/models/enums.dart';
+import '../editor/editor_attachments.dart';
 import 'alarm_permissions.dart';
 import '../../data/models/reminder.dart';
 import '../../services/ringtone_picker.dart';
@@ -62,6 +65,33 @@ Future<void> _openExternal(Uri uri) async {
   } catch (_) {/* لا يوجد تطبيق يفتح الرابط */}
 }
 
+/// يختار مرفق الدعوة (صورة أو PDF) وينسخه لمجلد المرفقات. يعيد المسار أو null.
+Future<String?> _pickInvitation(BuildContext context) async {
+  final choice = await showModalBottomSheet<String>(
+    context: context,
+    showDragHandle: true,
+    builder: (_) => SafeArea(
+      child: Wrap(children: [
+        ListTile(
+          leading: const Icon(Icons.image_outlined),
+          title: const Text('صورة'),
+          onTap: () => Navigator.pop(context, 'image'),
+        ),
+        ListTile(
+          leading: const Icon(Icons.picture_as_pdf_outlined),
+          title: const Text('PDF'),
+          onTap: () => Navigator.pop(context, 'pdf'),
+        ),
+      ]),
+    ),
+  );
+  if (choice == 'image' && context.mounted) {
+    return EditorAttachments.pickImage(context);
+  }
+  if (choice == 'pdf') return EditorAttachments.pickPdf();
+  return null;
+}
+
 /// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
 const List<(int, String)> _weekdayDefs = [
   (6, 'السبت'),
@@ -97,6 +127,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   final doseCtrl = TextEditingController();
   final placeCtrl = TextEditingController();
   final mapLinkCtrl = TextEditingController(text: existing?.location ?? '');
+  // مرفق الدعوة (صورة/PDF) للموعد — اختياري.
+  String attachmentPath = existing?.attachmentPath ?? '';
 
   // عند **أول** إنشاء تنبيه جديد: اطلب فكّ كل القيود لضمان عمل المنبّه.
   if (existing == null) {
@@ -360,6 +392,57 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                     color: scheme.onSurface.withOpacity(0.6)),
                               ),
                             ),
+                            const SizedBox(height: 10),
+                            // الدعوة (صورة/PDF) — اختياري.
+                            if (attachmentPath.isEmpty)
+                              OutlinedButton.icon(
+                                onPressed: () async {
+                                  final path = await _pickInvitation(context);
+                                  if (path != null) {
+                                    setState(() => attachmentPath = path);
+                                  }
+                                },
+                                icon: const Icon(Icons.attach_file),
+                                label: const Text('إرفاق الدعوة (صورة/PDF)'),
+                              )
+                            else
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: attachmentPath
+                                        .toLowerCase()
+                                        .endsWith('.pdf')
+                                    ? const Icon(Icons.picture_as_pdf,
+                                        color: Colors.red, size: 38)
+                                    : ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(File(attachmentPath),
+                                            width: 42,
+                                            height: 42,
+                                            fit: BoxFit.cover),
+                                      ),
+                                title: const Text('الدعوة مرفقة'),
+                                subtitle: Text(attachmentPath.split('/').last,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 11.5)),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      tooltip: 'فتح',
+                                      icon: const Icon(Icons.open_in_new),
+                                      onPressed: () => EditorAttachments
+                                          .openFile(attachmentPath),
+                                    ),
+                                    IconButton(
+                                      tooltip: 'إزالة',
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () =>
+                                          setState(() => attachmentPath = ''),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                           const SizedBox(height: 12),
                           Row(children: [
@@ -610,6 +693,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                     importance: importance,
                                     preAlerts: preAlerts.toList()..sort(),
                                     location: mapLinkCtrl.text.trim(),
+                                    attachmentPath: attachmentPath,
                                     existing: existing);
                               }
                               if (context.mounted) Navigator.pop(context);

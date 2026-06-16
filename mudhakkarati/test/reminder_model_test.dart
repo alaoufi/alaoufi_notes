@@ -15,6 +15,7 @@ void main() {
         importance: ReminderImportance.critical,
         preAlerts: const [5, 15, 60, 1440],
         location: 'https://maps.google.com/?q=24.7,46.6',
+        attachmentPath: '/data/attachments/invite.pdf',
         notificationId: 12345,
       );
       final back = Reminder.fromMap(r.toMap());
@@ -24,6 +25,7 @@ void main() {
       expect(back.importance, ReminderImportance.critical);
       expect(back.preAlerts, [5, 15, 60, 1440]);
       expect(back.location, 'https://maps.google.com/?q=24.7,46.6');
+      expect(back.attachmentPath, '/data/attachments/invite.pdf');
       expect(back.notificationId, 12345);
       expect(back.time.millisecondsSinceEpoch, 1700000000000);
     });
@@ -40,6 +42,7 @@ void main() {
         'pre_alerts': '',
       });
       expect(r.location, '');
+      expect(r.attachmentPath, '');
     });
 
     test('copyWith preserves location and other fields', () {

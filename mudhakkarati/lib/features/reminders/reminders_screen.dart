@@ -9,6 +9,7 @@ import '../../data/models/reminder.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../cleanup/cleanup_screen.dart';
+import '../editor/editor_attachments.dart';
 import '../editor/note_editor_screen.dart';
 import '../meds/medication_screen.dart';
 import '../sounds/sound_library_screen.dart';
@@ -228,6 +229,17 @@ class RemindersScreen extends StatelessWidget {
                     await launchUrl(u, mode: LaunchMode.externalApplication);
                   } catch (_) {/* لا يوجد تطبيق يفتح الرابط */}
                 },
+              ),
+            // فتح مرفق الدعوة (صورة/PDF) إن وُجد.
+            if (r.attachmentPath.trim().isNotEmpty)
+              IconButton(
+                tooltip: 'الدعوة',
+                icon: Icon(
+                    r.attachmentPath.toLowerCase().endsWith('.pdf')
+                        ? Icons.picture_as_pdf_outlined
+                        : Icons.image_outlined,
+                    color: scheme.primary),
+                onPressed: () => EditorAttachments.openFile(r.attachmentPath),
               ),
             IconButton(
               tooltip: 'حذف',

@@ -18,6 +18,9 @@ class Reminder {
   /// موقع التذكير (رابط خرائط جوجل) — للمواعيد. فارغ = بلا موقع.
   final String location;
 
+  /// مرفق الدعوة (صورة أو PDF) — للمواعيد. مسار ملف داخل التطبيق، أو فارغ.
+  final String attachmentPath;
+
   /// معرّف الإشعار في flutter_local_notifications (لإلغائه لاحقًا).
   final int notificationId;
 
@@ -31,6 +34,7 @@ class Reminder {
     this.importance = ReminderImportance.high,
     this.preAlerts = const [],
     this.location = '',
+    this.attachmentPath = '',
     required this.notificationId,
   });
 
@@ -49,6 +53,7 @@ class Reminder {
       'importance': importance.dbValue,
       'pre_alerts': preAlerts.join(','),
       'location': location,
+      'attachment': attachmentPath,
     };
   }
 
@@ -68,6 +73,7 @@ class Reminder {
           .where((e) => e > 0)
           .toList(),
       location: (map['location'] as String?) ?? '',
+      attachmentPath: (map['attachment'] as String?) ?? '',
     );
   }
 
@@ -81,6 +87,7 @@ class Reminder {
     ReminderImportance? importance,
     List<int>? preAlerts,
     String? location,
+    String? attachmentPath,
     int? notificationId,
   }) {
     return Reminder(
@@ -93,6 +100,7 @@ class Reminder {
       importance: importance ?? this.importance,
       preAlerts: preAlerts ?? this.preAlerts,
       location: location ?? this.location,
+      attachmentPath: attachmentPath ?? this.attachmentPath,
       notificationId: notificationId ?? this.notificationId,
     );
   }
