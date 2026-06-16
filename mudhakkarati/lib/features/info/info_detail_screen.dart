@@ -58,7 +58,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
     add('التخصص الرئيسي', _e.mainSpecialty);
     add('التخصص الفرعي', _e.subSpecialty);
     add('الموضوع', _e.topic);
-    add('المختصر', _e.brief);
+    add('الملخص', _e.brief);
     add('التفصيل', richToPlainText(_e.detail));
     add('ملاحظات', _e.notes);
     add('المصدر', _e.source);
@@ -162,7 +162,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
                         ?.copyWith(color: theme.hintColor)),
               ]),
               // الأقسام كبطاقات ثلاثية الأبعاد (تستوعب التنسيق).
-              _card3d('المختصر', Icons.short_text, dark, scheme,
+              _card3d('الملخص', Icons.short_text, dark, scheme,
                   highlight: true,
                   child: SelectableText(_e.brief,
                       style: theme.textTheme.bodyLarge?.copyWith(

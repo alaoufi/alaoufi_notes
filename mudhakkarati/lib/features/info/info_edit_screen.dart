@@ -158,7 +158,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   Future<void> _save() async {
     if (_topic.text.trim().isEmpty && _brief.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('أدخل الموضوع أو المختصر على الأقل')));
+          const SnackBar(content: Text('أدخل الموضوع أو الملخص على الأقل')));
       return;
     }
     setState(() => _saving = true);
@@ -323,7 +323,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                   ]),
                   _card('المحتوى', Icons.article_outlined, [
                     _field(_topic, 'الموضوع', Icons.title),
-                    _field(_brief, 'المختصر', Icons.short_text, maxLines: 3),
+                    _field(_brief, 'الملخص', Icons.short_text, maxLines: 3),
                     _detailField(),
                   ]),
                   _card('معلومات إضافية', Icons.more_horiz, [
