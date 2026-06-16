@@ -50,8 +50,9 @@ jobs:
             echo "===== flutter pub get ====="
             cd keygen
             flutter pub get
-            echo "===== flutter build apk (release) ====="
-            flutter build apk --release --build-number=${{ github.run_number }}
+            echo "===== flutter build apk (split per abi — ملفات أصغر) ====="
+            flutter build apk --release --split-per-abi \
+              --build-number=${{ github.run_number }}
             echo "===== size ====="
             ls -lh build/app/outputs/flutter-apk/
           } 2>&1 | tee /tmp/keygen-build.log
@@ -80,13 +81,15 @@ jobs:
           name: مولّد أكواد مذكراتي — أحدث نسخة
           body: |
             تطبيق مستقلّ لتوليد أكواد التفعيل — للمالك فقط.
-            ثبّت app-release.apk على جوالك أنت.
+            • app-arm64-v8a-release.apk — لمعظم الأجهزة الحديثة (الأصغر، يُنصح به)
+            • app-armeabi-v7a-release.apk — لأجهزة 32-بت القديمة
           files: |
-            keygen/build/app/outputs/flutter-apk/app-release.apk
+            keygen/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            keygen/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
 
       - name: رفع المولّد كـ Artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: mdk-keygen-apk
-          path: keygen/build/app/outputs/flutter-apk/app-release.apk
+          path: keygen/build/app/outputs/flutter-apk/*.apk
