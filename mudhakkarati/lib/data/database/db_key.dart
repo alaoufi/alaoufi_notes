@@ -51,11 +51,20 @@ class DbKeyManager {
   /// المفتاح الحالي. يُستعاد من النسخة الاحتياطية إن فُقد من Keystore، ولا يُولَّد
   /// مفتاح جديد إلا عند غيابه من كلا المصدرين.
   Future<String> getOrCreateKey() async {
-    // 1) التخزين الآمن (الأساسي).
+    // 1) التخزين الآمن (الأساسي) — مع إعادة محاولة، لأن الفشل غالبًا **لحظيّ**
+    //    (هذا بالضبط ما سبّب ظهور القاعدة فارغة: قراءة فاشلة مؤقّتة للمفتاح).
     String? secure;
-    try {
-      secure = await _storage.read(key: _kKey);
-    } catch (_) {}
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        secure = await _storage.read(key: _kKey);
+      } catch (_) {
+        secure = null;
+      }
+      if (secure != null && secure.isNotEmpty) break;
+      if (attempt < 2) {
+        await Future.delayed(const Duration(milliseconds: 250));
+      }
+    }
     if (secure != null && secure.isNotEmpty) {
       await _writeFallback(secure); // اضمن وجود النسخة الاحتياطية.
       return secure;
