@@ -30,6 +30,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   late final TextEditingController _source;
   bool _saving = false;
   bool _showToolbar = false;
+  List<InfoEntry> _all = []; // لاقتراح التخصصات الموجودة في قائمة الاختيار
 
   @override
   void initState() {
@@ -47,6 +48,102 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
     _detail.focus.addListener(() {
       if (mounted) setState(() => _showToolbar = _detail.focus.hasFocus);
     });
+    _loadExisting();
+  }
+
+  Future<void> _loadExisting() async {
+    final all = await _repo.getAll();
+    if (mounted) setState(() => _all = all);
+  }
+
+  /// قائمة التخصصات الرئيسية الموجودة (للاختيار من قائمة بدل التكرار).
+  List<String> get _mainOptions => {
+        for (final e in _all)
+          if (e.mainSpecialty.trim().isNotEmpty) e.mainSpecialty.trim()
+      }.toList()
+        ..sort();
+
+  /// التخصصات الفرعية (ضمن الرئيسي المختار إن وُجد، وإلا كلّها).
+  List<String> get _subOptions {
+    final main = _main.text.trim();
+    return {
+      for (final e in _all)
+        if (e.subSpecialty.trim().isNotEmpty &&
+            (main.isEmpty || e.mainSpecialty.trim() == main))
+          e.subSpecialty.trim()
+    }.toList()
+      ..sort();
+  }
+
+  /// يعرض قائمة قابلة للبحث لاختيار قيمة موجودة (أو الإبقاء على الكتابة الحرّة).
+  Future<void> _pickFromList(
+      TextEditingController c, String title, List<String> options) async {
+    if (options.isEmpty) return;
+    final scheme = Theme.of(context).colorScheme;
+    var query = '';
+    final picked = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) {
+          final filtered = options
+              .where((o) => o.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+          return SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  16, 0, 16, MediaQuery.of(ctx).viewInsets.bottom + 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: Theme.of(ctx)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  TextField(
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: 'بحث…',
+                      prefixIcon: Icon(Icons.search),
+                      isDense: true,
+                    ),
+                    onChanged: (v) => setSheet(() => query = v),
+                  ),
+                  const SizedBox(height: 8),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(ctx).size.height * 0.4),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final o in filtered)
+                          ListTile(
+                            dense: true,
+                            leading:
+                                Icon(Icons.label_outline, color: scheme.primary),
+                            title: Text(o),
+                            onTap: () => Navigator.pop(ctx, o),
+                          ),
+                        if (filtered.isEmpty)
+                          const Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Text('لا توجد عناصر مطابقة'),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+    if (picked != null) setState(() => c.text = picked);
   }
 
   @override
@@ -98,7 +195,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   }
 
   Widget _field(TextEditingController c, String label, IconData icon,
-      {int maxLines = 1}) {
+      {int maxLines = 1, VoidCallback? onPickList}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
@@ -111,6 +208,14 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
           labelText: label,
           prefixIcon: Icon(icon),
           alignLabelWithHint: true,
+          // زرّ «اختيار من قائمة» للتخصصات الموجودة.
+          suffixIcon: onPickList == null
+              ? null
+              : IconButton(
+                  tooltip: 'اختيار من قائمة',
+                  icon: const Icon(Icons.arrow_drop_down_circle_outlined),
+                  onPressed: onPickList,
+                ),
         ),
       ),
     );
@@ -208,9 +313,13 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                 children: [
                   _card('التصنيف', Icons.account_tree_outlined, [
                     _field(_main, 'التخصص الرئيسي',
-                        Icons.account_tree_outlined),
+                        Icons.account_tree_outlined,
+                        onPickList: () => _pickFromList(
+                            _main, 'التخصص الرئيسي', _mainOptions)),
                     _field(_sub, 'التخصص الفرعي',
-                        Icons.subdirectory_arrow_left),
+                        Icons.subdirectory_arrow_left,
+                        onPickList: () =>
+                            _pickFromList(_sub, 'التخصص الفرعي', _subOptions)),
                   ]),
                   _card('المحتوى', Icons.article_outlined, [
                     _field(_topic, 'الموضوع', Icons.title),

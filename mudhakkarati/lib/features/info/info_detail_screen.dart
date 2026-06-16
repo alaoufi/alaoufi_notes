@@ -71,104 +71,168 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
     return Scaffold(
-      appBar: gradientAppBar(context, 'عرض المعلومة', actions: [
-          IconButton(
-              onPressed: _copyAll,
-              icon: const Icon(Icons.copy_all),
-              tooltip: 'نسخ'),
-          IconButton(
-              onPressed: _edit,
-              icon: const Icon(Icons.edit_outlined),
-              tooltip: 'تعديل'),
-          IconButton(
-              onPressed: _delete,
-              icon: const Icon(Icons.delete_outline),
-              tooltip: 'حذف'),
+      body: CustomScrollView(
+        slivers: [
+          // رأس عصري كبير بتدرّج لوني — يعرض الموضوع كاملًا.
+          SliverAppBar.large(
+            pinned: true,
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+            actions: [
+              IconButton(
+                  onPressed: _copyAll,
+                  icon: const Icon(Icons.copy_all),
+                  tooltip: 'نسخ'),
+              IconButton(
+                  onPressed: _edit,
+                  icon: const Icon(Icons.edit_outlined),
+                  tooltip: 'تعديل'),
+              IconButton(
+                  onPressed: _delete,
+                  icon: const Icon(Icons.delete_outline),
+                  tooltip: 'حذف'),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding:
+                  const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 14),
+              title: Text(
+                _e.topic.isNotEmpty ? _e.topic : 'عرض المعلومة',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              background: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [
+                      scheme.primary,
+                      Color.alphaBlend(
+                          Colors.black.withOpacity(0.16), scheme.primary),
+                      scheme.tertiary,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 32),
+            sliver: SliverList.list(children: [
+              // مسار التخصص (قابل للنقر).
+              if (_e.mainSpecialty.isNotEmpty || _e.subSpecialty.isNotEmpty)
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (_e.mainSpecialty.isNotEmpty)
+                      _chip(
+                        _e.mainSpecialty,
+                        scheme.primaryContainer,
+                        scheme.onPrimaryContainer,
+                        Icons.account_tree_outlined,
+                        onTap: () => _openSpecialty(main: _e.mainSpecialty),
+                      ),
+                    if (_e.subSpecialty.isNotEmpty) ...[
+                      Icon(Icons.chevron_left, size: 18, color: theme.hintColor),
+                      _chip(
+                        _e.subSpecialty,
+                        scheme.secondaryContainer,
+                        scheme.onSecondaryContainer,
+                        Icons.subdirectory_arrow_left,
+                        onTap: () => _openSpecialty(
+                            main: _e.mainSpecialty.isEmpty
+                                ? null
+                                : _e.mainSpecialty,
+                            sub: _e.subSpecialty),
+                      ),
+                    ],
+                  ],
+                ),
+              const SizedBox(height: 8),
+              Row(children: [
+                Icon(Icons.event, size: 15, color: theme.hintColor),
+                const SizedBox(width: 4),
+                Text('تاريخ الإضافة: ${_date(_e.createdAt)}',
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.hintColor)),
+              ]),
+              // الأقسام كبطاقات ثلاثية الأبعاد (تستوعب التنسيق).
+              _card3d('المختصر', Icons.short_text, dark, scheme,
+                  highlight: true,
+                  child: SelectableText(_e.brief,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                          height: 1.6, fontWeight: FontWeight.w600))),
+              _card3d('التفصيل', Icons.notes, dark, scheme,
+                  rich: _e.detail),
+              _card3d('ملاحظات', Icons.sticky_note_2_outlined, dark, scheme,
+                  child: SelectableText(_e.notes,
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.7))),
+              _card3d('المصدر', Icons.link, dark, scheme,
+                  child: SelectableText(_e.source,
+                      style: theme.textTheme.bodyMedium?.copyWith(height: 1.6))),
+            ]),
+          ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+    );
+  }
+
+  /// بطاقة قسم ثلاثية الأبعاد (تدرّج + حدّ + ظلّ + شارة أيقونة). تُخفى إن فرغت.
+  /// [rich] لعرض نصّ غنيّ بتنسيقه؛ وإلا [child] لنصّ عادي.
+  Widget _card3d(String label, IconData icon, bool dark, ColorScheme scheme,
+      {Widget? child, String? rich, bool highlight = false}) {
+    if (rich != null) {
+      if (richToPlainText(rich).trim().isEmpty) return const SizedBox.shrink();
+    } else if (child is SelectableText) {
+      if ((child.data ?? '').trim().isEmpty) return const SizedBox.shrink();
+    }
+    final surface = dark ? const Color(0xFF1E2230) : Colors.white;
+    final accent = scheme.primary;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            surface,
+            Color.alphaBlend(
+                accent.withOpacity(highlight ? 0.10 : 0.05), surface),
+          ],
+        ),
+        border: Border.all(
+            color: accent.withOpacity(highlight ? 0.40 : 0.16),
+            width: highlight ? 1.4 : 1),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(dark ? 0.4 : 0.07),
+              offset: const Offset(0, 8),
+              blurRadius: 18,
+              spreadRadius: -6),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // مسار التخصص.
-          if (_e.mainSpecialty.isNotEmpty || _e.subSpecialty.isNotEmpty)
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                if (_e.mainSpecialty.isNotEmpty)
-                  _chip(
-                    _e.mainSpecialty,
-                    scheme.primaryContainer,
-                    scheme.onPrimaryContainer,
-                    Icons.account_tree_outlined,
-                    onTap: () => _openSpecialty(main: _e.mainSpecialty),
-                  ),
-                if (_e.subSpecialty.isNotEmpty) ...[
-                  Icon(Icons.chevron_left, size: 18, color: theme.hintColor),
-                  _chip(
-                    _e.subSpecialty,
-                    scheme.secondaryContainer,
-                    scheme.onSecondaryContainer,
-                    Icons.subdirectory_arrow_left,
-                    onTap: () => _openSpecialty(
-                        main: _e.mainSpecialty.isEmpty ? null : _e.mainSpecialty,
-                        sub: _e.subSpecialty),
-                  ),
-                ],
-              ],
-            ),
-          const SizedBox(height: 14),
-          // العنوان (الموضوع).
-          if (_e.topic.isNotEmpty)
-            SelectableText(
-              _e.topic,
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(Icons.event, size: 15, color: theme.hintColor),
-              const SizedBox(width: 4),
-              Text('تاريخ الإضافة: ${_date(_e.createdAt)}',
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.hintColor)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // المختصر — بطاقة بارزة.
-          if (_e.brief.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(14),
-                border: Border(
-                    right: BorderSide(color: scheme.primary, width: 4)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(children: [
-                    Icon(Icons.short_text, size: 18, color: scheme.primary),
-                    const SizedBox(width: 6),
-                    Text('المختصر',
-                        style: theme.textTheme.labelLarge
-                            ?.copyWith(color: scheme.primary)),
-                  ]),
-                  const SizedBox(height: 8),
-                  SelectableText(_e.brief,
-                      style: theme.textTheme.bodyLarge
-                          ?.copyWith(height: 1.6, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-          _richSection('التفصيل', Icons.notes, _e.detail, theme),
-          _section('ملاحظات', Icons.sticky_note_2_outlined, _e.notes, theme),
-          _section('المصدر', Icons.link, _e.source, theme),
+          Row(children: [
+            gradientBadge(icon, accent, size: 34, radius: 10, iconSize: 18),
+            const SizedBox(width: 10),
+            Text(label,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: scheme.onSurface)),
+          ]),
+          const SizedBox(height: 12),
+          if (rich != null) RichTextViewer(content: rich) else child!,
         ],
       ),
     );
@@ -207,48 +271,4 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
         ),
       );
 
-  /// قسم «التفصيل» — يعرض النص الغني بتنسيقه.
-  Widget _richSection(
-      String label, IconData icon, String value, ThemeData theme) {
-    if (richToPlainText(value).trim().isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, size: 18, color: theme.colorScheme.primary),
-            const SizedBox(width: 6),
-            Text(label,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
-          ]),
-          const Divider(height: 14),
-          RichTextViewer(content: value),
-        ],
-      ),
-    );
-  }
-
-  Widget _section(String label, IconData icon, String value, ThemeData theme) {
-    if (value.trim().isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.only(top: 18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            Icon(icon, size: 18, color: theme.colorScheme.primary),
-            const SizedBox(width: 6),
-            Text(label,
-                style: theme.textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.bold)),
-          ]),
-          const Divider(height: 14),
-          SelectableText(value,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.7)),
-        ],
-      ),
-    );
-  }
 }
