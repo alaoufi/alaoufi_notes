@@ -153,18 +153,26 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   /// إدراج عنصر جديد بعد [i] مباشرةً والانتقال إليه (عند ضغط Enter).
   /// يرث نوع السطر الحالي (مهمة/نص) كما في تطبيقات المذكرات.
-  void _addItemAfter(int i) {
+  /// [text]: النصّ المنقول لما بعد المؤشّر عند تقسيم سطر (وإلا سطر فارغ).
+  void _addItemAfter(int i, {String text = ''}) {
     final inheritTask =
         (i >= 0 && i < _checklist.length) ? _checklist[i].isTask : true;
     setState(() {
-      _checklist.insert(i + 1,
-          ChecklistItem(noteId: _note.id ?? 0, text: '', isTask: inheritTask));
-      _itemCtrls.insert(i + 1, TextEditingController());
+      _checklist.insert(
+          i + 1,
+          ChecklistItem(
+              noteId: _note.id ?? 0, text: text, isTask: inheritTask));
+      _itemCtrls.insert(i + 1, TextEditingController(text: text));
       _itemFocus.insert(i + 1, FocusNode());
     });
     _onChanged();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (i + 1 < _itemFocus.length) _itemFocus[i + 1].requestFocus();
+      if (i + 1 < _itemFocus.length) {
+        _itemFocus[i + 1].requestFocus();
+        // المؤشّر في بداية النص المنقول (حيث ضُغط Enter).
+        _itemCtrls[i + 1].selection =
+            const TextSelection.collapsed(offset: 0);
+      }
     });
   }
 
@@ -227,9 +235,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
     if (isEmpty && !force) return;
 
+    // أثناء التحرير لا نُعيد تحميل كامل القائمة (مئات الملاحظات) مع كل حفظ
+    // مؤجَّل — هذا كان سبب البطء عند كتابة سطر جديد. التحديث يحدث مرّة واحدة
+    // في الخلفية عند إغلاق المحرّر (انظر [_onWillPop]).
     final id = await provider.saveNote(
       candidate,
       checklist: _note.type == NoteType.checklist ? _checklist : null,
+      reload: false,
     );
     _note = candidate.copyWith(id: id);
     _dirty = false;
@@ -237,9 +249,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Future<bool> _onWillPop() async {
     _debounce?.cancel();
+    final provider = context.read<NotesProvider>();
     if (!_deleted && (_dirty || _note.id == null)) {
       await _save();
     }
+    // حدّث القائمة مرّة واحدة في الخلفية (بصمت، بلا وميض تحميل) كي لا يتأخّر
+    // الرجوع للملاحظات ويظلّ الانتقال سلسًا.
+    unawaited(provider.refresh(silent: true));
     return true;
   }
 
@@ -775,7 +791,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             _onChanged();
           },
           onTextChanged: _onChanged,
-          onSubmit: () => _addItemAfter(i),
+          onSubmit: (rest) => _addItemAfter(i, text: rest),
           onDelete: () {
             setState(() {
               _checklist.removeAt(i);
@@ -981,7 +997,8 @@ class ChecklistTile extends StatefulWidget {
   final ValueChanged<bool> onToggle;
   final VoidCallback onToggleType; // تحويل مهمة⇄نص
   final VoidCallback onTextChanged;
-  final VoidCallback onSubmit; // Enter ⇒ سطر/مهمة جديدة
+  // Enter ⇒ سطر/مهمة جديدة. الوسيط = النصّ المنقول لما بعد المؤشّر (عند التقسيم).
+  final ValueChanged<String> onSubmit;
   final VoidCallback onDelete;
 
   const ChecklistTile({
@@ -1026,7 +1043,25 @@ class _ChecklistTileState extends State<ChecklistTile> {
   }
 
   void _onText() {
-    final d = ChecklistTile.dirOf(widget.controller.text);
+    final text = widget.controller.text;
+    // كشف موثوق لـ Enter على **كل** لوحات المفاتيح: في حقل متعدّد الأسطر يُدرج
+    // Enter محرف سطر جديد دائمًا (بخلاف onSubmitted الذي قد لا يُطلَق على حقل
+    // فارغ في بعض اللوحات — وهو سبب «لا ينزل سطر جديد إلا بعد الكتابة»).
+    if (text.contains('\n')) {
+      final idx = text.indexOf('\n');
+      final before = text.substring(0, idx);
+      final after = text.substring(idx + 1);
+      // أبقِ ما قبل Enter في السطر الحالي (دفعة واحدة لتفادي وميض سطرين).
+      widget.controller.value = TextEditingValue(
+        text: before,
+        selection: TextSelection.collapsed(offset: before.length),
+      );
+      final d = ChecklistTile.dirOf(before);
+      if (d != _dir && mounted) setState(() => _dir = d);
+      widget.onSubmit(after); // أنشئ سطرًا جديدًا (مع النص المنقول إن وُجد).
+      return;
+    }
+    final d = ChecklistTile.dirOf(text);
     if (d != _dir && mounted) setState(() => _dir = d);
     widget.onTextChanged();
   }
@@ -1078,10 +1113,12 @@ class _ChecklistTileState extends State<ChecklistTile> {
               controller: widget.controller,
               focusNode: widget.focusNode,
               textDirection: _dir,
-              maxLines: 1,
-              // Enter ⇒ ينشئ سطرًا/مهمة جديدة بدل سطر داخل نفس الحقل.
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) => widget.onSubmit(),
+              // حقل متعدّد الأسطر كي يُدرج Enter محرف سطر نلتقطه في [_onText]
+              // ونحوّله إلى عنصر جديد — يعمل حتى على السطر الأول الفارغ.
+              minLines: 1,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
               style: widget.baseStyle.copyWith(
                 decoration: (widget.isTask && widget.isDone)
                     ? TextDecoration.lineThrough

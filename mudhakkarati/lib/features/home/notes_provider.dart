@@ -126,9 +126,16 @@ class NotesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refresh() async {
-    _loading = true;
-    notifyListeners();
+  /// يعيد تحميل قائمة الملاحظات.
+  ///
+  /// [silent]: عند `true` لا نُظهر مؤشّر التحميل (نُبقي القائمة الحالية ظاهرة
+  /// ونحدّثها في مكانها عند الانتهاء) — يُستخدم عند الرجوع من المحرّر كي يكون
+  /// الانتقال سلسًا بلا وميض شاشة تحميل.
+  Future<void> refresh({bool silent = false}) async {
+    if (!silent) {
+      _loading = true;
+      notifyListeners();
+    }
     try {
       _items = await notes.getNotes(
         categoryId: _filterCategoryId,
@@ -199,12 +206,18 @@ class NotesProvider extends ChangeNotifier {
 
   // ---- إجراءات الملاحظات ----
 
-  Future<int> saveNote(Note note, {List<ChecklistItem>? checklist}) async {
+  /// يحفظ الملاحظة (والقائمة إن وُجدت) ويعيد المعرّف.
+  ///
+  /// [reload]: عند `false` لا يُعاد تحميل كامل قائمة الملاحظات — يُستخدم أثناء
+  /// التحرير المتكرّر (حفظ مؤجَّل لكل سطر/تعديل) لتفادي البطء مع مئات الملاحظات.
+  /// الشاشة الفاتحة للمحرّر تتولّى تحديث القائمة مرّة واحدة عند الرجوع.
+  Future<int> saveNote(Note note,
+      {List<ChecklistItem>? checklist, bool reload = true}) async {
     final id = await notes.upsertNote(note);
     if (checklist != null) {
       await notes.saveChecklist(id, checklist);
     }
-    await refresh();
+    if (reload) await refresh();
     return id;
   }
 
