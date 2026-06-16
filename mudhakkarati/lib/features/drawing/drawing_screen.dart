@@ -3,21 +3,26 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../services/file_service.dart';
 import '../../widgets/confirm_dialog.dart';
 
-/// خطّ واحد في الرسم — يحتفظ **بلونه وسماكته الخاصّة** (تحكّم مستقلّ لكل خط).
+/// نوع الفرشاة — يحدّد الشفافية والعرض وشكل النهاية.
+enum _Brush { pen, marker, highlighter, pencil }
+
+/// خطّ واحد — يحتفظ **بلونه وسماكته وشكله الخاصّ** (تحكّم مستقلّ لكل خط).
 class _Stroke {
   final List<Offset> points;
   final Color color;
   final double width;
-  _Stroke(this.points, this.color, this.width);
+  final StrokeCap cap;
+  _Stroke(this.points, this.color, this.width, this.cap);
 }
 
-/// لوحة رسم/كتابة يدوية مخصّصة: لون وسماكة لكل خط على حدة، فرشاة وممحاة،
-/// لوحة ألوان، تراجع لكل خط. تعيد مسار صورة PNG عند الحفظ.
+/// لوحة رسم احترافية: أنواع فرش (قلم/ماركر/فسفوري/رصاص)، منتقي ألوان احترافي
+/// (عجلة + شفافية)، ممحاة، لون وسماكة لكل خط. تعيد مسار صورة PNG عند الحفظ.
 class DrawingScreen extends StatefulWidget {
   final String? existingPath;
   const DrawingScreen({super.key, this.existingPath});
@@ -33,6 +38,7 @@ class _DrawingScreenState extends State<DrawingScreen> {
 
   Color _penColor = Colors.black;
   double _penWidth = 4;
+  _Brush _brush = _Brush.pen;
   bool _eraser = false;
   ui.Image? _bgImage; // الرسم السابق (عند التعديل) كخلفية.
 
@@ -46,14 +52,18 @@ class _DrawingScreenState extends State<DrawingScreen> {
     Color(0xFF1E88E5),
     Color(0xFF00ACC1),
     Color(0xFF43A047),
-    Color(0xFF7CB342),
     Color(0xFFFDD835),
     Color(0xFFFB8C00),
     Color(0xFF6D4C41),
     Color(0xFFFFFFFF),
   ];
 
-  static const _widths = [2.0, 4.0, 8.0, 14.0, 22.0];
+  static const _brushDefs = <_Brush, ({IconData icon, String label})>{
+    _Brush.pen: (icon: Icons.create, label: 'قلم'),
+    _Brush.marker: (icon: Icons.brush, label: 'ماركر'),
+    _Brush.highlighter: (icon: Icons.highlight, label: 'فسفوري'),
+    _Brush.pencil: (icon: Icons.draw_outlined, label: 'رصاص'),
+  };
 
   @override
   void initState() {
@@ -68,15 +78,33 @@ class _DrawingScreenState extends State<DrawingScreen> {
       final codec = await ui.instantiateImageCodec(bytes);
       final frame = await codec.getNextFrame();
       if (mounted) setState(() => _bgImage = frame.image);
-    } catch (_) {/* تعذّر تحميل الرسم السابق — نبدأ بلوحة بيضاء */}
+    } catch (_) {/* نبدأ بلوحة بيضاء */}
   }
 
-  Color get _effectiveColor => _eraser ? Colors.white : _penColor;
-  double get _effectiveWidth => _eraser ? _penWidth * 2.5 : _penWidth;
+  double get _brushOpacity => switch (_brush) {
+        _Brush.pen => 1.0,
+        _Brush.marker => 1.0,
+        _Brush.highlighter => 0.32,
+        _Brush.pencil => 0.7,
+      };
+  double get _brushWidthMul => switch (_brush) {
+        _Brush.pen => 1.0,
+        _Brush.marker => 2.0,
+        _Brush.highlighter => 3.4,
+        _Brush.pencil => 0.6,
+      };
 
-  void _start(Offset p) {
-    setState(() => _current = _Stroke([p], _effectiveColor, _effectiveWidth));
-  }
+  Color get _effectiveColor =>
+      _eraser ? Colors.white : _penColor.withOpacity(_brushOpacity);
+  double get _effectiveWidth =>
+      _eraser ? _penWidth * 2.6 : _penWidth * _brushWidthMul;
+  StrokeCap get _effectiveCap =>
+      (!_eraser && _brush == _Brush.highlighter)
+          ? StrokeCap.square
+          : StrokeCap.round;
+
+  void _start(Offset p) => setState(() =>
+      _current = _Stroke([p], _effectiveColor, _effectiveWidth, _effectiveCap));
 
   void _add(Offset p) {
     if (_current == null) return;
@@ -89,6 +117,40 @@ class _DrawingScreenState extends State<DrawingScreen> {
       _strokes.add(_current!);
       _current = null;
     });
+  }
+
+  Future<void> _pickColor() async {
+    var temp = _penColor;
+    final chosen = await showDialog<Color>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('اختر لونًا'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: _penColor,
+            onColorChanged: (c) => temp = c,
+            enableAlpha: true,
+            labelTypes: const [],
+            pickerAreaHeightPercent: 0.7,
+            portraitOnly: true,
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('إلغاء')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, temp),
+              child: const Text('تم')),
+        ],
+      ),
+    );
+    if (chosen != null) {
+      setState(() {
+        _penColor = chosen;
+        _eraser = false;
+      });
+    }
   }
 
   Future<void> _save() async {
@@ -180,69 +242,122 @@ class _DrawingScreenState extends State<DrawingScreen> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // فرشاة/ممحاة + سماكات سريعة.
+              // أنواع الفرش + الممحاة.
               Row(
                 children: [
-                  _toolBtn(Icons.brush, !_eraser, () {
-                    setState(() => _eraser = false);
-                  }),
-                  const SizedBox(width: 6),
-                  _toolBtn(Icons.cleaning_services_outlined, _eraser, () {
-                    setState(() => _eraser = true);
-                  }),
-                  const SizedBox(width: 12),
-                  for (final w in _widths) ...[
-                    _widthDot(w),
-                    const SizedBox(width: 4),
-                  ],
+                  for (final e in _brushDefs.entries)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6),
+                      child: _toolBtn(e.value.icon, !_eraser && _brush == e.key,
+                          () => setState(() {
+                                _brush = e.key;
+                                _eraser = false;
+                              }),
+                          label: e.value.label),
+                    ),
+                  const Spacer(),
+                  _toolBtn(Icons.cleaning_services_outlined, _eraser,
+                      () => setState(() => _eraser = true),
+                      label: 'ممحاة'),
+                ],
+              ),
+              const SizedBox(height: 4),
+              // السماكة.
+              Row(
+                children: [
+                  const Icon(Icons.line_weight, size: 20),
                   Expanded(
                     child: Slider(
                       min: 1,
-                      max: 28,
+                      max: 30,
                       value: _penWidth,
+                      label: _penWidth.round().toString(),
+                      divisions: 29,
                       onChanged: (v) => setState(() => _penWidth = v),
+                    ),
+                  ),
+                  // معاينة حجم الفرشاة.
+                  Container(
+                    width: 34,
+                    alignment: Alignment.center,
+                    child: Container(
+                      width: (_effectiveWidth).clamp(2, 26).toDouble(),
+                      height: (_effectiveWidth).clamp(2, 26).toDouble(),
+                      decoration: BoxDecoration(
+                        color: _eraser ? Colors.grey.shade400 : _effectiveColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.black26),
+                      ),
                     ),
                   ),
                 ],
               ),
-              // لوحة الألوان (تؤثّر على الخطوط الجديدة فقط).
+              // الألوان + منتقي احترافي.
               SizedBox(
-                height: 38,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  children: _palette.map((c) {
-                    final selected = !_eraser && c.value == _penColor.value;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 5),
-                      child: GestureDetector(
-                        onTap: () => setState(() {
-                          _penColor = c;
-                          _eraser = false;
-                        }),
-                        child: Container(
-                          width: 32,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: c,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: selected
-                                  ? scheme.primary
-                                  : (c == Colors.white
-                                      ? Colors.black26
-                                      : Colors.black12),
-                              width: selected ? 3 : 1,
+                height: 40,
+                child: Row(children: [
+                  // زرّ المنتقي الاحترافي (يعرض اللون الحالي).
+                  GestureDetector(
+                    onTap: _pickColor,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        gradient: const SweepGradient(colors: [
+                          Color(0xFFE53935),
+                          Color(0xFFFDD835),
+                          Color(0xFF43A047),
+                          Color(0xFF1E88E5),
+                          Color(0xFF8E24AA),
+                          Color(0xFFE53935),
+                        ]),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: scheme.primary, width: 2),
+                      ),
+                      child: const Icon(Icons.add, color: Colors.white, size: 20),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const VerticalDivider(width: 8),
+                  Expanded(
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: _palette.map((c) {
+                        final selected =
+                            !_eraser && c.value == _penColor.value;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: GestureDetector(
+                            onTap: () => setState(() {
+                              _penColor = c;
+                              _eraser = false;
+                            }),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: c,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: selected
+                                      ? scheme.primary
+                                      : (c == Colors.white
+                                          ? Colors.black26
+                                          : Colors.black12),
+                                  width: selected ? 3 : 1,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ]),
               ),
             ],
           ),
@@ -251,43 +366,31 @@ class _DrawingScreenState extends State<DrawingScreen> {
     );
   }
 
-  Widget _toolBtn(IconData icon, bool selected, VoidCallback onTap) {
+  Widget _toolBtn(IconData icon, bool selected, VoidCallback onTap,
+      {String? label}) {
     final scheme = Theme.of(context).colorScheme;
     return InkWell(
       borderRadius: BorderRadius.circular(10),
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
           color: selected ? scheme.primaryContainer : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
               color: selected ? scheme.primary : scheme.outlineVariant),
         ),
-        child: Icon(icon,
-            size: 22, color: selected ? scheme.primary : scheme.onSurface),
-      ),
-    );
-  }
-
-  Widget _widthDot(double w) {
-    final selected = (_penWidth - w).abs() < 0.5;
-    final scheme = Theme.of(context).colorScheme;
-    return GestureDetector(
-      onTap: () => setState(() => _penWidth = w),
-      child: Container(
-        width: 30,
-        height: 30,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: selected ? scheme.primaryContainer : Colors.transparent,
-        ),
-        child: Container(
-          width: w.clamp(3, 18).toDouble(),
-          height: w.clamp(3, 18).toDouble(),
-          decoration: const BoxDecoration(
-              color: Colors.black87, shape: BoxShape.circle),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 22, color: selected ? scheme.primary : scheme.onSurface),
+            if (label != null)
+              Text(label,
+                  style: TextStyle(
+                      fontSize: 9.5,
+                      color: selected ? scheme.primary : scheme.onSurface)),
+          ],
         ),
       ),
     );
@@ -302,9 +405,7 @@ class _StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // خلفية بيضاء (تظهر في الصورة المصدّرة).
     canvas.drawRect(Offset.zero & size, Paint()..color = Colors.white);
-    // خلفية الرسم السابق (محتواة ضمن اللوحة).
     if (bg != null) {
       paintImage(
         canvas: canvas,
@@ -318,15 +419,14 @@ class _StrokePainter extends CustomPainter {
       final paint = Paint()
         ..color = st.color
         ..strokeWidth = st.width
-        ..strokeCap = StrokeCap.round
+        ..strokeCap = st.cap
         ..strokeJoin = StrokeJoin.round
         ..style = PaintingStyle.stroke;
       if (st.points.length == 1) {
         canvas.drawCircle(
             st.points.first, st.width / 2, Paint()..color = st.color);
       } else {
-        final path = Path()
-          ..moveTo(st.points.first.dx, st.points.first.dy);
+        final path = Path()..moveTo(st.points.first.dx, st.points.first.dy);
         for (var i = 1; i < st.points.length; i++) {
           path.lineTo(st.points[i].dx, st.points[i].dy);
         }
