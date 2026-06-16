@@ -268,7 +268,17 @@ class SyncService {
         pushed: merged.length,
       );
     } catch (e) {
-      return SyncResult(false, 'فشل المزامنة: $e');
+      // الدمج اتحادي (لا يحذف المحلّي)، وأي فشل هنا غالبًا مشكلة شبكة — نطمئن
+      // المستخدم أن ملاحظاته المحلية آمنة بدل عرض استثناء مخيف.
+      final net = e.toString().contains('ClientException') ||
+          e.toString().contains('SocketException') ||
+          e.toString().contains('HandshakeException') ||
+          e.toString().contains('TimeoutException');
+      return SyncResult(
+          false,
+          net
+              ? 'تعذّرت المزامنة (الشبكة) — ملاحظاتك المحلية آمنة'
+              : 'تعذّرت المزامنة — ملاحظاتك المحلية آمنة');
     }
   }
 

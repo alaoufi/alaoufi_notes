@@ -416,7 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
               else if (provider.items.isEmpty)
                 SliverFillRemaining(
                   hasScrollBody: false,
-                  child: _empty(context, s),
+                  child: _empty(context, s, provider),
                 )
               else
                 SliverPadding(
@@ -707,8 +707,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _empty(BuildContext context, S s) {
-    // بحث تلقائي عن آخر نسخة محفوظة عند أول ظهور للقائمة الفارغة.
+  Widget _empty(BuildContext context, S s, NotesProvider provider) {
+    // فراغ بسبب مُرشِّح/بحث (تصنيف/وسم/بحث) — ملاحظاتك موجودة، فلا نُظهر شاشة
+    // «لا ملاحظات» المخيفة ولا الاستعادة؛ بل رسالة لطيفة + زرّ «إظهار الكل».
+    final filtering = provider.filterCategoryId != null ||
+        provider.filterTag != null ||
+        provider.search.trim().isNotEmpty ||
+        provider.hasAdvancedFilter;
+    if (filtering) {
+      final scheme = Theme.of(context).colorScheme;
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.filter_alt_off_outlined,
+                  size: 60, color: scheme.outline),
+              const SizedBox(height: 14),
+              const Text('لا توجد ملاحظات بهذا المُرشِّح',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 6),
+              Text('ملاحظاتك محفوظة — جرّب «الكل» أو امسح البحث.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: Theme.of(context).hintColor, fontSize: 12.5)),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () {
+                  provider.setCategoryFilter(null); // يمسح التصنيف والوسم
+                  provider.clearAdvancedFilter();
+                  _searchCtrl.clear();
+                  provider.setSearch('');
+                },
+                icon: const Icon(Icons.grid_view),
+                label: const Text('إظهار الكل'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // فراغ حقيقي (لا ملاحظات إطلاقًا): عرض الاستعادة كشبكة أمان.
     if (!_restoreChecked) {
       _restoreChecked = true;
       WidgetsBinding.instance
