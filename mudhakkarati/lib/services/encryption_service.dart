@@ -12,7 +12,8 @@ class EncryptionService {
   EncryptionService._();
   static final EncryptionService instance = EncryptionService._();
 
-  static const _magic = 'MDK1'; // توقيع الملف للتحقق من صحته
+  static const _magic = 'MDK1'; // قديم: AES-CBC بلا مصادقة (يُقرأ للتوافق)
+  static const _magic2 = 'MDK2'; // جديد: AES-CBC + HMAC-SHA256 (مصادَق)
   static const _iterations = 12000;
 
   /// اشتقاق مفتاح 32 بايت من كلمة المرور والـ salt.
@@ -35,32 +36,70 @@ class EncryptionService {
   Uint8List encryptBytes(Uint8List data, String password) {
     final salt = _randomBytes(16);
     final iv = enc.IV.fromSecureRandom(16);
-    final key = enc.Key(_deriveKey(password, salt));
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+    final encKey = _deriveKey(password, salt);
+    final encrypter =
+        enc.Encrypter(enc.AES(enc.Key(encKey), mode: enc.AESMode.cbc));
     final encrypted = encrypter.encryptBytes(data, iv: iv);
 
+    // مصادقة: HMAC-SHA256 على (salt|iv|ciphertext) بمفتاح مشتقّ منفصل
+    // (encrypt-then-MAC) — يكشف أي تلاعب/تلف ويؤكّد صحّة كلمة المرور.
+    final mac = _hmac(encKey, salt, iv.bytes, encrypted.bytes);
+
     final builder = BytesBuilder();
-    builder.add(utf8.encode(_magic));
+    builder.add(utf8.encode(_magic2));
     builder.add(salt);
     builder.add(iv.bytes);
+    builder.add(mac); // 32 بايت
     builder.add(encrypted.bytes);
     return builder.toBytes();
   }
 
-  /// يفكّ تشفير حزمة أنشأها [encryptBytes]. يرمي استثناءً عند كلمة مرور خاطئة.
+  List<int> _hmac(
+      List<int> encKey, List<int> salt, List<int> iv, List<int> cipher) {
+    final macKey = sha256.convert([...encKey, ...utf8.encode('mac')]).bytes;
+    return Hmac(sha256, macKey).convert([...salt, ...iv, ...cipher]).bytes;
+  }
+
+  /// مقارنة ثابتة الزمن (تفادي تسريب التوقيت).
+  bool _ctEquals(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    var diff = 0;
+    for (var i = 0; i < a.length; i++) {
+      diff |= a[i] ^ b[i];
+    }
+    return diff == 0;
+  }
+
+  /// يفكّ تشفير حزمة أنشأها [encryptBytes]. يرمي استثناءً عند كلمة مرور خاطئة أو
+  /// تلف/تلاعب (في الصيغة المصادَقة MDK2). يدعم الصيغة القديمة MDK1 للتوافق.
   Uint8List decryptBytes(Uint8List packed, String password) {
     final magic = utf8.decode(packed.sublist(0, 4));
-    if (magic != _magic) {
-      throw const FormatException('ملف النسخة الاحتياطية غير صالح');
+    if (magic == _magic2) {
+      final salt = packed.sublist(4, 20);
+      final ivBytes = packed.sublist(20, 36);
+      final mac = packed.sublist(36, 68);
+      final cipher = packed.sublist(68);
+      final encKey = _deriveKey(password, Uint8List.fromList(salt));
+      final expected = _hmac(encKey, salt, ivBytes, cipher);
+      if (!_ctEquals(mac, expected)) {
+        throw const FormatException('النسخة تالفة أو كلمة المرور خاطئة');
+      }
+      final encrypter =
+          enc.Encrypter(enc.AES(enc.Key(encKey), mode: enc.AESMode.cbc));
+      return Uint8List.fromList(encrypter.decryptBytes(
+          enc.Encrypted(Uint8List.fromList(cipher)),
+          iv: enc.IV(Uint8List.fromList(ivBytes))));
     }
-    final salt = packed.sublist(4, 20);
-    final iv = enc.IV(packed.sublist(20, 36));
-    final cipher = packed.sublist(36);
-
-    final key = enc.Key(_deriveKey(password, Uint8List.fromList(salt)));
-    final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
-    final decrypted = encrypter.decryptBytes(enc.Encrypted(cipher), iv: iv);
-    return Uint8List.fromList(decrypted);
+    if (magic == _magic) {
+      // MDK1 (قديم، بلا مصادقة) — توافق رجعيّ مع النسخ السابقة.
+      final salt = packed.sublist(4, 20);
+      final iv = enc.IV(packed.sublist(20, 36));
+      final cipher = packed.sublist(36);
+      final key = enc.Key(_deriveKey(password, Uint8List.fromList(salt)));
+      final encrypter = enc.Encrypter(enc.AES(key, mode: enc.AESMode.cbc));
+      return Uint8List.fromList(encrypter.decryptBytes(enc.Encrypted(cipher), iv: iv));
+    }
+    throw const FormatException('ملف النسخة الاحتياطية غير صالح');
   }
 
   /// تجزئة كلمة المرور/الرقم السري لتخزينه بأمان (للتحقق فقط).

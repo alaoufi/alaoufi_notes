@@ -185,6 +185,23 @@ class SyncService {
   }
 
   // ===================== المزامنة =====================
+  /// إعادة محاولة عملية شبكية عند الفشل اللحظيّ (مثل ClientException) — تحسّن
+  /// موثوقية المزامنة على الشبكات غير المستقرّة. تراجع أُسّي بسيط (1ث، 2ث، 4ث).
+  Future<T> _retry<T>(Future<T> Function() op, {int attempts = 3}) async {
+    Object? last;
+    for (var i = 0; i < attempts; i++) {
+      try {
+        return await op();
+      } catch (e) {
+        last = e;
+        if (i < attempts - 1) {
+          await Future.delayed(Duration(seconds: 1 << i));
+        }
+      }
+    }
+    throw last!;
+  }
+
   /// مزامنة الآن: تنزيل السحابة، دمج لكل ملاحظة بـ«آخر تعديل يفوز»، تطبيق التغييرات
   /// محليًّا، ثم رفع النتيجة المدموجة.
   Future<SyncResult> syncNow() async {
@@ -202,9 +219,9 @@ class SyncService {
       final local = await _exportLocal();
       final localByUuid = {for (final n in local) n['uuid'] as String: n};
 
-      // 2) السحابي.
+      // 2) السحابي (مع إعادة محاولة عند فشل الشبكة اللحظيّ).
       List<Map<String, dynamic>> remote = [];
-      final remoteBytes = await backend.download();
+      final remoteBytes = await _retry(() => backend.download());
       if (remoteBytes != null) {
         try {
           final decrypted =
@@ -252,11 +269,12 @@ class SyncService {
         await _importRecord(rec);
       }
 
-      // 5) ارفع المدموج.
+      // 5) ارفع المدموج (مع إعادة محاولة). المدموج اتحاديّ فلا يقلّ أبدًا عن عدد
+      //    ملاحظات السحابة ⇒ الرفع لا يُنقص النسخة السحابية إطلاقًا.
       final bytes = Uint8List.fromList(utf8.encode(jsonEncode(merged)));
       final encrypted =
           EncryptionService.instance.encryptBytes(bytes, passphrase);
-      await backend.upload(encrypted);
+      await _retry(() => backend.upload(encrypted));
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_kLast, DateTime.now().millisecondsSinceEpoch);
