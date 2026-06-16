@@ -247,6 +247,17 @@ class BackupService {
   /// نسخة نفس اليوم من الأسبوع الماضي ⇒ 7 نسخ دائمة دوريّة (واحدة لكل يوم).
   Future<BackupResult> runAutoBackup() async {
     try {
+      // حارس ضدّ فقدان البيانات: لا نكتب نسخة فارغة فوق نسخة جيدة. إن لم توجد
+      // أي ملاحظة حالية بينما توجد نسخة سابقة، نتخطّى (نحفظ نسخك القديمة).
+      final db = await AppDatabase.instance.database;
+      final rows = await db
+          .rawQuery('SELECT COUNT(*) AS c FROM notes WHERE is_deleted = 0');
+      final liveCount = (rows.first['c'] as int?) ?? 0;
+      if (liveCount == 0 && (await listAutoBackups()).isNotEmpty) {
+        return const BackupResult(
+            false, 'تُخطّي النسخ التلقائي (لا ملاحظات) — حماية لنسخك السابقة');
+      }
+
       final pwd = await _secure.read(key: _kAutoPwd);
       if (pwd == null || pwd.isEmpty) {
         return const BackupResult(false, 'لم تُضبط كلمة مرور النسخ التلقائي');

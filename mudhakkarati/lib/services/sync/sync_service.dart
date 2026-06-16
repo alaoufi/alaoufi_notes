@@ -383,8 +383,17 @@ class SyncService {
     int noteId;
     if (found.isNotEmpty) {
       noteId = found.first['id'] as int;
+      // حماية من فقدان البيانات: لا نُطبّق «حذفًا» قادمًا من السحابة على ملاحظة
+      // محلية غير محذوفة. المزامنة لا تحذف ملاحظاتك المحلية أبدًا.
+      final remoteDeleted =
+          ((noteMap['is_deleted'] as num?)?.toInt() ?? 0) == 1;
+      final localDeleted =
+          ((found.first['is_deleted'] as num?)?.toInt() ?? 0) == 1;
+      if (remoteDeleted && !localDeleted) return;
       await db.update('notes', noteMap, where: 'id = ?', whereArgs: [noteId]);
     } else {
+      // ملاحظة جديدة من السحابة محذوفة أصلًا ⇒ لا فائدة من استيرادها.
+      if (((noteMap['is_deleted'] as num?)?.toInt() ?? 0) == 1) return;
       noteId = await db.insert('notes', noteMap,
           conflictAlgorithm: ConflictAlgorithm.replace);
     }
