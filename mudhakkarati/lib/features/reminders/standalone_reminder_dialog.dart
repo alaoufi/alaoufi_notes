@@ -117,7 +117,12 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   // أعلى موثوقية + إصرار حتى التأكيد). يمكن للمستخدم خفض المستوى إن أراد.
   ReminderImportance importance =
       existing?.importance ?? ReminderImportance.critical;
-  final Set<int> preAlerts = {...?existing?.preAlerts};
+  // تنبيه جديد: نبدأ بقيمة «قبل الوقت» الافتراضية من الإعدادات (إن وُجدت).
+  final Set<int> preAlerts = {
+    ...?existing?.preAlerts,
+    if (existing == null && settings.defaultPreAlert > 0)
+      settings.defaultPreAlert,
+  };
   final Set<int> weekdays = {date.weekday};
   // نوع المنبّه + حقول خاصّة بكل نوع (جرعة الدواء / مكان الموعد + رابط خرائط).
   // عند تعديل تنبيه له موقع محفوظ، نبدأ بنوع «موعد» لإظهار حقول المكان.

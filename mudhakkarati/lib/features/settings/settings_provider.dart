@@ -22,6 +22,7 @@ class SettingsProvider extends ChangeNotifier {
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   bool _autoRaiseVolume = true; // رفع صوت المنبّه تلقائيًّا عند الصامت/المنخفض
   bool _gradualVolume = false; // رفع صوت المنبّه بالتدرّج
+  int _defaultPreAlert = 0; // تنبيه قبل الوقت الافتراضي بالدقائق (0 = بلا)
   String? _customToneUri; // رابط نغمة مخصّصة من الجهاز (عند alarmTone=custom)
   String? _customToneTitle; // اسم النغمة المخصّصة للعرض
   int _customToneSeq = 0; // معرّف متزايد لقناة النغمة المخصّصة
@@ -53,6 +54,7 @@ class SettingsProvider extends ChangeNotifier {
   int get snoozeMinutes => _snoozeMinutes;
   bool get autoRaiseVolume => _autoRaiseVolume;
   bool get gradualVolume => _gradualVolume;
+  int get defaultPreAlert => _defaultPreAlert;
   String? get customToneUri => _customToneUri;
   String? get customToneTitle => _customToneTitle;
   Set<String> get favoriteTones => _favoriteTones;
@@ -164,6 +166,7 @@ class SettingsProvider extends ChangeNotifier {
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
     _autoRaiseVolume = prefs.getBool('auto_raise_volume') ?? true;
     _gradualVolume = prefs.getBool('gradual_volume') ?? false;
+    _defaultPreAlert = prefs.getInt('default_pre_alert') ?? 0;
     NotificationService.instance.snoozeMinutes = _snoozeMinutes;
     _customToneUri = prefs.getString(_kCustomToneUri);
     _customToneTitle = prefs.getString(_kCustomToneTitle);
@@ -307,6 +310,14 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('gradual_volume', v);
+  }
+
+  /// تنبيه قبل الوقت الافتراضي (بالدقائق، 0 = بلا) — يُستخدم كقيمة أولية للتنبيه الجديد.
+  Future<void> setDefaultPreAlert(int minutes) async {
+    _defaultPreAlert = minutes;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('default_pre_alert', minutes);
   }
 
   /// يضبط نغمة مخصّصة مختارة من نغمات الجهاز ([uri] رابطها، [title] اسمها).

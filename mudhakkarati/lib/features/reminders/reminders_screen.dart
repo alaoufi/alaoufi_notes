@@ -8,13 +8,13 @@ import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
-import '../cleanup/cleanup_screen.dart';
 import '../editor/editor_attachments.dart';
 import '../editor/note_editor_screen.dart';
 import '../meds/medication_screen.dart';
 import '../sounds/sound_library_screen.dart';
 import 'notification_center_screen.dart';
 import 'reliability_test_screen.dart';
+import 'reminder_defaults_screen.dart';
 import 'reminders_provider.dart';
 import 'standalone_reminder_dialog.dart';
 
@@ -53,6 +53,9 @@ class RemindersScreen extends StatelessWidget {
           tooltip: s.t('reminder_tools'),
           onSelected: (v) {
             switch (v) {
+              case 'reminder_defaults':
+                _open(context, const ReminderDefaultsScreen());
+                break;
               case 'notif_center':
                 _open(context, const NotificationCenterScreen());
                 break;
@@ -62,20 +65,17 @@ class RemindersScreen extends StatelessWidget {
               case 'reliability_test':
                 _open(context, const ReliabilityTestScreen());
                 break;
-              case 'cleanup':
-                _open(context, const CleanupScreen());
-                break;
             }
           },
           itemBuilder: (context) => [
+            _menuItem('reminder_defaults', Icons.tune,
+                s.t('reminder_defaults')),
             _menuItem('notif_center', Icons.notifications_active_outlined,
                 s.t('notif_center')),
             _menuItem('sound_library', Icons.library_music_outlined,
                 s.t('sound_library')),
             _menuItem('reliability_test', Icons.health_and_safety_outlined,
                 s.t('reliability_test')),
-            _menuItem('cleanup', Icons.cleaning_services_outlined,
-                s.t('cleanup')),
           ],
         ),
       ]),

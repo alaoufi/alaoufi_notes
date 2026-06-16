@@ -5,6 +5,7 @@ import '../core/l10n/app_strings.dart';
 import '../features/backup/backup_screen.dart';
 import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
+import '../features/cleanup/cleanup_screen.dart';
 import '../features/insights/weekly_summary_screen.dart';
 import '../features/favorites/favorites_screen.dart';
 import '../features/help/help_guide_screen.dart';
@@ -129,6 +130,8 @@ class AppDrawer extends StatelessWidget {
             ]),
             _group(context, Icons.handyman_outlined, s.t('group_tools'),
                 children: [
+              _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),
+                  () => go(const CleanupScreen())),
               _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
                   () => go(const WeeklySummaryScreen())),
               _tile(context, Icons.category_outlined, s.t('manage_categories'),
