@@ -135,16 +135,143 @@ class _InfoListScreenState extends State<InfoListScreen> {
           ? const Center(child: CircularProgressIndicator())
           : _items.isEmpty
               ? _empty(theme)
-              : RefreshIndicator(
-                  onRefresh: _load,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.only(bottom: 90),
-                    itemCount: _items.length,
-                    separatorBuilder: (_, __) =>
-                        Divider(height: 1, indent: 16, endIndent: 16, color: theme.dividerColor.withValues(alpha: 0.4)),
-                    itemBuilder: (context, i) => _row(_items[i], theme, scheme),
-                  ),
-                ),
+              : (_query.trim().isNotEmpty
+                  // نتائج البحث: قائمة مسطّحة بسطر تعريفي.
+                  ? RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.only(bottom: 90),
+                        itemCount: _items.length,
+                        separatorBuilder: (_, __) => Divider(
+                            height: 1,
+                            indent: 16,
+                            endIndent: 16,
+                            color: theme.dividerColor.withValues(alpha: 0.4)),
+                        itemBuilder: (context, i) =>
+                            _row(_items[i], theme, scheme),
+                      ),
+                    )
+                  // العرض المنظّم: مجموعات حسب التخصص (رئيسي › فرعي) + بطاقات.
+                  : _grouped(theme, scheme)),
+    );
+  }
+
+  /// عرض منظّم احترافيًّا: التخصص الرئيسي عنوانًا بارزًا، تحته التخصصات الفرعية،
+  /// ثم بطاقات المواضيع — كقاعدة معرفة منسّقة.
+  Widget _grouped(ThemeData theme, ColorScheme scheme) {
+    final mains = <String, Map<String, List<InfoEntry>>>{};
+    for (final e in _items) {
+      final m = e.mainSpecialty.trim();
+      final sub = e.subSpecialty.trim();
+      mains
+          .putIfAbsent(m, () => <String, List<InfoEntry>>{})
+          .putIfAbsent(sub, () => [])
+          .add(e);
+    }
+    final mainKeys = mains.keys.toList()..sort();
+    final children = <Widget>[];
+    for (final m in mainKeys) {
+      final subs = mains[m]!;
+      final count = subs.values.fold<int>(0, (a, b) => a + b.length);
+      children.add(_mainHeader(m.isEmpty ? 'عامّ' : m, count, theme, scheme));
+      final subKeys = subs.keys.toList()..sort();
+      for (final sName in subKeys) {
+        if (sName.isNotEmpty) children.add(_subHeader(sName, theme, scheme));
+        for (final e in subs[sName]!) {
+          children.add(_card(e, theme, scheme));
+        }
+      }
+    }
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.fromLTRB(12, 6, 12, 90),
+        children: children,
+      ),
+    );
+  }
+
+  Widget _mainHeader(
+      String name, int count, ThemeData theme, ColorScheme scheme) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 16, 2, 8),
+      child: Row(children: [
+        Icon(Icons.account_tree, size: 20, color: scheme.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(name,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold, color: scheme.primary)),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text('$count',
+              style: TextStyle(
+                  color: scheme.onPrimaryContainer,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12)),
+        ),
+      ]),
+    );
+  }
+
+  Widget _subHeader(String name, ThemeData theme, ColorScheme scheme) {
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(10, 6, 2, 4),
+      child: Row(children: [
+        Icon(Icons.subdirectory_arrow_left, size: 16, color: theme.hintColor),
+        const SizedBox(width: 6),
+        Text(name,
+            style: theme.textTheme.labelLarge
+                ?.copyWith(color: scheme.onSurface, fontWeight: FontWeight.w700)),
+      ]),
+    );
+  }
+
+  /// بطاقة موضوع أنيقة (عنوان + لمحة من الملخّص).
+  Widget _card(InfoEntry e, ThemeData theme, ColorScheme scheme) {
+    final title = e.topic.isNotEmpty ? e.topic : e.brief;
+    final preview = e.brief.trim();
+    return AppCard(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      onTap: () => _open(e),
+      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
+      child: Row(children: [
+        Container(
+          width: 6,
+          height: 38,
+          decoration: BoxDecoration(
+            color: scheme.primary,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyLarge
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+              if (preview.isNotEmpty && e.topic.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(preview,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: theme.hintColor)),
+              ],
+            ],
+          ),
+        ),
+        Icon(Icons.chevron_left, size: 18, color: theme.hintColor),
+      ]),
     );
   }
 
