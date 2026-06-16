@@ -3,7 +3,8 @@ import 'package:flutter/services.dart';
 
 import '../../services/license_service.dart';
 
-/// شاشة تفعيل التطبيق (مربوط بالجهاز). تظهر قبل المحتوى إن لم يُفعّل.
+/// بوابة تفعيل التطبيق (مربوط بالجهاز). تظهر قبل المحتوى إن لم يُفعّل أو انتهت
+/// مدّته. تُعيد الفحص عند عودة التطبيق للواجهة كي يُطبَّق الانتهاء مباشرة.
 class ActivationGate extends StatefulWidget {
   final Widget child;
   const ActivationGate({super.key, required this.child});
@@ -12,40 +13,64 @@ class ActivationGate extends StatefulWidget {
   State<ActivationGate> createState() => _ActivationGateState();
 }
 
-class _ActivationGateState extends State<ActivationGate> {
+class _ActivationGateState extends State<ActivationGate>
+    with WidgetsBindingObserver {
   bool _checking = true;
-  bool _activated = false;
+  LicenseState _state = LicenseState.none;
+  int _daysLeft = 0;
+  bool _permanent = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _check();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // أعد فحص الصلاحية عند العودة للواجهة (لتطبيق الانتهاء فورًا).
+    if (state == AppLifecycleState.resumed && !_checking) _check();
+  }
+
   Future<void> _check() async {
-    final ok = await LicenseService.instance.isActivated();
+    final info = await LicenseService.instance.info();
     if (mounted) {
       setState(() {
-        _activated = ok;
+        _state = info.state;
+        _daysLeft = info.daysLeft;
+        _permanent = info.permanent;
         _checking = false;
       });
     }
   }
+
+  bool get _open =>
+      _state == LicenseState.active || _state == LicenseState.disabled;
 
   @override
   Widget build(BuildContext context) {
     if (_checking) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (_activated) return widget.child;
+    if (_open) return widget.child;
     return _ActivationScreen(
-        onActivated: () => setState(() => _activated = true));
+      expired: _state == LicenseState.expired,
+      onActivated: _check,
+    );
   }
 }
 
 class _ActivationScreen extends StatefulWidget {
+  final bool expired;
   final VoidCallback onActivated;
-  const _ActivationScreen({required this.onActivated});
+  const _ActivationScreen({required this.expired, required this.onActivated});
 
   @override
   State<_ActivationScreen> createState() => _ActivationScreenState();
@@ -88,6 +113,52 @@ class _ActivationScreenState extends State<_ActivationScreen> {
     }
   }
 
+  /// استرجاع المالك: إدخال المفتاح الخاصّ (Seed) لفكّ القفل دائمًا — ضمانة ألّا
+  /// يُحبَس المالك عن بياناته. متاح فقط لمن يملك المفتاح الخاصّ.
+  Future<void> _ownerRecovery() async {
+    final ctrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('استرجاع المالك'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+                'للمالك فقط: ألصق المفتاح الخاصّ (Seed) لفكّ القفل دائمًا على هذا الجهاز.',
+                style: TextStyle(fontSize: 13)),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ctrl,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                hintText: 'المفتاح الخاصّ (64 خانة)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('إلغاء')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('فكّ القفل')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final done = await LicenseService.instance.recoverWithOwnerSeed(ctrl.text);
+    if (!mounted) return;
+    if (done) {
+      widget.onActivated();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('المفتاح الخاصّ غير صحيح')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -99,18 +170,25 @@ class _ActivationScreenState extends State<_ActivationScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.verified_user_outlined, size: 64, color: scheme.primary),
+                Icon(
+                    widget.expired
+                        ? Icons.lock_clock_outlined
+                        : Icons.verified_user_outlined,
+                    size: 64,
+                    color: scheme.primary),
                 const SizedBox(height: 16),
-                Text('تفعيل التطبيق',
+                Text(widget.expired ? 'انتهت صلاحية التفعيل' : 'تفعيل التطبيق',
                     style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
-                const Text(
-                  'هذه النسخة مرخّصة لجهاز واحد. أرسل «رقم الجهاز» أدناه '
-                  'للحصول على رمز التفعيل.',
+                Text(
+                  widget.expired
+                      ? 'انتهت مدّة الترخيص لهذا الجهاز. أرسل «رقم الجهاز» أدناه '
+                          'للحصول على رمز تفعيل جديد.'
+                      : 'هذه النسخة مرخّصة لجهاز واحد. أرسل «رقم الجهاز» أدناه '
+                          'للحصول على رمز التفعيل.',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                // رقم الجهاز.
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -148,11 +226,14 @@ class _ActivationScreenState extends State<_ActivationScreen> {
                 TextField(
                   controller: _codeCtrl,
                   textAlign: TextAlign.center,
+                  maxLines: 3,
+                  minLines: 1,
                   decoration: InputDecoration(
                     labelText: 'رمز التفعيل',
                     hintText: 'ألصق الرمز هنا',
                     errorText: _error ? 'رمز غير صحيح لهذا الجهاز' : null,
                     prefixIcon: const Icon(Icons.vpn_key),
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -167,6 +248,17 @@ class _ActivationScreenState extends State<_ActivationScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2))
                         : const Icon(Icons.lock_open),
                     label: const Text('تفعيل'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // استرجاع المالك (مخفيّ بضغطة مطوّلة على الأيقونة).
+                GestureDetector(
+                  onLongPress: _ownerRecovery,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Text('© مذكراتي',
+                        style: TextStyle(
+                            color: scheme.outline, fontSize: 12)),
                   ),
                 ),
               ],

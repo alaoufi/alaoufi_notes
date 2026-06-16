@@ -1,0 +1,92 @@
+name: بناء مولّد الأكواد (APK مستقل)
+
+# يبني تطبيق «مولّد أكواد التفعيل» المستقلّ (معرّف تطبيق منفصل) كـ APK.
+# منفصل تمامًا عن بناء التطبيق الأساسي ولا يمسّه.
+
+on:
+  push:
+    branches:
+      - main
+      - claude/repository-data-check-41e6pd
+    paths:
+      - 'keygen/**'
+      - '.github/workflows/build-keygen.yml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build-keygen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تهيئة Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: تهيئة Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.0
+          cache: true
+
+      - name: تهيئة مشروع أندرويد وبناء APK
+        run: |
+          set -o pipefail
+          {
+            echo "===== flutter create (سقالة أندرويد بمعرّف مستقلّ) ====="
+            flutter create --platforms=android \
+              --org com.mudhakkarati --project-name mdk_keygen keygen
+            echo "===== نسخ المصادر الخاصّة فوق السقالة ====="
+            cp keygen/_src/pubspec.yaml keygen/pubspec.yaml
+            rm -f keygen/lib/main.dart
+            cp keygen/_src/lib/*.dart keygen/lib/
+            echo "===== flutter pub get ====="
+            cd keygen
+            flutter pub get
+            echo "===== flutter build apk (release) ====="
+            flutter build apk --release --build-number=${{ github.run_number }}
+            echo "===== size ====="
+            ls -lh build/app/outputs/flutter-apk/
+          } 2>&1 | tee /tmp/keygen-build.log
+
+      - name: نشر سجل البناء إلى فرع keygen-log
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/klog
+          tail -n 400 /tmp/keygen-build.log > /tmp/klog/keygen-build.log 2>/dev/null || echo "no log" > /tmp/klog/keygen-build.log
+          cd /tmp/klog
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b keygen-log
+          git add keygen-build.log
+          git commit -q -m "keygen build log #${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" keygen-log
+
+      - name: نشر المولّد في Releases (تحميل مباشر)
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: keygen-latest
+          name: مولّد أكواد مذكراتي — أحدث نسخة
+          body: |
+            تطبيق مستقلّ لتوليد أكواد التفعيل — للمالك فقط.
+            ثبّت app-release.apk على جوالك أنت.
+          files: |
+            keygen/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: رفع المولّد كـ Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdk-keygen-apk
+          path: keygen/build/app/outputs/flutter-apk/app-release.apk

@@ -1,0 +1,21 @@
+# لا نُلزِم سوى المصادر في _src/ — السقالة تُولَّد في البناء.
+/android/
+/ios/
+/linux/
+/macos/
+/windows/
+/web/
+/build/
+/.dart_tool/
+/lib/
+/test/
+/pubspec.yaml
+/pubspec.lock
+/.metadata
+/analysis_options.yaml
+/*.iml
+
+# لا تُلزَم أيّ مفاتيح خاصّة إطلاقًا.
+*seed*
+*.key
+*.pem
