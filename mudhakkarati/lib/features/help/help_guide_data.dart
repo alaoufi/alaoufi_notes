@@ -19,6 +19,7 @@ const _c3 = Color(0xFFEF6C00);
 const _c4 = Color(0xFF42A5F5);
 const _c6 = Color(0xFFE53935);
 const _c8 = Color(0xFF6D4C41);
+const _c5 = Color(0xFF7E57C2); // قسم التنبيهات والمنبّه
 
 const Map<String, List<HgSection>> _hg = {
   'en': [
@@ -56,6 +57,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'Privacy mode', 'Hide card contents'),
       HgItem(Icons.backup_outlined, 'Backup', 'Save and restore'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Encrypted cloud sync'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'Reminders & alarm', [
+      HgItem(Icons.notifications_active, 'Reminder types', 'General, medication, appointment, occasion'),
+      HgItem(Icons.timer, 'Alert before by', '5 min / 15 min / hour / day'),
+      HgItem(Icons.place, 'Appointment location', 'Google Maps link or pick'),
+      HgItem(Icons.attach_file, 'Invitation', 'Attach an image or PDF'),
+      HgItem(Icons.library_music, 'Sound library', 'Tones + your device tones'),
+      HgItem(Icons.alarm_on, 'Reliable alarm', 'Works when closed/rebooted, full-screen, raises volume'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'More', [
       HgItem(Icons.format_textdirection_r_to_l, 'Per-line direction', 'Arabic right, English left'),
@@ -99,6 +108,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'نسخ احتياطي', 'حفظ واستعادة'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'مزامنة سحابية مشفّرة'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'التنبيهات والمنبّه', [
+      HgItem(Icons.notifications_active, 'أنواع التنبيه', 'عام، دواء، موعد، مناسبة'),
+      HgItem(Icons.timer, 'تنبيه قبل الوقت', '5د / 15د / ساعة / يوم'),
+      HgItem(Icons.place, 'موقع الموعد', 'رابط خرائط جوجل أو اختيار'),
+      HgItem(Icons.attach_file, 'الدعوة', 'إرفاق صورة أو PDF'),
+      HgItem(Icons.library_music, 'مكتبة الأصوات', 'نغمات + نغمات جهازك'),
+      HgItem(Icons.alarm_on, 'منبّه موثوق', 'يعمل والتطبيق مغلق/بعد التشغيل، شاشة كاملة، يرفع الصوت'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'المزيد', [
       HgItem(Icons.format_textdirection_r_to_l, 'اتجاه لكل سطر', 'العربي يمين والإنجليزي يسار'),
       HgItem(Icons.archive_outlined, 'الأرشيف والمهملات', 'استرجاع ملاحظاتك'),
@@ -140,6 +157,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'Modo privado', 'Ocultar contenido'),
       HgItem(Icons.backup_outlined, 'Copia de seguridad', 'Guardar y restaurar'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Sincronización cifrada'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'Recordatorios y alarma', [
+      HgItem(Icons.notifications_active, 'Tipos de recordatorio', 'General, medicación, cita, evento'),
+      HgItem(Icons.timer, 'Avisar antes', '5 min / 15 min / hora / día'),
+      HgItem(Icons.place, 'Ubicación de la cita', 'Enlace de Google Maps o elegir'),
+      HgItem(Icons.attach_file, 'Invitación', 'Adjuntar imagen o PDF'),
+      HgItem(Icons.library_music, 'Biblioteca de sonidos', 'Tonos + tonos del dispositivo'),
+      HgItem(Icons.alarm_on, 'Alarma fiable', 'Funciona cerrada/reiniciada, pantalla completa, sube volumen'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Más', [
       HgItem(Icons.format_textdirection_r_to_l, 'Dirección por línea', 'Árabe a la derecha, inglés a la izquierda'),
@@ -183,6 +208,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'Sicherung', 'Speichern & wiederherstellen'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Verschlüsselte Sync'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'Erinnerungen & Wecker', [
+      HgItem(Icons.notifications_active, 'Erinnerungstypen', 'Allgemein, Medikament, Termin, Anlass'),
+      HgItem(Icons.timer, 'Vorher erinnern', '5 Min / 15 Min / Stunde / Tag'),
+      HgItem(Icons.place, 'Terminort', 'Google-Maps-Link oder wählen'),
+      HgItem(Icons.attach_file, 'Einladung', 'Bild oder PDF anhängen'),
+      HgItem(Icons.library_music, 'Klangbibliothek', 'Töne + Gerätetöne'),
+      HgItem(Icons.alarm_on, 'Zuverlässiger Wecker', 'Auch geschlossen/nach Neustart, Vollbild, lauter'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Mehr', [
       HgItem(Icons.format_textdirection_r_to_l, 'Richtung pro Zeile', 'Arabisch rechts, Englisch links'),
       HgItem(Icons.archive_outlined, 'Archiv & Papierkorb', 'Notizen wiederherstellen'),
@@ -224,6 +257,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'Privacy mode', 'Itago ang nilalaman'),
       HgItem(Icons.backup_outlined, 'Backup', 'I-save at ibalik'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Naka-encrypt na sync'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'Mga paalala at alarm', [
+      HgItem(Icons.notifications_active, 'Uri ng paalala', 'Pangkalahatan, gamot, appointment, okasyon'),
+      HgItem(Icons.timer, 'Paalala bago ang oras', '5 min / 15 min / oras / araw'),
+      HgItem(Icons.place, 'Lokasyon ng appointment', 'Google Maps link o pumili'),
+      HgItem(Icons.attach_file, 'Imbitasyon', 'Maglakip ng larawan o PDF'),
+      HgItem(Icons.library_music, 'Aklatan ng tunog', 'Mga tono + tono ng device'),
+      HgItem(Icons.alarm_on, 'Maaasahang alarm', 'Gumagana kahit sarado/na-restart, full-screen, nilalakasan'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Iba pa', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direksyon kada linya', 'Arabe kanan, Ingles kaliwa'),
@@ -267,6 +308,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'Sauvegarde', 'Enregistrer et restaurer'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Sync chiffrée'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'Rappels et alarme', [
+      HgItem(Icons.notifications_active, 'Types de rappel', 'Général, médicament, rendez-vous, occasion'),
+      HgItem(Icons.timer, 'Alerter avant', '5 min / 15 min / heure / jour'),
+      HgItem(Icons.place, 'Lieu du rendez-vous', 'Lien Google Maps ou choisir'),
+      HgItem(Icons.attach_file, 'Invitation', 'Joindre une image ou un PDF'),
+      HgItem(Icons.library_music, 'Bibliothèque de sons', 'Sonneries + sons de l’appareil'),
+      HgItem(Icons.alarm_on, 'Alarme fiable', 'Marche fermée/redémarrée, plein écran, monte le volume'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Plus', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direction par ligne', 'Arabe à droite, anglais à gauche'),
       HgItem(Icons.archive_outlined, 'Archives et corbeille', 'Restaurer vos notes'),
@@ -308,6 +357,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'Mode privasi', 'Sembunyikan isi'),
       HgItem(Icons.backup_outlined, 'Cadangan', 'Simpan dan pulihkan'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Sinkron terenkripsi'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'Pengingat & alarm', [
+      HgItem(Icons.notifications_active, 'Jenis pengingat', 'Umum, obat, janji temu, acara'),
+      HgItem(Icons.timer, 'Ingatkan sebelumnya', '5 mnt / 15 mnt / jam / hari'),
+      HgItem(Icons.place, 'Lokasi janji temu', 'Tautan Google Maps atau pilih'),
+      HgItem(Icons.attach_file, 'Undangan', 'Lampirkan gambar atau PDF'),
+      HgItem(Icons.library_music, 'Pustaka suara', 'Nada + nada perangkat'),
+      HgItem(Icons.alarm_on, 'Alarm andal', 'Jalan saat tertutup/restart, layar penuh, naikkan volume'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lainnya', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah per baris', 'Arab kanan, Inggris kiri'),
@@ -351,6 +408,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'Backup', 'Salva e ripristina'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Sync crittografata'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'Promemoria e sveglia', [
+      HgItem(Icons.notifications_active, 'Tipi di promemoria', 'Generale, farmaco, appuntamento, evento'),
+      HgItem(Icons.timer, 'Avvisa prima', '5 min / 15 min / ora / giorno'),
+      HgItem(Icons.place, 'Luogo appuntamento', 'Link Google Maps o scegli'),
+      HgItem(Icons.attach_file, 'Invito', 'Allega immagine o PDF'),
+      HgItem(Icons.library_music, 'Libreria suoni', 'Suoni + suoni del dispositivo'),
+      HgItem(Icons.alarm_on, 'Sveglia affidabile', 'Funziona chiusa/riavviata, schermo intero, alza volume'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Altro', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direzione per riga', 'Arabo a destra, inglese a sinistra'),
       HgItem(Icons.archive_outlined, 'Archivio e cestino', 'Ripristina le note'),
@@ -392,6 +457,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'Mod privasi', 'Sembunyi kandungan'),
       HgItem(Icons.backup_outlined, 'Sandaran', 'Simpan dan pulih'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Segerak tersulit'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'Peringatan & penggera', [
+      HgItem(Icons.notifications_active, 'Jenis peringatan', 'Umum, ubat, temu janji, majlis'),
+      HgItem(Icons.timer, 'Ingatkan sebelum', '5 min / 15 min / jam / hari'),
+      HgItem(Icons.place, 'Lokasi temu janji', 'Pautan Google Maps atau pilih'),
+      HgItem(Icons.attach_file, 'Jemputan', 'Lampirkan imej atau PDF'),
+      HgItem(Icons.library_music, 'Pustaka bunyi', 'Nada + nada peranti'),
+      HgItem(Icons.alarm_on, 'Penggera boleh harap', 'Berfungsi ditutup/dimulakan semula, skrin penuh, naik kuat'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lagi', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah setiap baris', 'Arab kanan, Inggeris kiri'),
@@ -435,6 +508,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'बैकअप', 'सहेजें और पुनर्स्थापित'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'एन्क्रिप्टेड सिंक'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'रिमाइंडर और अलार्म', [
+      HgItem(Icons.notifications_active, 'रिमाइंडर के प्रकार', 'सामान्य, दवा, अपॉइंटमेंट, अवसर'),
+      HgItem(Icons.timer, 'समय से पहले सूचना', '5 मि / 15 मि / घंटा / दिन'),
+      HgItem(Icons.place, 'अपॉइंटमेंट स्थान', 'Google Maps लिंक या चुनें'),
+      HgItem(Icons.attach_file, 'निमंत्रण', 'इमेज या PDF जोड़ें'),
+      HgItem(Icons.library_music, 'ध्वनि लाइब्रेरी', 'टोन + डिवाइस टोन'),
+      HgItem(Icons.alarm_on, 'भरोसेमंद अलार्म', 'बंद/रीस्टार्ट पर भी, फुल-स्क्रीन, आवाज़ बढ़ाता है'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'अधिक', [
       HgItem(Icons.format_textdirection_r_to_l, 'हर लाइन की दिशा', 'अरबी दाएँ, अंग्रेज़ी बाएँ'),
       HgItem(Icons.archive_outlined, 'आर्काइव और ट्रैश', 'नोट्स पुनर्स्थापित करें'),
@@ -476,6 +557,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.visibility_off, 'প্রাইভেসি মোড', 'বিষয়বস্তু লুকান'),
       HgItem(Icons.backup_outlined, 'ব্যাকআপ', 'সংরক্ষণ ও পুনরুদ্ধার'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'এনক্রিপ্টেড সিঙ্ক'),
+    ]),
+    HgSection(Icons.alarm, _c5, false, 'রিমাইন্ডার ও অ্যালার্ম', [
+      HgItem(Icons.notifications_active, 'রিমাইন্ডারের ধরন', 'সাধারণ, ওষুধ, অ্যাপয়েন্টমেন্ট, অনুষ্ঠান'),
+      HgItem(Icons.timer, 'সময়ের আগে সতর্কতা', '5 মি / 15 মি / ঘণ্টা / দিন'),
+      HgItem(Icons.place, 'অ্যাপয়েন্টমেন্ট স্থান', 'Google Maps লিঙ্ক বা নির্বাচন'),
+      HgItem(Icons.attach_file, 'আমন্ত্রণ', 'ছবি বা PDF সংযুক্ত করুন'),
+      HgItem(Icons.library_music, 'সাউন্ড লাইব্রেরি', 'টোন + ডিভাইস টোন'),
+      HgItem(Icons.alarm_on, 'নির্ভরযোগ্য অ্যালার্ম', 'বন্ধ/রিস্টার্টেও চলে, ফুল-স্ক্রিন, ভলিউম বাড়ায়'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'আরও', [
       HgItem(Icons.format_textdirection_r_to_l, 'প্রতি লাইনে দিক', 'আরবি ডানে, ইংরেজি বামে'),
@@ -519,6 +608,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'پشتیبان', 'ذخیره و بازیابی'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'همگام‌سازی رمزنگاری‌شده'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'یادآورها و زنگ', [
+      HgItem(Icons.notifications_active, 'انواع یادآور', 'عمومی، دارو، قرار، مناسبت'),
+      HgItem(Icons.timer, 'هشدار پیش از موعد', '۵د / ۱۵د / ساعت / روز'),
+      HgItem(Icons.place, 'مکان قرار', 'لینک گوگل‌مپ یا انتخاب'),
+      HgItem(Icons.attach_file, 'دعوت‌نامه', 'پیوست عکس یا PDF'),
+      HgItem(Icons.library_music, 'کتابخانه صداها', 'آهنگ‌ها + آهنگ‌های دستگاه'),
+      HgItem(Icons.alarm_on, 'زنگ مطمئن', 'حتی بسته/پس از ری‌استارت، تمام‌صفحه، صدا را بالا می‌برد'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'بیشتر', [
       HgItem(Icons.format_textdirection_r_to_l, 'جهت هر خط', 'عربی راست، انگلیسی چپ'),
       HgItem(Icons.archive_outlined, 'بایگانی و زباله‌دان', 'بازیابی یادداشت‌ها'),
@@ -561,6 +658,14 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.backup_outlined, 'Резервная копия', 'Сохранить и восстановить'),
       HgItem(Icons.cloud, 'Google Drive / WebDAV', 'Шифрованная синхронизация'),
     ]),
+    HgSection(Icons.alarm, _c5, false, 'Напоминания и будильник', [
+      HgItem(Icons.notifications_active, 'Типы напоминаний', 'Общее, лекарство, встреча, событие'),
+      HgItem(Icons.timer, 'Предупредить заранее', '5 мин / 15 мин / час / день'),
+      HgItem(Icons.place, 'Место встречи', 'Ссылка Google Maps или выбор'),
+      HgItem(Icons.attach_file, 'Приглашение', 'Прикрепить изображение или PDF'),
+      HgItem(Icons.library_music, 'Библиотека звуков', 'Сигналы + сигналы устройства'),
+      HgItem(Icons.alarm_on, 'Надёжный будильник', 'Работает закрытым/после перезагрузки, на весь экран, повышает громкость'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Ещё', [
       HgItem(Icons.format_textdirection_r_to_l, 'Направление по строке', 'Арабский справа, английский слева'),
       HgItem(Icons.archive_outlined, 'Архив и корзина', 'Восстановить заметки'),
@@ -570,19 +675,19 @@ const Map<String, List<HgSection>> _hg = {
 };
 
 const Map<String, HgChrome> _hgChrome = {
-  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-13'),
-  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-13'),
-  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-13'),
-  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-13'),
-  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-13'),
-  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-13'),
-  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-13'),
-  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-13'),
-  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-13'),
-  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-13'),
-  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-13'),
-  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-13'),
-  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-13'),
+  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-16'),
+  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-16'),
+  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-16'),
+  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-16'),
+  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-16'),
+  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-16'),
+  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-16'),
+  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-16'),
+  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-16'),
+  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-16'),
+  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-16'),
+  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-16'),
+  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-16'),
 };
 
 List<HgSection> helpSections(String lang) => _hg[lang] ?? _hg['en']!;
