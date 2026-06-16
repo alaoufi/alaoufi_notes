@@ -119,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (sheetCtx) {
-        // (أيقونة، تسمية، لون، إجراء) لكل نوع إضافة.
+        // (أيقونة، تسمية، لون، إجراء) لكل نوع إضافة — مكان واحد لكل الأنواع.
         final items = <(IconData, String, Color, VoidCallback)>[
           (Icons.edit_note, s.t('qa_note'), const Color(0xFF42A5F5),
               () => _quickType(NoteType.text)),
@@ -129,9 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
               () => _quickType(NoteType.audio)),
           (Icons.image, s.t('qa_image'), const Color(0xFFAB47BC),
               () => _quickType(NoteType.image)),
+          (Icons.picture_as_pdf, s.t('note_pdf'), const Color(0xFFD32F2F),
+              () => _quickType(NoteType.pdf)),
+          (Icons.brush, s.t('note_drawing'), const Color(0xFF8E24AA),
+              () => _quickType(NoteType.drawing)),
+          (Icons.vpn_key, s.t('note_password'), const Color(0xFF00897B),
+              () => _addTypedNote(NoteType.password)),
           (Icons.dashboard_customize_outlined, s.t('qa_template'),
               const Color(0xFFFFA726), () => showTemplatePicker(context)),
-          (Icons.today, s.t('qa_today'), const Color(0xFF26A69A), _openDaily),
+          (Icons.today, s.t('qa_today'), const Color(0xFF5C6BC0), _openDaily),
         ];
         return SafeArea(
           child: Padding(
@@ -140,12 +146,22 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 14, right: 2),
-                  child: Text(s.t('qa_title'),
-                      style: Theme.of(sheetCtx).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold)),
+                // ترويسة بزرّ رجوع/إغلاق واضح.
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'رجوع',
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                    Text(s.t('qa_title'),
+                        style: Theme.of(sheetCtx)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                  ],
                 ),
+                const SizedBox(height: 8),
                 GridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
@@ -293,8 +309,6 @@ class _HomeScreenState extends State<HomeScreen> {
           _openInfo();
         } else if (v == 'privacy') {
           settings.setPrivacyMode(!settings.privacyMode);
-        } else if (v.startsWith('type_')) {
-          _addTypedNote(NoteType.values.byName(v.substring(5)));
         } else if (v.startsWith('sort_')) {
           provider.setSort(NoteSort.values.byName(v.substring(5)));
         }
@@ -315,29 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: _menuRow(Icons.menu_book_outlined, 'معلومات')),
           const PopupMenuDivider(),
         ],
-        const PopupMenuItem<String>(
-            enabled: false, child: Text('إضافة نوع آخر')),
-        PopupMenuItem<String>(
-            value: 'type_text',
-            child: _menuRow(Icons.notes, 'ملاحظة نصية (تنسيق غني)')),
-        PopupMenuItem<String>(
-            value: 'type_checklist',
-            child: _menuRow(Icons.checklist, s.t('note_checklist'))),
-        PopupMenuItem<String>(
-            value: 'type_image',
-            child: _menuRow(Icons.image, s.t('note_image'))),
-        PopupMenuItem<String>(
-            value: 'type_audio', child: _menuRow(Icons.mic, s.t('note_audio'))),
-        PopupMenuItem<String>(
-            value: 'type_pdf',
-            child: _menuRow(Icons.picture_as_pdf, s.t('note_pdf'))),
-        PopupMenuItem<String>(
-            value: 'type_drawing',
-            child: _menuRow(Icons.brush, s.t('note_drawing'))),
-        PopupMenuItem<String>(
-            value: 'type_password',
-            child: _menuRow(Icons.vpn_key, s.t('note_password'))),
-        const PopupMenuDivider(),
+        // أنواع الإضافة جميعها في زرّ (+) — لا نكرّرها هنا.
         const PopupMenuItem<String>(enabled: false, child: Text('فرز حسب')),
         _sortItem('sort_updatedDesc', 'الأحدث تعديلًا', provider),
         _sortItem('sort_createdDesc', 'الأحدث إنشاءً', provider),

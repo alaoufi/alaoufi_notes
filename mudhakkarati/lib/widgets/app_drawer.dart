@@ -64,7 +64,20 @@ class AppDrawer extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Icon(Icons.sticky_note_2, color: scheme.onPrimary, size: 40),
+                  // الشعار + زرّ رجوع/إغلاق واضح للقائمة الجانبية (نفس الصفّ).
+                  Row(
+                    children: [
+                      Icon(Icons.sticky_note_2,
+                          color: scheme.onPrimary, size: 40),
+                      const Spacer(),
+                      IconButton(
+                        tooltip: 'رجوع',
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(Icons.arrow_back, color: scheme.onPrimary),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     s.t('app_name'),

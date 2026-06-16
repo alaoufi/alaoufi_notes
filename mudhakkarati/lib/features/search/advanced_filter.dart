@@ -57,9 +57,16 @@ Future<void> showAdvancedFilter(BuildContext context) async {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('بحث متقدّم',
-                      style: Theme.of(sheetCtx).textTheme.titleLarge),
-                  const SizedBox(height: 12),
+                  Row(children: [
+                    IconButton(
+                      tooltip: 'رجوع',
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () => Navigator.pop(sheetCtx),
+                    ),
+                    Text('بحث متقدّم',
+                        style: Theme.of(sheetCtx).textTheme.titleLarge),
+                  ]),
+                  const SizedBox(height: 8),
                   const Text('النوع'),
                   const SizedBox(height: 6),
                   Wrap(
