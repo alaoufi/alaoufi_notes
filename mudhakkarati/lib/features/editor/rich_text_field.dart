@@ -33,6 +33,7 @@ class RichTextController {
   final ValueChanged<String> _onChanged;
   Timer? _debounce;
   bool _applyingDir = false; // حارس ضد التكرار أثناء ضبط الاتجاه
+  bool _dirPending = false; // ضبط اتجاه مؤجَّل مُجدوَل بالفعل
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -48,11 +49,24 @@ class RichTextController {
   }
 
   void _handle() {
-    // اضبط اتجاه كل سطر مباشرةً أثناء الكتابة (لا ننتظر التأجيل).
-    _applyAutoDirection();
+    // **مهم:** نؤجّل ضبط الاتجاه إلى ما بعد إطار الإدخال الحالي. لو عدّلنا
+    // المستند (formatText) **أثناء** معالجة الإدخال، ابتُلع السطر الجديد (Enter)
+    // على ملاحظة فارغة، وحدث بطء لأن كل حرف يستدعي تعديلًا متزامنًا. التأجيل
+    // يجعل الكتابة وإنشاء الأسطر سلسة وفوريّة.
+    _scheduleApplyDirection();
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
       _onChanged(_serializeWithoutDirection());
+    });
+  }
+
+  /// يجدول ضبط اتجاه الأسطر بعد اكتمال الإطار الحالي (مرّة واحدة معلّقة).
+  void _scheduleApplyDirection() {
+    if (_dirPending) return;
+    _dirPending = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _dirPending = false;
+      _applyAutoDirection();
     });
   }
 
