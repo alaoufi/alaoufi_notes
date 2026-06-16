@@ -60,6 +60,20 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       return;
     }
+    // العرض التلقائي: لا يظهر إلا إذا كانت القائمة **فعلًا** فارغة، والشاشة
+    // الرئيسية هي الظاهرة (تفاديًا لظهوره أثناء التحميل أو فوق شاشة أخرى مثل
+    // المفضّلة). الطلب اليدوي يتجاوز هذه الشروط.
+    if (!manual) {
+      final notes = context.read<NotesProvider>();
+      // فلتر/بحث نشط قد يُفرغ القائمة رغم وجود ملاحظات ⇒ ليست قاعدة فارغة فعلًا.
+      final filtering = notes.filterCategoryId != null ||
+          notes.filterTag != null ||
+          notes.search.trim().isNotEmpty ||
+          notes.hasAdvancedFilter;
+      if (notes.loading || notes.items.isNotEmpty || filtering) return;
+      // لا يظهر إلا والشاشة الرئيسية هي الظاهرة (لا فوق المفضّلة أو غيرها).
+      if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    }
     final stamp = file.path.split('/').last;
     final ok = await showDialog<bool>(
       context: context,
