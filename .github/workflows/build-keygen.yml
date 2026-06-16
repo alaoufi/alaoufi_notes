@@ -87,6 +87,22 @@ jobs:
             keygen/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             keygen/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
 
+      - name: دفع المولّد (arm64) إلى فرع keygen-dist (قناة تحميل بديلة)
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p /tmp/kout
+          cp keygen/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk /tmp/kout/MdkKeygen.apk
+          cd /tmp/kout
+          git init -q
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git checkout -q -b keygen-dist
+          git add MdkKeygen.apk
+          git commit -q -m "mdk keygen apk (arm64) #${{ github.run_number }}"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" keygen-dist
+
       - name: رفع المولّد كـ Artifact
         if: success()
         uses: actions/upload-artifact@v4
