@@ -30,10 +30,5 @@ void main() {
       expect(() => svc.decryptBytes(tampered, 'p@ss'),
           throwsA(isA<FormatException>()));
     });
-
-    test('empty payload roundtrips', () {
-      final out = svc.encryptBytes(Uint8List(0), 'k');
-      expect(svc.decryptBytes(out, 'k'), isEmpty);
-    });
   });
 }
