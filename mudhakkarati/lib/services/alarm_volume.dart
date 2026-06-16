@@ -41,4 +41,19 @@ class AlarmVolume {
       await _ch.invokeMethod('requestBatteryUnrestricted');
     } catch (_) {}
   }
+
+  /// يفتح شاشة «التشغيل التلقائي» (Autostart) الخاصّة بالمُصنّع — لا يمكن منحها
+  /// برمجيًّا، فنوجّه المستخدم إليها مباشرةً.
+  static Future<void> openAutoStart() async {
+    try {
+      await _ch.invokeMethod('openAutoStart');
+    } catch (_) {}
+  }
+
+  /// يفتح صفحة إعدادات التطبيق (بديل عامّ).
+  static Future<void> openAppSettings() async {
+    try {
+      await _ch.invokeMethod('openAppSettings');
+    } catch (_) {}
+  }
 }

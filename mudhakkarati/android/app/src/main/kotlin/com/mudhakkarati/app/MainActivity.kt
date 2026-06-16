@@ -69,6 +69,8 @@ class MainActivity : FlutterFragmentActivity() {
                     "requestBatteryUnrestricted" -> {
                         requestBatteryUnrestricted(); result.success(true)
                     }
+                    "openAutoStart" -> { openAutoStart(); result.success(true) }
+                    "openAppSettings" -> { openAppSettings(); result.success(true) }
                     else -> result.notImplemented()
                 }
             }
@@ -133,6 +135,60 @@ class MainActivity : FlutterFragmentActivity() {
         } catch (e: Exception) {
             true // عند التعذّر لا نُزعج المستخدم
         }
+    }
+
+    /// يفتح صفحة تفاصيل التطبيق في الإعدادات (مخرج احتياطيّ موثوق).
+    private fun openAppSettings() {
+        try {
+            val intent = Intent(
+                android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            ).apply {
+                data = Uri.parse("package:$packageName")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+        } catch (e: Exception) {
+        }
+    }
+
+    /// يحاول فتح شاشة «التشغيل التلقائي» الخاصّة بالمُصنّع (شاومي/هواوي/أوبو/…)،
+    /// وإلا يفتح صفحة إعدادات التطبيق كبديل.
+    private fun openAutoStart() {
+        val candidates = listOf(
+            "com.miui.securitycenter" to
+                "com.miui.permcenter.autostart.AutoStartManagementActivity",
+            "com.huawei.systemmanager" to
+                "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+            "com.huawei.systemmanager" to
+                "com.huawei.systemmanager.optimize.process.ProtectActivity",
+            "com.coloros.safecenter" to
+                "com.coloros.safecenter.permission.startup.StartupAppListActivity",
+            "com.coloros.safecenter" to
+                "com.coloros.safecenter.startupapp.StartupAppListActivity",
+            "com.oppo.safe" to
+                "com.oppo.safe.permission.startup.StartupAppListActivity",
+            "com.iqoo.secure" to
+                "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity",
+            "com.vivo.permissionmanager" to
+                "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+            "com.letv.android.letvsafe" to
+                "com.letv.android.letvsafe.AutobootManageActivity",
+            "com.samsung.android.lool" to
+                "com.samsung.android.sm.ui.battery.BatteryActivity"
+        )
+        for ((pkg, cls) in candidates) {
+            try {
+                val intent = Intent().apply {
+                    component = android.content.ComponentName(pkg, cls)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+                return
+            } catch (e: Exception) {
+                // جرّب التالي
+            }
+        }
+        openAppSettings()
     }
 
     /// يطلب من المستخدم استثناء التطبيق من توفير البطارية (نافذة النظام).

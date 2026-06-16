@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../services/alarm_volume.dart';
 import '../../services/notification_service.dart';
+import 'alarm_permissions.dart';
 
 /// شاشة «اختبار الموثوقية»: تتأكّد من أن الإشعارات والمنبّه يعملان فعليًّا على
 /// الجهاز — إشعار فوري + منبّه حرج مجدول + تشخيص أذونات (إشعارات/منبّه دقيق).
@@ -146,6 +147,22 @@ class _ReliabilityTestScreenState extends State<ReliabilityTestScreen> {
                   ],
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // تفعيل كل القيود دفعةً واحدة.
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: () async {
+                await showAlarmReliabilitySheet(context);
+                await _refreshDiagnostics();
+              },
+              icon: const Icon(Icons.verified_user_outlined),
+              label: const Text('تفعيل موثوقية المنبّه (فكّ القيود)'),
+              style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48)),
             ),
           ),
           const SizedBox(height: 6),

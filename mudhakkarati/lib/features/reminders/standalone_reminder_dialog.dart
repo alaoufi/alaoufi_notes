@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../data/models/enums.dart';
+import 'alarm_permissions.dart';
 import '../../data/models/reminder.dart';
 import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
@@ -96,6 +97,12 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
   final doseCtrl = TextEditingController();
   final placeCtrl = TextEditingController();
   final mapLinkCtrl = TextEditingController(text: existing?.location ?? '');
+
+  // عند **أول** إنشاء تنبيه جديد: اطلب فكّ كل القيود لضمان عمل المنبّه.
+  if (existing == null) {
+    await ensureAlarmReliabilityOnce(context);
+    if (!context.mounted) return;
+  }
 
   await showModalBottomSheet(
     context: context,
