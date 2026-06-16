@@ -20,6 +20,7 @@ const _c4 = Color(0xFF42A5F5);
 const _c6 = Color(0xFFE53935);
 const _c8 = Color(0xFF6D4C41);
 const _c5 = Color(0xFF7E57C2); // قسم التنبيهات والمنبّه
+const _c7 = Color(0xFFEC407A); // قسم التحسينات الحديثة
 
 const Map<String, List<HgSection>> _hg = {
   'en': [
@@ -65,6 +66,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invitation', 'Attach an image or PDF'),
       HgItem(Icons.library_music, 'Sound library', 'Tones + your device tones'),
       HgItem(Icons.alarm_on, 'Reliable alarm', 'Works when closed/rebooted, full-screen, raises volume'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Recent improvements', [
+      HgItem(Icons.brush, 'Advanced drawing', 'Per-stroke color & width, brush, eraser'),
+      HgItem(Icons.tune, 'Default reminder settings', 'Tone, snooze, volume, pre-alert'),
+      HgItem(Icons.lock, 'Encrypted & safe', 'On-device encrypted data + auto backup'),
+      HgItem(Icons.cloud_done, 'Secure sync', 'Authenticated & resilient (never deletes data)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'More', [
       HgItem(Icons.format_textdirection_r_to_l, 'Per-line direction', 'Arabic right, English left'),
@@ -116,6 +123,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'مكتبة الأصوات', 'نغمات + نغمات جهازك'),
       HgItem(Icons.alarm_on, 'منبّه موثوق', 'يعمل والتطبيق مغلق/بعد التشغيل، شاشة كاملة، يرفع الصوت'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'تحسينات حديثة', [
+      HgItem(Icons.brush, 'الرسم المتقدّم', 'لون وسماكة لكل خط + فرشاة وممحاة'),
+      HgItem(Icons.tune, 'إعدادات التنبيه الافتراضية', 'نغمة، غفوة، رفع الصوت، قبل الوقت'),
+      HgItem(Icons.lock, 'تخزين مشفّر آمن', 'بياناتك محليّة مشفّرة + نسخ تلقائي'),
+      HgItem(Icons.cloud_done, 'مزامنة مؤمّنة', 'مشفّرة ومتينة (لا تحذف بياناتك)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'المزيد', [
       HgItem(Icons.format_textdirection_r_to_l, 'اتجاه لكل سطر', 'العربي يمين والإنجليزي يسار'),
       HgItem(Icons.archive_outlined, 'الأرشيف والمهملات', 'استرجاع ملاحظاتك'),
@@ -165,6 +178,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invitación', 'Adjuntar imagen o PDF'),
       HgItem(Icons.library_music, 'Biblioteca de sonidos', 'Tonos + tonos del dispositivo'),
       HgItem(Icons.alarm_on, 'Alarma fiable', 'Funciona cerrada/reiniciada, pantalla completa, sube volumen'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Mejoras recientes', [
+      HgItem(Icons.brush, 'Dibujo avanzado', 'Color y grosor por trazo, pincel, goma'),
+      HgItem(Icons.tune, 'Ajustes de recordatorio', 'Tono, posponer, volumen, pre-aviso'),
+      HgItem(Icons.lock, 'Cifrado y seguro', 'Datos cifrados en el dispositivo + copia automática'),
+      HgItem(Icons.cloud_done, 'Sync segura', 'Autenticada y resistente (nunca borra datos)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Más', [
       HgItem(Icons.format_textdirection_r_to_l, 'Dirección por línea', 'Árabe a la derecha, inglés a la izquierda'),
@@ -216,6 +235,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'Klangbibliothek', 'Töne + Gerätetöne'),
       HgItem(Icons.alarm_on, 'Zuverlässiger Wecker', 'Auch geschlossen/nach Neustart, Vollbild, lauter'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Neue Verbesserungen', [
+      HgItem(Icons.brush, 'Erweitertes Zeichnen', 'Farbe & Stärke pro Strich, Pinsel, Radierer'),
+      HgItem(Icons.tune, 'Standard-Erinnerung', 'Ton, Schlummern, Lautstärke, Vorab-Hinweis'),
+      HgItem(Icons.lock, 'Verschlüsselt & sicher', 'Daten verschlüsselt auf dem Gerät + Auto-Backup'),
+      HgItem(Icons.cloud_done, 'Sichere Sync', 'Authentifiziert & robust (löscht nie Daten)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Mehr', [
       HgItem(Icons.format_textdirection_r_to_l, 'Richtung pro Zeile', 'Arabisch rechts, Englisch links'),
       HgItem(Icons.archive_outlined, 'Archiv & Papierkorb', 'Notizen wiederherstellen'),
@@ -265,6 +290,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Imbitasyon', 'Maglakip ng larawan o PDF'),
       HgItem(Icons.library_music, 'Aklatan ng tunog', 'Mga tono + tono ng device'),
       HgItem(Icons.alarm_on, 'Maaasahang alarm', 'Gumagana kahit sarado/na-restart, full-screen, nilalakasan'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Mga bagong pagpapabuti', [
+      HgItem(Icons.brush, 'Advanced na pagguhit', 'Kulay at kapal kada guhit, brush, pambura'),
+      HgItem(Icons.tune, 'Default na paalala', 'Tono, snooze, volume, pre-alert'),
+      HgItem(Icons.lock, 'Naka-encrypt at ligtas', 'Naka-encrypt sa device + auto backup'),
+      HgItem(Icons.cloud_done, 'Ligtas na sync', 'May pagpapatunay at matatag (di nagbubura)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Iba pa', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direksyon kada linya', 'Arabe kanan, Ingles kaliwa'),
@@ -316,6 +347,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'Bibliothèque de sons', 'Sonneries + sons de l’appareil'),
       HgItem(Icons.alarm_on, 'Alarme fiable', 'Marche fermée/redémarrée, plein écran, monte le volume'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Améliorations récentes', [
+      HgItem(Icons.brush, 'Dessin avancé', 'Couleur et épaisseur par trait, pinceau, gomme'),
+      HgItem(Icons.tune, 'Réglages de rappel', 'Sonnerie, rappel, volume, pré-alerte'),
+      HgItem(Icons.lock, 'Chiffré et sûr', 'Données chiffrées sur l’appareil + sauvegarde auto'),
+      HgItem(Icons.cloud_done, 'Sync sécurisée', 'Authentifiée et robuste (ne supprime jamais)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Plus', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direction par ligne', 'Arabe à droite, anglais à gauche'),
       HgItem(Icons.archive_outlined, 'Archives et corbeille', 'Restaurer vos notes'),
@@ -365,6 +402,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Undangan', 'Lampirkan gambar atau PDF'),
       HgItem(Icons.library_music, 'Pustaka suara', 'Nada + nada perangkat'),
       HgItem(Icons.alarm_on, 'Alarm andal', 'Jalan saat tertutup/restart, layar penuh, naikkan volume'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Peningkatan terbaru', [
+      HgItem(Icons.brush, 'Gambar lanjutan', 'Warna & tebal per goresan, kuas, penghapus'),
+      HgItem(Icons.tune, 'Setelan pengingat', 'Nada, tunda, volume, pra-peringatan'),
+      HgItem(Icons.lock, 'Terenkripsi & aman', 'Data terenkripsi di perangkat + cadangan otomatis'),
+      HgItem(Icons.cloud_done, 'Sinkron aman', 'Terautentikasi & tangguh (tidak menghapus data)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lainnya', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah per baris', 'Arab kanan, Inggris kiri'),
@@ -416,6 +459,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'Libreria suoni', 'Suoni + suoni del dispositivo'),
       HgItem(Icons.alarm_on, 'Sveglia affidabile', 'Funziona chiusa/riavviata, schermo intero, alza volume'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Miglioramenti recenti', [
+      HgItem(Icons.brush, 'Disegno avanzato', 'Colore e spessore per tratto, pennello, gomma'),
+      HgItem(Icons.tune, 'Impostazioni promemoria', 'Suono, posticipa, volume, pre-avviso'),
+      HgItem(Icons.lock, 'Cifrato e sicuro', 'Dati cifrati sul dispositivo + backup automatico'),
+      HgItem(Icons.cloud_done, 'Sync sicura', 'Autenticata e robusta (non cancella mai i dati)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Altro', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direzione per riga', 'Arabo a destra, inglese a sinistra'),
       HgItem(Icons.archive_outlined, 'Archivio e cestino', 'Ripristina le note'),
@@ -465,6 +514,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Jemputan', 'Lampirkan imej atau PDF'),
       HgItem(Icons.library_music, 'Pustaka bunyi', 'Nada + nada peranti'),
       HgItem(Icons.alarm_on, 'Penggera boleh harap', 'Berfungsi ditutup/dimulakan semula, skrin penuh, naik kuat'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Penambahbaikan terkini', [
+      HgItem(Icons.brush, 'Lukisan lanjutan', 'Warna & ketebalan setiap lakaran, berus, pemadam'),
+      HgItem(Icons.tune, 'Tetapan peringatan', 'Nada, tunda, kelantangan, pra-amaran'),
+      HgItem(Icons.lock, 'Tersulit & selamat', 'Data tersulit dalam peranti + sandaran auto'),
+      HgItem(Icons.cloud_done, 'Segerak selamat', 'Disahkan & teguh (tidak memadam data)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lagi', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah setiap baris', 'Arab kanan, Inggeris kiri'),
@@ -516,6 +571,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'ध्वनि लाइब्रेरी', 'टोन + डिवाइस टोन'),
       HgItem(Icons.alarm_on, 'भरोसेमंद अलार्म', 'बंद/रीस्टार्ट पर भी, फुल-स्क्रीन, आवाज़ बढ़ाता है'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'हाल के सुधार', [
+      HgItem(Icons.brush, 'उन्नत ड्रॉइंग', 'हर स्ट्रोक का रंग व मोटाई, ब्रश, इरेज़र'),
+      HgItem(Icons.tune, 'रिमाइंडर डिफ़ॉल्ट', 'टोन, स्नूज़, आवाज़, पूर्व-सूचना'),
+      HgItem(Icons.lock, 'एन्क्रिप्टेड व सुरक्षित', 'डिवाइस पर एन्क्रिप्टेड डेटा + ऑटो बैकअप'),
+      HgItem(Icons.cloud_done, 'सुरक्षित सिंक', 'प्रमाणित व मज़बूत (डेटा नहीं मिटाता)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'अधिक', [
       HgItem(Icons.format_textdirection_r_to_l, 'हर लाइन की दिशा', 'अरबी दाएँ, अंग्रेज़ी बाएँ'),
       HgItem(Icons.archive_outlined, 'आर्काइव और ट्रैश', 'नोट्स पुनर्स्थापित करें'),
@@ -565,6 +626,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'আমন্ত্রণ', 'ছবি বা PDF সংযুক্ত করুন'),
       HgItem(Icons.library_music, 'সাউন্ড লাইব্রেরি', 'টোন + ডিভাইস টোন'),
       HgItem(Icons.alarm_on, 'নির্ভরযোগ্য অ্যালার্ম', 'বন্ধ/রিস্টার্টেও চলে, ফুল-স্ক্রিন, ভলিউম বাড়ায়'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'সাম্প্রতিক উন্নতি', [
+      HgItem(Icons.brush, 'উন্নত অঙ্কন', 'প্রতি স্ট্রোকে রং ও পুরুত্ব, ব্রাশ, ইরেজার'),
+      HgItem(Icons.tune, 'রিমাইন্ডার ডিফল্ট', 'টোন, স্নুজ, ভলিউম, প্রি-অ্যালার্ট'),
+      HgItem(Icons.lock, 'এনক্রিপ্টেড ও নিরাপদ', 'ডিভাইসে এনক্রিপ্টেড ডেটা + অটো ব্যাকআপ'),
+      HgItem(Icons.cloud_done, 'নিরাপদ সিঙ্ক', 'প্রমাণিত ও দৃঢ় (ডেটা মোছে না)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'আরও', [
       HgItem(Icons.format_textdirection_r_to_l, 'প্রতি লাইনে দিক', 'আরবি ডানে, ইংরেজি বামে'),
@@ -616,6 +683,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.library_music, 'کتابخانه صداها', 'آهنگ‌ها + آهنگ‌های دستگاه'),
       HgItem(Icons.alarm_on, 'زنگ مطمئن', 'حتی بسته/پس از ری‌استارت، تمام‌صفحه، صدا را بالا می‌برد'),
     ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'بهبودهای اخیر', [
+      HgItem(Icons.brush, 'طراحی پیشرفته', 'رنگ و ضخامت برای هر خط، قلم‌مو، پاک‌کن'),
+      HgItem(Icons.tune, 'تنظیمات یادآور', 'آهنگ، تعویق، صدا، هشدار پیش از موعد'),
+      HgItem(Icons.lock, 'رمزنگاری‌شده و امن', 'داده‌های رمزنگاری‌شده روی دستگاه + پشتیبان خودکار'),
+      HgItem(Icons.cloud_done, 'همگام‌سازی امن', 'احرازشده و مقاوم (داده‌ها را حذف نمی‌کند)'),
+    ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'بیشتر', [
       HgItem(Icons.format_textdirection_r_to_l, 'جهت هر خط', 'عربی راست، انگلیسی چپ'),
       HgItem(Icons.archive_outlined, 'بایگانی و زباله‌دان', 'بازیابی یادداشت‌ها'),
@@ -665,6 +738,12 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Приглашение', 'Прикрепить изображение или PDF'),
       HgItem(Icons.library_music, 'Библиотека звуков', 'Сигналы + сигналы устройства'),
       HgItem(Icons.alarm_on, 'Надёжный будильник', 'Работает закрытым/после перезагрузки, на весь экран, повышает громкость'),
+    ]),
+    HgSection(Icons.auto_awesome, _c7, false, 'Последние улучшения', [
+      HgItem(Icons.brush, 'Продвинутое рисование', 'Цвет и толщина для каждого штриха, кисть, ластик'),
+      HgItem(Icons.tune, 'Настройки напоминаний', 'Сигнал, отложить, громкость, предупреждение'),
+      HgItem(Icons.lock, 'Шифрование и защита', 'Данные зашифрованы на устройстве + авто-резерв'),
+      HgItem(Icons.cloud_done, 'Безопасная синхронизация', 'С проверкой и устойчивая (не удаляет данные)'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Ещё', [
       HgItem(Icons.format_textdirection_r_to_l, 'Направление по строке', 'Арабский справа, английский слева'),
