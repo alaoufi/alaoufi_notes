@@ -21,8 +21,10 @@ class RichTextController {
       document: _documentFrom(initialContent),
       selection: const TextSelection.collapsed(offset: 0),
     );
+    _lastText = quill.document.toPlainText();
     quill.addListener(_handle);
-    // اضبط اتجاه كل سطر فور التحميل (للملاحظات الموجودة مسبقًا).
+    // اضبط اتجاه كل سطر فور التحميل (للملاحظات الموجودة مسبقًا) — مرّة واحدة،
+    // ثم تبقى الأسطر مستقرّة (لا يُعاد الحساب إلا لسطر التحرير الحالي).
     _applyAutoDirection();
   }
 
@@ -34,6 +36,7 @@ class RichTextController {
   Timer? _debounce;
   bool _applyingDir = false; // حارس ضد التكرار أثناء ضبط الاتجاه
   bool _dirPending = false; // ضبط اتجاه مؤجَّل مُجدوَل بالفعل
+  String _lastText = ''; // آخر نصّ رأيناه (للتمييز بين تغيّر النص واللمس فقط)
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -49,10 +52,15 @@ class RichTextController {
   }
 
   void _handle() {
-    // **مهم:** نؤجّل ضبط الاتجاه إلى ما بعد إطار الإدخال الحالي. لو عدّلنا
-    // المستند (formatText) **أثناء** معالجة الإدخال، ابتُلع السطر الجديد (Enter)
-    // على ملاحظة فارغة، وحدث بطء لأن كل حرف يستدعي تعديلًا متزامنًا. التأجيل
-    // يجعل الكتابة وإنشاء الأسطر سلسة وفوريّة.
+    // **استقرار الأسطر:** لمس الشاشة/تحريك المؤشّر يُطلق هذا المستمع دون تغيّر
+    // النص. كنّا نعيد حساب اتجاه كل الأسطر عندها فتضطرب الأسطر المختلطة اللغات
+    // (تنقلب الإنجليزية إلى يمين). الآن: إن لم يتغيّر النص (لمس فقط) لا نفعل شيئًا
+    // ⇒ تبقى الأسطر كما حُفظت تمامًا.
+    final text = quill.document.toPlainText();
+    if (text == _lastText) return;
+    _lastText = text;
+    // نؤجّل ضبط الاتجاه إلى ما بعد إطار الإدخال (كي لا يُبتلع Enter ولا يحدث بطء)،
+    // ونضبط **سطر المؤشّر فقط** (لا نلمس بقية الأسطر ⇒ لا تضطرب).
     _scheduleApplyDirection();
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
@@ -60,14 +68,51 @@ class RichTextController {
     });
   }
 
-  /// يجدول ضبط اتجاه الأسطر بعد اكتمال الإطار الحالي (مرّة واحدة معلّقة).
+  /// يجدول ضبط اتجاه **سطر المؤشّر فقط** بعد اكتمال الإطار الحالي.
   void _scheduleApplyDirection() {
     if (_dirPending) return;
     _dirPending = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _dirPending = false;
-      _applyAutoDirection();
+      _applyDirectionForCursorLine();
     });
+  }
+
+  /// يضبط سمة الاتجاه للسطر الذي فيه المؤشّر فقط (إن لزم) — فلا تتأثّر بقية
+  /// الأسطر المحفوظة ولا تضطرب. يحافظ على موضع المؤشّر.
+  void _applyDirectionForCursorLine() {
+    if (_applyingDir) return;
+    _applyingDir = true;
+    try {
+      final sel = quill.selection;
+      if (!sel.isValid) return;
+      final text = quill.document.toPlainText();
+      final offset = sel.baseOffset.clamp(0, text.length);
+      final start = offset > 0 ? text.lastIndexOf('\n', offset - 1) + 1 : 0;
+      var end = text.indexOf('\n', offset);
+      if (end == -1) end = text.length;
+      final lineText = text.substring(start, end);
+      // طول السطر شاملًا فاصله (سمة الاتجاه تُخزَّن على فاصل السطر).
+      final lineLen = (end < text.length) ? (end - start + 1) : (end - start);
+      if (lineLen <= 0) return;
+      final wantRtl = lineDirection(lineText) == TextDirection.rtl;
+      var hasRtl = false;
+      try {
+        final st = quill.document.collectStyle(start, lineLen);
+        hasRtl = st.attributes['direction']?.value == 'rtl';
+      } catch (_) {}
+      if (wantRtl != hasRtl) {
+        quill.formatText(
+          start,
+          lineLen,
+          wantRtl ? Attribute.rtl : Attribute.clone(Attribute.rtl, null),
+          shouldNotifyListeners: false,
+        );
+        if (sel.isValid) quill.updateSelection(sel, ChangeSource.local);
+      }
+    } finally {
+      _applyingDir = false;
+    }
   }
 
   /// يُسلسِل المستند للتخزين **دون** سمة الاتجاه — فلا نُغيّر التمثيل المخزَّن؛
