@@ -177,8 +177,11 @@ class SettingsProvider extends ChangeNotifier {
           .setCustomTone(_customToneUri, seq: _customToneSeq);
     }
 
-    _defaultNoteColor =
-        prefs.containsKey(_kDefColor) ? prefs.getInt(_kDefColor) : null;
+    // اللون الافتراضي الأوّلي للملاحظات الجديدة = أصفر دافئ (#FCE49E)، ويبقى
+    // قابلًا للتغيير من الإعدادات (وعند الضبط يُحفظ مفتاحه).
+    _defaultNoteColor = prefs.containsKey(_kDefColor)
+        ? prefs.getInt(_kDefColor)
+        : 0xFFFCE49E;
     _defaultGradient = prefs.getString(_kDefGradient);
     _defaultBgStyle = prefs.getInt(_kDefBgStyle) ?? 0;
     final nf = prefs.getString(_kNoteFont);
