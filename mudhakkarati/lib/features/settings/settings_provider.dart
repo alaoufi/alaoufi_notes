@@ -17,7 +17,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _hideSelectionMenu = false;
   InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
-  Locale _locale = const Locale('en');
+  Locale _locale = const Locale('ar'); // عربي افتراضيًّا (تطبيق عربيّ ⇒ اتجاه RTL)
   String _alarmTone = 'ocean'; // Calm Tide افتراضيًّا
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
   bool _autoRaiseVolume = true; // رفع صوت المنبّه تلقائيًّا عند الصامت/المنخفض
@@ -160,7 +160,7 @@ class SettingsProvider extends ChangeNotifier {
     _infoPlacement = InfoPlacement.values
         .firstWhere((e) => e.name == ip, orElse: () => InfoPlacement.tab);
     _layout = prefs.getString(_kLayout) == 'list' ? NoteLayout.list : NoteLayout.grid;
-    _locale = Locale(prefs.getString(_kLocale) ?? 'en');
+    _locale = Locale(prefs.getString(_kLocale) ?? 'ar'); // افتراضي عربي (RTL)
     _alarmTone = prefs.getString(_kTone) ?? 'ocean';
     _favoriteTones = (prefs.getStringList('favorite_tones') ?? const []).toSet();
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;

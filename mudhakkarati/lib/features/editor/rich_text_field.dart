@@ -325,39 +325,43 @@ class RichTextToolbar extends StatelessWidget {
               height: 26, child: VerticalDivider(width: 1, thickness: 1)),
         );
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.alphaBlend(scheme.primary.withOpacity(0.05), scheme.surface),
-            scheme.surface,
+    return TextFieldTapRegion(
+      // مهمّ: نُلحق الشريط بمنطقة لمس المحرّر كي لا يفقد المحرّر التركيز/التحديد
+      // عند الضغط على أزرار التنسيق — وإلا فالغامق/المائل لا يجد تحديدًا يطبّق
+      // عليه فيبدو «لا يعمل». مع هذا يبقى التحديد قائمًا ويُطبَّق التنسيق فورًا.
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color.alphaBlend(scheme.primary.withOpacity(0.05), scheme.surface),
+              scheme.surface,
+            ],
+          ),
+          border: Border(
+              top: BorderSide(color: scheme.primary.withOpacity(0.14), width: 1)),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                offset: const Offset(0, -3),
+                blurRadius: 12,
+                spreadRadius: -2),
           ],
         ),
-        border: Border(
-            top: BorderSide(color: scheme.primary.withOpacity(0.14), width: 1)),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.12),
-              offset: const Offset(0, -3),
-              blurRadius: 12,
-              spreadRadius: -2),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        // صفّ واحد قابل للتمرير الأفقي بنعومة (يمين/يسار).
-        child: SizedBox(
-          height: 54,
-          child: ScrollConfiguration(
-            // تمرير سلس باللمس + بالماوس/اللوحة.
-            behavior: const _SmoothToolbarScrollBehavior(),
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              children: [
+        child: SafeArea(
+          top: false,
+          // صفّ واحد قابل للتمرير الأفقي بنعومة (يمين/يسار).
+          child: SizedBox(
+            height: 54,
+            child: ScrollConfiguration(
+              // تمرير سلس باللمس + بالماوس/اللوحة.
+              behavior: const _SmoothToolbarScrollBehavior(),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                children: [
                 // التراجع/الإعادة في أول الصفّ.
                 QuillToolbarHistoryButton(controller: q, isUndo: true),
                 QuillToolbarHistoryButton(controller: q, isUndo: false),
@@ -472,6 +476,7 @@ class RichTextToolbar extends StatelessWidget {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
