@@ -24,7 +24,7 @@ jobs:
         # No `version` here — pnpm/action-setup reads it from the
         # `packageManager` field in package.json (pnpm@10.x). Pinning a
         # different version causes ERR_PNPM_BAD_PM_VERSION.
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,7 +56,7 @@ jobs:
 
       - name: Setup pnpm
         # No `version` here — read from package.json `packageManager`.
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
