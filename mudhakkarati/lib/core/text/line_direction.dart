@@ -37,6 +37,27 @@ TextDirection lineDirection(String text,
         {TextDirection fallback = TextDirection.rtl}) =>
     strongLineDirection(text) ?? fallback;
 
+/// اتجاه النصّ **الغالب** حسب أكثر الحروف (عربي مقابل لاتيني). يُستخدم لاتجاه
+/// الملاحظة ككلّ في المحرّر/العارض — فيستقرّ على سياق اللغة بلا تشويش يمين/يسار.
+/// النصّ بلا حروف قويّة (فارغ/رموز) ⇒ [fallback] (افتراضيًّا RTL — لغة عربية).
+TextDirection dominantDirection(String text,
+    {TextDirection fallback = TextDirection.rtl}) {
+  var ar = 0, lat = 0;
+  for (final r in text.runes) {
+    if ((r >= 0x0590 && r <= 0x08FF) ||
+        (r >= 0xFB1D && r <= 0xFDFF) ||
+        (r >= 0xFE70 && r <= 0xFEFF)) {
+      ar++;
+    } else if ((r >= 0x41 && r <= 0x5A) ||
+        (r >= 0x61 && r <= 0x7A) ||
+        (r >= 0xC0 && r <= 0x24F)) {
+      lat++;
+    }
+  }
+  if (ar == 0 && lat == 0) return fallback;
+  return ar >= lat ? TextDirection.rtl : TextDirection.ltr;
+}
+
 /// عنصر نصّ يعرض كل سطر باتجاهه المستقلّ (للعرض للقراءة فقط: البطاقات/المعاينات).
 /// يحافظ على ترتيب الرموز/الشرطة/الترقيم في بداية كل سطر دون عكسها.
 class AutoDirText extends StatelessWidget {
