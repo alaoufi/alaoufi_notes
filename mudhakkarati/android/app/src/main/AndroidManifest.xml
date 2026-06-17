@@ -56,6 +56,14 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- نستخدم محرّك Skia بدل Impeller: فالأخير لا يطبّق وزن الغامق
+             (FontWeight.bold) على الخطوط المضمّنة بشكل موثوق على أندرويد، فيبدو
+             الغامق «لا يعمل» لكل الخطوط. Skia يعرض الغامق صحيحًا (ويُولّده صناعيًّا
+             للخطوط أحادية الوزن أيضًا). -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+
         <!-- Home screen widget receiver -->
         <receiver android:name="HomeWidgetProvider"
             android:exported="true">
