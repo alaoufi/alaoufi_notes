@@ -60,7 +60,7 @@ class RichTextController {
   String _serializeWithoutDirection() {
     final ops = quill.document.toDelta().toJson();
     for (final op in ops) {
-      if (op is Map && op['attributes'] is Map) {
+      if (op['attributes'] is Map) {
         final attrs = op['attributes'] as Map;
         attrs.remove('direction');
         if (attrs.isEmpty) op.remove('attributes');
