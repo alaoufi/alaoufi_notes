@@ -63,6 +63,9 @@ class RichTextController {
       _pending = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _pending = false;
+        // لا نمسّ المستند إن كان هناك «نمط معلَّق» (غامق/مائل/تسطير مضبوط قبل
+        // الكتابة بلا تحديد) كي لا يُمسح — يُضبط الاتجاه لاحقًا عند زواله.
+        if (quill.toggledStyle.attributes.isNotEmpty) return;
         _applying = true;
         applyLineDirections(quill);
         _applying = false;
@@ -119,18 +122,18 @@ void applyLineDirections(QuillController quill) {
     lineStart = i + 1;
   }
   if (ops.isEmpty) return;
-  for (final op in ops) {
+  // نُخطر بإعادة الرسم عبر آخر formatText فقط (لا نستدعي updateSelection) — فلا
+  // نمسّ المؤشّر ولا «النمط المعلَّق» (الغامق/المائل المضبوط قبل الكتابة بلا
+  // تحديد). تنسيق فاصل السطر لا يغيّر طول النص فلا يتحرّك المؤشّر.
+  for (var k = 0; k < ops.length; k++) {
+    final op = ops[k];
     quill.formatText(
       op[0],
       1,
       op[1] == 1 ? Attribute.rtl : Attribute.clone(Attribute.rtl, null),
-      shouldNotifyListeners: false,
+      shouldNotifyListeners: k == ops.length - 1,
     );
   }
-  // أخطر بإعادة الرسم مع إبقاء المؤشّر في **مكانه الحالي** (قراءة طازجة بعد
-  // التنسيق ⇒ لا قفز). تنسيق فاصل السطر لا يغيّر طول النص فلا يتحرّك المؤشّر.
-  final sel = quill.selection;
-  if (sel.isValid) quill.updateSelection(sel, ChangeSource.local);
 }
 
 /// يبني أنماط المحرّر الافتراضية (خط المتن وحجمه وتباعد أسطره) من الإعدادات.
