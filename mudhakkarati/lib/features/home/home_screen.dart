@@ -37,6 +37,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchCtrl = TextEditingController();
+  bool _searching = false; // حقل البحث مخفيّ حتى يُفتح بأيقونة العدسة
   bool _restoreChecked = false; // بحث تلقائي عن نسخة احتياطية مرّة واحدة
   bool _backupReminderChecked = false; // فحص تذكير النسخة الخارجية مرّة واحدة
   bool _showBackupReminder = false; // إظهار شريط «صدّر نسخة قبل التحديث»
@@ -598,6 +599,17 @@ class _HomeScreenState extends State<HomeScreen> {
               // كي تبقى أيقونة القائمة (☰) ظاهرة. (المفضّلة/المعلومات في القائمة الجانبية.)
               const Spacer(),
               IconButton(
+                tooltip: s.t('search_hint'),
+                icon: Icon(_searching ? Icons.search_off : Icons.search),
+                onPressed: () => setState(() {
+                  _searching = !_searching;
+                  if (!_searching) {
+                    _searchCtrl.clear();
+                    provider.setSearch('');
+                  }
+                }),
+              ),
+              IconButton(
                 tooltip: s.t('calendar'),
                 icon: const Icon(Icons.calendar_month_outlined),
                 onPressed: () => Navigator.push(context,
@@ -619,42 +631,48 @@ class _HomeScreenState extends State<HomeScreen> {
               _overflowMenu(context, s, provider),
             ],
           ),
-          const SizedBox(height: 8),
-          StatefulBuilder(
-            builder: (ctx, setSearchState) => TextField(
-            controller: _searchCtrl,
-            onChanged: (v) {
-              provider.setSearch(v);
-              setSearchState(() {}); // اتجاه الحقل فورًا (دون إعادة بناء القائمة)
-            },
-            textDirection: lineDirection(_searchCtrl.text),
-            textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              hintText: s.t('search_hint'),
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    tooltip: s.t('advanced_search'),
-                    icon: Icon(Icons.tune,
-                        color: provider.hasAdvancedFilter
-                            ? Theme.of(context).colorScheme.primary
-                            : null),
-                    onPressed: () => showAdvancedFilter(context),
+          // حقل البحث يظهر فقط عند فتح العدسة (يوفّر مساحة فوق الملاحظات).
+          if (_searching) ...[
+            const SizedBox(height: 8),
+            StatefulBuilder(
+              builder: (ctx, setSearchState) => TextField(
+                controller: _searchCtrl,
+                autofocus: true,
+                onChanged: (v) {
+                  provider.setSearch(v);
+                  setSearchState(() {}); // اتجاه الحقل فورًا (دون إعادة بناء القائمة)
+                },
+                textDirection: lineDirection(_searchCtrl.text),
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: s.t('search_hint'),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: s.t('advanced_search'),
+                        icon: Icon(Icons.tune,
+                            color: provider.hasAdvancedFilter
+                                ? Theme.of(context).colorScheme.primary
+                                : null),
+                        onPressed: () => showAdvancedFilter(context),
+                      ),
+                      IconButton(
+                        tooltip: 'إغلاق البحث',
+                        icon: const Icon(Icons.close),
+                        onPressed: () => setState(() {
+                          _searchCtrl.clear();
+                          provider.setSearch('');
+                          _searching = false;
+                        }),
+                      ),
+                    ],
                   ),
-                  if (_searchCtrl.text.isNotEmpty)
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () {
-                        _searchCtrl.clear();
-                        provider.setSearch('');
-                      },
-                    ),
-                ],
+                ),
               ),
             ),
-          )),
+          ],
           const SizedBox(height: 12),
           _categoryChips(context, s, settings, provider),
         ],
