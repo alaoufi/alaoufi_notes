@@ -95,7 +95,8 @@ class RichTextController {
       // طول السطر شاملًا فاصله (سمة الاتجاه تُخزَّن على فاصل السطر).
       final lineLen = (end < text.length) ? (end - start + 1) : (end - start);
       if (lineLen <= 0) return;
-      final wantRtl = lineDirection(lineText) == TextDirection.rtl;
+      // سطر فارغ/رموز فقط ⇒ بلا اتجاه (محايد) كي لا تتبادل الأسطر يمين/يسار.
+      final wantRtl = strongLineDirection(lineText) == TextDirection.rtl;
       var hasRtl = false;
       try {
         final st = quill.document.collectStyle(start, lineLen);
@@ -175,7 +176,8 @@ void applyLineDirections(QuillController quill) {
       // طول السطر شاملًا فاصل الأسطر (سمة الاتجاه تُخزَّن على فاصل السطر).
       final lineLen = (i < text.length) ? (i - start + 1) : (i - start);
       if (lineLen > 0) {
-        final wantRtl = lineDirection(lineText) == TextDirection.rtl;
+        // سطر فارغ/رموز فقط ⇒ بلا اتجاه (لا نضع RTL) كي تبقى الأسطر مستقرّة.
+        final wantRtl = strongLineDirection(lineText) == TextDirection.rtl;
         var hasRtl = false;
         try {
           final st = quill.document.collectStyle(start, lineLen);
