@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { supabaseEnv, getServiceRoleKey } from "./env";
+import { supabaseEnv } from "./env";
 import type { Database } from "./types";
 
 export async function createSupabaseServerClient() {
@@ -23,17 +23,7 @@ export async function createSupabaseServerClient() {
   });
 }
 
-// Service-role client — bypasses RLS. NEVER expose to the browser.
-// Use exclusively inside server actions / route handlers that already enforce permission themselves.
-export function createSupabaseServiceRoleClient() {
-  return createServerClient<Database>(supabaseEnv.url, getServiceRoleKey(), {
-    cookies: {
-      getAll() {
-        return [];
-      },
-      setAll() {
-        // no-op
-      },
-    },
-  });
-}
+// The service-role client lives in `./service-role.ts` (no next/headers import)
+// so it can be used from Edge Middleware / CMS loaders. Re-exported here so
+// existing server-side importers keep working unchanged.
+export { createSupabaseServiceRoleClient } from "./service-role";

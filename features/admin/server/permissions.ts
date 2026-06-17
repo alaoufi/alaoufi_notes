@@ -7,11 +7,7 @@ import {
 } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { requireRole } from "@/lib/auth/guard";
-import {
-  type AdminSection,
-  ADMIN_SECTIONS,
-  isAdminSection,
-} from "@/lib/auth/sections";
+import { type AdminSection, isAdminSection } from "@/lib/auth/sections";
 
 interface Result {
   ok: boolean;
@@ -188,5 +184,3 @@ export async function searchUsersForPromotion(
     username: p.username,
   }));
 }
-
-export { ADMIN_SECTIONS };

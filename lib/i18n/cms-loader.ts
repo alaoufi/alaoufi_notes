@@ -1,5 +1,5 @@
 import "server-only";
-import { createSupabaseServiceRoleClient } from "@/lib/supabase/server";
+import { createSupabaseServiceRoleClient } from "@/lib/supabase/service-role";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import type { Locale } from "@/i18n/locales";
 import type { FlatMessages } from "./cms";

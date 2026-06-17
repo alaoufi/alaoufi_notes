@@ -1,24 +1,13 @@
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCurrentRoles, requireUser } from "./guard";
+import { ADMIN_SECTIONS, isAdminSection, type AdminSection } from "./sections-shared";
 
-export const ADMIN_SECTIONS = [
-  "categories",
-  "geography",
-  "users",
-  "disputes",
-  "translations",
-  "settings",
-  "orders",
-  "payments",
-  "ads",
-] as const;
-
-export type AdminSection = (typeof ADMIN_SECTIONS)[number];
-
-export function isAdminSection(value: unknown): value is AdminSection {
-  return typeof value === "string" && (ADMIN_SECTIONS as readonly string[]).includes(value);
-}
+// Re-export the client-safe constants/types so existing server-side importers
+// (`@/lib/auth/sections`) keep working unchanged. Client Components should
+// import them from `./sections-shared` directly.
+export { ADMIN_SECTIONS, isAdminSection };
+export type { AdminSection };
 
 /**
  * Every admin section the current user can access.

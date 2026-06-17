@@ -10,7 +10,7 @@ import {
   type SectionAdminRow,
   type UserSearchResult,
 } from "../server/permissions";
-import { ADMIN_SECTIONS, type AdminSection } from "@/lib/auth/sections";
+import { ADMIN_SECTIONS, type AdminSection } from "@/lib/auth/sections-shared";
 import { Search, UserPlus, X, ShieldCheck, AlertCircle } from "lucide-react";
 
 interface Props {
