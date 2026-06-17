@@ -103,23 +103,21 @@ class RichTextController {
 /// - flutter_quill يعرض المستند باتجاهٍ محيط واحد (LTR هنا)، ويدعم سمة اتجاه
 ///   `rtl` فقط لكل سطر (لا `ltr`). فالأسطر الإنجليزية تبقى بلا سمة (تُعرض يسارًا)،
 ///   والعربية تُعلَّم `rtl` (تُعرض يمينًا).
-/// - السطر الفارغ **يرث اتجاه أقرب سطر سابق فيه حرف لغوي** (وإلا عربي افتراضيًّا)
-///   ⇒ المؤشّر يستمرّ على سياق اللغة الفعّالة بلا تنقّل يمين/يسار.
+/// - **السطر الفارغ يبقى محايدًا** (بلا سمة) — لأنّ المحرّك يرسم مؤشّر السطر
+///   الفارغ المعلَّم بـ`rtl` بشكل خاطئ (يساره أو يُخفيه). يُضبط الاتجاه فور كتابة
+///   أوّل حرف لغوي في السطر.
 /// - نطبّق السمة على **فاصل السطر فقط** (طول 1) لا على محتواه ⇒ لا يتسرّب
-///   الاتجاه لسطر مجاور (كان ذلك سبب اضطراب الأسطر سابقًا)، ومرور حتميّ واحد
-///   يجعل كل الأسطر متّسقة (بلا تبادل).
+///   الاتجاه لسطر مجاور، ومرور حتميّ واحد يجعل كل الأسطر متّسقة (بلا تبادل).
 void applyLineDirections(QuillController quill) {
   final text = quill.document.toPlainText();
   final doc = quill.document;
-  var context = TextDirection.rtl; // سياق البداية: عربي (لغة التطبيق)
   final ops = <List<int>>[]; // [newlinePos, wantRtl(1/0)]
   var lineStart = 0;
   for (var i = 0; i < text.length; i++) {
     if (text[i] != '\n') continue;
     final lineText = text.substring(lineStart, i);
-    final strong = strongLineDirection(lineText);
-    if (strong != null) context = strong; // حدّث سياق اللغة الفعّالة
-    final want = (strong ?? context) == TextDirection.rtl;
+    // عربي ⇒ rtl؛ إنجليزي/فارغ/رموز ⇒ محايد (لا سمة).
+    final want = strongLineDirection(lineText) == TextDirection.rtl;
     var cur = false;
     try {
       cur = doc.collectStyle(i, 1).attributes['direction']?.value == 'rtl';
