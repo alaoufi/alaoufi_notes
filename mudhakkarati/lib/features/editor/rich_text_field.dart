@@ -21,15 +21,13 @@ class RichTextController {
       document: _documentFrom(initialContent),
       selection: const TextSelection.collapsed(offset: 0),
     );
-    _lastText = quill.document.toPlainText();
     // اضبط اتجاهات الأسطر فور التحميل (للملاحظات الموجودة مسبقًا) **قبل** الاشتراك
-    // في تغييرات المستند، كي لا تُحسب تعديلات الاتجاه الأوّلية كتحرير من المستخدم.
+    // كي لا تُحسب تعديلات الاتجاه الأوّلية كتحرير من المستخدم.
     applyLineDirections(quill);
-    _lastSig = _serializeWithoutDirection(); // بصمة المحتوى الابتدائية (دون اتجاه)
-    // نراقب **تعديلات المستند فقط** (إدراج/حذف/تنسيق) لا تحريك المؤشّر/التحديد؛
-    // فيبقى السحب والتحديد رخيصًا تمامًا (نعومة، خاصةً آخر الملاحظة)، ويُحفظ أيّ
-    // تنسيق (غامق/لون/حجم) ولو لم يتغيّر النصّ — وهذا إصلاح ضياع الغامق.
-    _docSub = quill.document.changes.listen((_) => _onDocChanged());
+    // نراقب **تعديلات المستند فقط** (إدراج/حذف/تنسيق) لا تحريك المؤشّر؛ ونفحص
+    // **دلتا التغيير** الصغيرة فقط (لا نُسلسِل المستند كاملًا في كل مرة) ⇒ كتابة
+    // وتراجع سريعان وناعمان حتى في الملاحظات الكبيرة.
+    _docSub = quill.document.changes.listen(_onDocChanged);
   }
 
   late final QuillController quill;
@@ -39,8 +37,6 @@ class RichTextController {
   final ValueChanged<String> _onChanged;
   Timer? _debounce; // تأجيل الحفظ
   bool _pending = false; // ضبط اتجاه مؤجَّل لما بعد الإطار (مجدوَل بالفعل)
-  String _lastText = ''; // آخر نصّ رأيناه (لتفرقة تغيّر النص عن التنسيق)
-  String _lastSig = ''; // بصمة المحتوى (دون اتجاه) لتجاهُل ضبطنا الداخلي للاتجاه
   StreamSubscription? _docSub; // اشتراك في تعديلات المستند (دون أحداث التحديد)
 
   static Document _documentFrom(String content) {
@@ -56,23 +52,34 @@ class RichTextController {
     return doc;
   }
 
-  /// يُستدعى عند كلّ **تعديل على المستند** (إدراج/حذف/تنسيق) — لا عند مجرّد تحريك
-  /// المؤشّر أو التحديد (تلك لا تبثّ في `document.changes`)، فيبقى التحديد ناعمًا.
-  void _onDocChanged() {
-    final text = quill.document.toPlainText();
-    final sig = _serializeWithoutDirection();
-    if (sig == _lastSig) {
-      // لا تغيّر فعليّ في المحتوى — مثل ضبطنا الداخليّ لسمة الاتجاه (تُجرَّد عند
-      // الحفظ) ⇒ لا حفظ ولا إعادة حساب، فقط نُحدّث آخر نصّ.
-      _lastText = text;
-      return;
+  /// يُستدعى عند كلّ **تعديل على المستند** (إدراج/حذف/تنسيق) لا عند تحريك المؤشّر
+  /// (تلك لا تبثّ في `document.changes`). نفحص **دلتا التغيير الصغيرة** فقط (رخيص)
+  /// بدل تسلسل المستند كاملًا ⇒ كتابة وتراجع ناعمان، ويُحفظ التنسيق ولو بلا نصّ.
+  void _onDocChanged(DocChange change) {
+    // نفحص عمليّات دلتا التغيير الصغيرة (مُستنتَجة النوع، بلا تسلسل المستند):
+    // - تغيّر نصّ (إدراج/حذف) ⇒ نعيد حساب الاتجاه لاحقًا.
+    // - «اتجاه فقط» (retain بسمة direction وحدها) ⇒ تغييرنا الداخليّ ⇒ نتجاهله
+    //   (تُجرَّد سمة الاتجاه عند الحفظ) تفاديًا لحفظ زائد وحلقة لا نهائية.
+    var textChanged = false;
+    var sawDirection = false;
+    var directionOnly = true;
+    for (final op in change.change.toList()) {
+      if (op.isInsert || op.isDelete) {
+        textChanged = true;
+        directionOnly = false;
+        continue;
+      }
+      final attrs = op.attributes;
+      if (attrs == null) continue; // retain لتخطّي موضع (بلا سمة)
+      if (attrs.length == 1 && attrs.containsKey('direction')) {
+        sawDirection = true;
+      } else {
+        directionOnly = false; // تنسيق فعليّ (غامق/لون/حجم...)
+      }
     }
-    final textChanged = text != _lastText;
-    _lastSig = sig;
-    _lastText = text;
-    // عند تغيّر النصّ فقط نعيد حساب اتجاه الأسطر (التنسيق لا يغيّر الاتجاه)، بعد
-    // إطار الإدخال الحالي، وبشرط ألّا يُمحى «نمط معلَّق» (غامق مضبوط قبل الكتابة
-    // بلا تحديد). ضبطنا للاتجاه يبثّ تغييرًا نتجاهله أعلاه (البصمة لم تتغيّر).
+    if (directionOnly && sawDirection) return; // ضبطنا الداخليّ للاتجاه فقط
+    // أعِد حساب الاتجاه فقط عند تغيّر النصّ، بعد إطار الإدخال، وبشرط ألّا يُمحى
+    // «نمط معلَّق» (غامق مضبوط قبل الكتابة بلا تحديد).
     if (textChanged && !_pending) {
       _pending = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
