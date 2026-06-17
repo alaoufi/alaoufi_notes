@@ -211,4 +211,57 @@ void main() {
       expect(_ambientDirOf(tester), TextDirection.ltr);
     });
   });
+
+  group('فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ)', () {
+    test('١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)', () async {
+      String? saved;
+      final c = RichTextController('', (json) => saved = json);
+      const text = 'كلمة أخرى';
+      c.quill.replaceText(
+          0, 0, text, TextSelection.collapsed(offset: text.length));
+      // ننتظر اكتمال الحفظ الأول (بلا غامق) — تمامًا كحالة المستخدم الواقعية.
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      expect(saved, isNot(contains('bold')),
+          reason: 'قبل تطبيق الغامق لا يوجد غامق محفوظ');
+      // الآن نطبّق الغامق دون أيّ تغيير في النصّ:
+      c.quill.formatText(0, 4, Attribute.bold);
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      expect(saved, contains('bold'),
+          reason: 'تغيّر التنسيق وحده يجب أن يُجدوِل الحفظ');
+      c.dispose();
+    });
+
+    test('١٦) تحريك المؤشّر وحده (بلا تغيّر تنسيق) لا يستدعي الحفظ', () async {
+      var calls = 0;
+      final c = RichTextController('نص للاختبار', (_) => calls++);
+      c.quill.updateSelection(
+        const TextSelection.collapsed(offset: 3),
+        ChangeSource.local,
+      );
+      c.quill.updateSelection(
+        const TextSelection(baseOffset: 0, extentOffset: 2),
+        ChangeSource.local,
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 700));
+      expect(calls, 0, reason: 'البصمة لم تتغيّر ⇒ لا حفظ عند مجرّد التحديد');
+      c.dispose();
+    });
+  });
+
+  group('توسيع الكلمة عند المؤشّر (تنسيق بلا تحديد)', () {
+    // مرحبا(0..5) مسافة(5) بالعالم(6..13)
+    const t = 'مرحبا بالعالم';
+    test('١٧) المؤشّر داخل كلمة ⇒ نطاق الكلمة كاملة', () {
+      expect(wordRangeAt(t, 2), [0, 5]);
+      expect(wordRangeAt(t, 9), [6, 13]);
+    });
+    test('١٨) المؤشّر ملاصق لنهاية كلمة (بعد الكتابة) ⇒ الكلمة قبله', () {
+      expect(wordRangeAt(t, 5), [0, 5]);
+      expect(wordRangeAt(t, 13), [6, 13]);
+    });
+    test('١٩) المؤشّر على مسافة/فراغ بلا كلمة ملاصقة ⇒ null', () {
+      expect(wordRangeAt('ا  ب', 2), isNull);
+      expect(wordRangeAt('', 0), isNull);
+    });
+  });
 }

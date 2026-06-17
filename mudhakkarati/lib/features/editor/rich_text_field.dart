@@ -22,11 +22,14 @@ class RichTextController {
       selection: const TextSelection.collapsed(offset: 0),
     );
     _lastText = quill.document.toPlainText();
-    quill.addListener(_handle);
-    // اضبط اتجاهات الأسطر فور التحميل (للملاحظات الموجودة مسبقًا).
-    _applying = true;
+    // اضبط اتجاهات الأسطر فور التحميل (للملاحظات الموجودة مسبقًا) **قبل** الاشتراك
+    // في تغييرات المستند، كي لا تُحسب تعديلات الاتجاه الأوّلية كتحرير من المستخدم.
     applyLineDirections(quill);
-    _applying = false;
+    _lastSig = _serializeWithoutDirection(); // بصمة المحتوى الابتدائية (دون اتجاه)
+    // نراقب **تعديلات المستند فقط** (إدراج/حذف/تنسيق) لا تحريك المؤشّر/التحديد؛
+    // فيبقى السحب والتحديد رخيصًا تمامًا (نعومة، خاصةً آخر الملاحظة)، ويُحفظ أيّ
+    // تنسيق (غامق/لون/حجم) ولو لم يتغيّر النصّ — وهذا إصلاح ضياع الغامق.
+    _docSub = quill.document.changes.listen((_) => _onDocChanged());
   }
 
   late final QuillController quill;
@@ -35,9 +38,10 @@ class RichTextController {
   final ScrollController scroll = ScrollController();
   final ValueChanged<String> _onChanged;
   Timer? _debounce; // تأجيل الحفظ
-  bool _applying = false; // حارس أثناء ضبطنا لسمة الاتجاه (تفادي إعادة الدخول)
   bool _pending = false; // ضبط اتجاه مؤجَّل لما بعد الإطار (مجدوَل بالفعل)
-  String _lastText = ''; // آخر نصّ رأيناه (لتفرقة تغيّر النص عن اللمس)
+  String _lastText = ''; // آخر نصّ رأيناه (لتفرقة تغيّر النص عن التنسيق)
+  String _lastSig = ''; // بصمة المحتوى (دون اتجاه) لتجاهُل ضبطنا الداخلي للاتجاه
+  StreamSubscription? _docSub; // اشتراك في تعديلات المستند (دون أحداث التحديد)
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -52,24 +56,35 @@ class RichTextController {
     return doc;
   }
 
-  void _handle() {
-    if (_applying) return; // تغييرنا الداخلي لسمة الاتجاه — لا نعيد المعالجة
+  /// يُستدعى عند كلّ **تعديل على المستند** (إدراج/حذف/تنسيق) — لا عند مجرّد تحريك
+  /// المؤشّر أو التحديد (تلك لا تبثّ في `document.changes`)، فيبقى التحديد ناعمًا.
+  void _onDocChanged() {
     final text = quill.document.toPlainText();
-    if (text == _lastText) return; // لمس/تحريك مؤشّر فقط ⇒ لا شيء (استقرار)
+    final sig = _serializeWithoutDirection();
+    if (sig == _lastSig) {
+      // لا تغيّر فعليّ في المحتوى — مثل ضبطنا الداخليّ لسمة الاتجاه (تُجرَّد عند
+      // الحفظ) ⇒ لا حفظ ولا إعادة حساب، فقط نُحدّث آخر نصّ.
+      _lastText = text;
+      return;
+    }
+    final textChanged = text != _lastText;
+    _lastSig = sig;
     _lastText = text;
-    // نضبط الاتجاه بعد إطار الإدخال الحالي (لا نُعدّل المستند أثناء معالجته).
-    if (!_pending) {
+    // عند تغيّر النصّ فقط نعيد حساب اتجاه الأسطر (التنسيق لا يغيّر الاتجاه)، بعد
+    // إطار الإدخال الحالي، وبشرط ألّا يُمحى «نمط معلَّق» (غامق مضبوط قبل الكتابة
+    // بلا تحديد). ضبطنا للاتجاه يبثّ تغييرًا نتجاهله أعلاه (البصمة لم تتغيّر).
+    if (textChanged && !_pending) {
       _pending = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _pending = false;
-        // لا نمسّ المستند إن كان هناك «نمط معلَّق» (غامق/مائل/تسطير مضبوط قبل
-        // الكتابة بلا تحديد) كي لا يُمسح — يُضبط الاتجاه لاحقًا عند زواله.
         if (quill.toggledStyle.attributes.isNotEmpty) return;
-        _applying = true;
         applyLineDirections(quill);
-        _applying = false;
       });
     }
+    _scheduleSave();
+  }
+
+  void _scheduleSave() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
       _onChanged(_serializeWithoutDirection());
@@ -91,7 +106,7 @@ class RichTextController {
 
   void dispose() {
     _debounce?.cancel();
-    quill.removeListener(_handle);
+    _docSub?.cancel();
     quill.dispose();
     focus.dispose();
     scroll.dispose();
@@ -532,11 +547,22 @@ class _SmoothToolbarScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-/// يبدّل سمة تنسيق مضمّنة على **النص المحدَّد فقط** (المعلَّم):
-/// - مع تحديد نصّ: يطبّق/يزيل السمة على التحديد فقط.
-/// - بلا تحديد: يضبط تنسيق ما سيُكتب بعد المؤشر (السلوك القياسي) — لا يتوسّع
-///   إلى الكلمة كاملة كما كان سابقًا، احترامًا لقاعدة «على المعلَّم فقط».
+/// يبدّل سمة تنسيق مضمّنة (غامق/مائل/تسطير/شطب) بأثرٍ فوريّ مرئيّ:
+/// - مع تحديد نصّ: يطبّق/يزيل السمة على المعلَّم فقط.
+/// - بلا تحديد لكنّ المؤشّر داخل/ملاصق لكلمة: يطبّق/يزيل السمة على **الكلمة
+///   كاملة** فيظهر الأثر فورًا (أكثر فاعلية وبديهية على الجوال).
+/// - بلا تحديد ولا كلمة (سطر فارغ/مسافة): يضبط نمطًا معلَّقًا لما سيُكتب.
 void _smartToggleInline(QuillController c, Attribute attr) {
+  final sel = c.selection;
+  if (sel.isValid && sel.isCollapsed) {
+    final range = wordRangeAt(c.document.toPlainText(), sel.baseOffset);
+    if (range != null) {
+      final isOn = _rangeHasAttr(c, range[0], range[1] - range[0], attr);
+      c.formatText(range[0], range[1] - range[0],
+          isOn ? Attribute.clone(attr, null) : attr);
+      return;
+    }
+  }
   bool isOn;
   try {
     isOn = c.getSelectionStyle().attributes.containsKey(attr.key);
@@ -544,6 +570,41 @@ void _smartToggleInline(QuillController c, Attribute attr) {
     isOn = false;
   }
   c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
+}
+
+/// نطاق الكلمة المحيطة بالموضع [offset] في [text] كـ`[start, end]`، أو `null`
+/// إن لم يكن المؤشّر داخل كلمة ولا ملاصقًا لها (سطر فارغ/مسافة/فاصل سطر).
+/// «حرف الكلمة» = أيّ محرف غير فراغ وغير فاصل سطر (يشمل الترقيم المُلتصق).
+List<int>? wordRangeAt(String text, int offset) {
+  bool isWord(int i) =>
+      i >= 0 && i < text.length && text[i] != '\n' && text[i].trim().isNotEmpty;
+  var start = offset;
+  var end = offset;
+  if (isWord(offset)) {
+    while (start > 0 && isWord(start - 1)) {
+      start--;
+    }
+    while (end < text.length && isWord(end)) {
+      end++;
+    }
+  } else if (isWord(offset - 1)) {
+    // المؤشّر ملاصق لنهاية كلمة (شائع بعد الكتابة) ⇒ نأخذ الكلمة قبله.
+    while (start > 0 && isWord(start - 1)) {
+      start--;
+    }
+  } else {
+    return null;
+  }
+  return end > start ? [start, end] : null;
+}
+
+/// هل يحمل المدى المعطى السمةَ [attr] (لتقرير التطبيق أم الإزالة)؟
+bool _rangeHasAttr(QuillController c, int start, int len, Attribute attr) {
+  try {
+    return c.document.collectStyle(start, len).attributes.containsKey(attr.key);
+  } catch (_) {
+    return false;
+  }
 }
 
 /// يحوّل محتوى ملاحظة (Delta JSON أو نص عادي) إلى نص صريح للمعاينة في البطاقة.
