@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../core/theme/app_colors.dart';
+import '../core/theme/custom_colors_store.dart';
 import '../core/theme/note_gradient.dart';
 
 /// نتيجة اختيار لون/نمط خلفية البطاقة.
@@ -64,7 +65,10 @@ Future<ColorPickResult?> showColorPicker(
   double currentThickness = 1.0,
   double currentOpacity = 0.12,
   double currentLineHeight = 1.6,
-}) {
+}) async {
+  // حمّل مكتبة الألوان المخصّصة المحفوظة (دائمة) قبل عرض المنتقي.
+  await CustomColorsStore.instance.load();
+  if (!context.mounted) return null;
   final s = S.of(context);
   int selectedStyle = currentStyle;
   int? selectedColor = current;
@@ -129,6 +133,8 @@ Future<ColorPickResult?> showColorPicker(
                           final picked = await _showCustomColor(
                               context, selectedColor ?? 0xFFFFFFFF);
                           if (picked != null) {
+                            // احفظه في المكتبة الدائمة كي لا يُعاد تكوينه.
+                            await CustomColorsStore.instance.add(picked);
                             setSheet(() => selectedColor = picked);
                           }
                         },
@@ -152,6 +158,49 @@ Future<ColorPickResult?> showColorPicker(
                           selected: selectedColor == c.value,
                         ),
                     ],
+                  ),
+                  // ===== مكتبة الألوان المحفوظة (المخصّصة) =====
+                  ValueListenableBuilder<List<int>>(
+                    valueListenable: CustomColorsStore.instance.colors,
+                    builder: (context, saved, _) {
+                      if (saved.isEmpty) return const SizedBox.shrink();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Text('ألوان محفوظة',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(width: 6),
+                              Text('(اضغط مطوّلًا للحذف)',
+                                  style: Theme.of(context).textTheme.bodySmall),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final v in saved)
+                                GestureDetector(
+                                  onLongPress: () =>
+                                      CustomColorsStore.instance.remove(v),
+                                  child: _swatch(
+                                    context,
+                                    color: Color(v),
+                                    size: 34,
+                                    onTap: () =>
+                                        setSheet(() => selectedColor = v),
+                                    selected: selectedColor == v,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 20),
                   Text('نمط الصفحة',
@@ -363,15 +412,32 @@ Future<ColorPickResult?> showColorPicker(
   );
 }
 
-/// منتقي لون دقيق (RGB) — تحكّم لوني كامل بأي لون.
+/// يحوّل كود HEX (‎#RRGGBB أو RRGGBB أو RGB) إلى لون مُعتم، أو null إن لم يصحّ.
+int? _parseHex(String input) {
+  var h = input.trim().replaceAll('#', '').replaceAll(' ', '');
+  if (h.length == 3) {
+    h = h.split('').map((ch) => '$ch$ch').join(); // RGB ⇒ RRGGBB
+  }
+  if (h.length != 6) return null;
+  final v = int.tryParse(h, radix: 16);
+  if (v == null) return null;
+  return 0xFF000000 | v;
+}
+
+String _toHex(Color c) =>
+    (c.value & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase();
+
+/// منتقي لون دقيق (RGB + كود HEX بالأرقام) — تحكّم لوني كامل بأي لون.
 Future<int?> _showCustomColor(BuildContext context, int initial) {
   var c = Color(initial);
   double r = c.red.toDouble(), g = c.green.toDouble(), b = c.blue.toDouble();
+  final hexCtrl = TextEditingController(text: _toHex(Color(initial)));
   return showDialog<int>(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setD) {
         final color = Color.fromARGB(255, r.round(), g.round(), b.round());
+
         Widget slider(String label, double v, Color tint, ValueChanged<double> on) =>
             Row(children: [
               SizedBox(width: 18, child: Text(label)),
@@ -381,29 +447,61 @@ Future<int?> _showCustomColor(BuildContext context, int initial) {
                   max: 255,
                   value: v,
                   activeColor: tint,
-                  onChanged: (nv) => setD(() => on(nv)),
+                  onChanged: (nv) {
+                    setD(() => on(nv));
+                    // حدّث حقل HEX من المنزلقات (دون الكتابة فيه يدويًّا).
+                    hexCtrl.text = _toHex(
+                        Color.fromARGB(255, r.round(), g.round(), b.round()));
+                  },
                 ),
               ),
               SizedBox(width: 34, child: Text(v.round().toString())),
             ]);
         return AlertDialog(
           title: const Text('لون مخصص'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                height: 56,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.black12),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.black12),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              slider('R', r, Colors.red, (v) => r = v),
-              slider('G', g, Colors.green, (v) => g = v),
-              slider('B', b, Colors.blue, (v) => b = v),
-            ],
+                const SizedBox(height: 10),
+                // إدخال كود اللون بالأرقام (HEX) مباشرةً.
+                TextField(
+                  controller: hexCtrl,
+                  textAlign: TextAlign.center,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(
+                    prefixText: '#',
+                    labelText: 'كود اللون (HEX)',
+                    hintText: 'FCE49E',
+                    isDense: true,
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (v) {
+                    final parsed = _parseHex(v);
+                    if (parsed != null) {
+                      final nc = Color(parsed);
+                      setD(() {
+                        r = nc.red.toDouble();
+                        g = nc.green.toDouble();
+                        b = nc.blue.toDouble();
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                slider('R', r, Colors.red, (v) => r = v),
+                slider('G', g, Colors.green, (v) => g = v),
+                slider('B', b, Colors.blue, (v) => b = v),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -418,7 +516,10 @@ Future<int?> _showCustomColor(BuildContext context, int initial) {
         );
       },
     ),
-  );
+  ).then((val) {
+    hexCtrl.dispose();
+    return val;
+  });
 }
 
 Widget _swatch(

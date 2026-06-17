@@ -21,6 +21,7 @@ class AppColors {
     Color(0xFFFFFFFF), // أبيض (افتراضي)
     Color(0xFFFFF9C4), // أصفر فاتح جدًا
     Color(0xFFFFF1B8), // أصفر
+    Color(0xFFFCE49E), // أصفر دافئ (مرجعي)
     Color(0xFFFFE0B2), // برتقالي فاتح
     Color(0xFFFFD9C7), // مشمشي
     Color(0xFFFFCCBC), // مرجاني فاتح
@@ -45,6 +46,7 @@ class AppColors {
     Color(0xFF2A2A2E), // رمادي داكن (افتراضي)
     Color(0xFF45431B), // أصفر فاتح جدًا داكن
     Color(0xFF4A431F), // أصفر داكن
+    Color(0xFF4D451F), // أصفر دافئ داكن (مرجعي)
     Color(0xFF49381F), // برتقالي داكن
     Color(0xFF4A2E20), // مشمشي داكن
     Color(0xFF492A1F), // مرجاني داكن
