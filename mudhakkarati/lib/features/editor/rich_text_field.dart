@@ -637,17 +637,25 @@ class _InlineFormatButton extends StatelessWidget {
         } catch (_) {
           active = false;
         }
-        return IconButton(
-          icon: Icon(icon, size: 22),
-          tooltip: tooltip,
-          visualDensity: VisualDensity.compact,
-          isSelected: active,
-          color: active ? scheme.primary : null,
-          style: active
-              ? IconButton.styleFrom(
-                  backgroundColor: scheme.primary.withOpacity(0.16))
-              : null,
-          onPressed: () => controller.toggleInline(attribute),
+        // حالة مفعّلة: خلفية ممتلئة بلون بارز + أيقونة معاكسة + إطار ⇒ واضحة جدًّا.
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 120),
+          margin: const EdgeInsets.symmetric(horizontal: 1),
+          decoration: BoxDecoration(
+            color: active ? scheme.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+            border: active
+                ? Border.all(color: scheme.primary, width: 1.5)
+                : null,
+          ),
+          child: IconButton(
+            icon: Icon(icon, size: 22),
+            tooltip: tooltip,
+            visualDensity: VisualDensity.compact,
+            isSelected: active,
+            color: active ? scheme.onPrimary : null,
+            onPressed: () => controller.toggleInline(attribute),
+          ),
         );
       },
     );
