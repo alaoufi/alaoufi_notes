@@ -159,4 +159,16 @@ void main() {
     expect(find.byTooltip('مائل'), findsOneWidget, reason: 'بقية الأزرار باقية');
     c.dispose();
   });
+
+  test('٧) ترتيب الأدوات: moveTool ينقل الأداة ويحفظ الترتيب', () async {
+    SharedPreferences.setMockInitialValues({});
+    final st = SettingsProvider();
+    final first = st.toolOrder.first;
+    final second = st.toolOrder[1];
+    await st.moveTool(first, up: false); // انقل الأولى لأسفل خطوة.
+    expect(st.toolOrder[0], second, reason: 'صعدت الثانية للأعلى');
+    expect(st.toolOrder[1], first, reason: 'نزلت الأولى خطوة');
+    await st.moveTool(first, up: true); // أعِدها لأعلى.
+    expect(st.toolOrder.first, first, reason: 'رجعت لمكانها');
+  });
 }

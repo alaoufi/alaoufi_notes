@@ -423,23 +423,51 @@ class SettingsScreen extends StatelessWidget {
 
   // ===================== أزرار شريط التنسيق =====================
 
-  /// مفاتيح إظهار/إخفاء كل زرّ في شريط تنسيق المحرّر (لتقصير الشريط).
+  /// إظهار/إخفاء وترتيب كل زرّ في شريط تنسيق المحرّر.
+  /// الترتيب بأسهم لأعلى/لأسفل، والإظهار بمفتاح — ويُطبَّق فورًا على المحرّر.
   List<Widget> _toolbarButtons(BuildContext context, S s, SettingsProvider st) {
+    final order = st.toolOrder;
+    final scheme = Theme.of(context).colorScheme;
     return [
       const Padding(
         padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
         child: Text(
-          'اختر الأزرار التي تريد ظهورها في شريط التنسيق أثناء تحرير الملاحظة. '
-          'الأزرار المخفاة لا تُحذف وظيفتها — يمكنك إعادتها في أيّ وقت.',
+          'رتّب الأزرار بالأسهم ↑ ↓، وأظهِر/أخفِ كلًّا منها بالمفتاح. '
+          'المخفيّة لا تُحذف وظيفتها — يمكنك إعادتها في أيّ وقت.',
           style: TextStyle(fontSize: 12.5, height: 1.4),
         ),
       ),
-      for (final entry in SettingsProvider.toolbarTools.entries)
-        SwitchListTile(
+      for (var i = 0; i < order.length; i++)
+        ListTile(
           dense: true,
-          title: Text(entry.value),
-          value: st.isToolVisible(entry.key),
-          onChanged: (v) => st.setToolVisible(entry.key, v),
+          key: ValueKey(order[i]),
+          title: Text(SettingsProvider.toolbarTools[order[i]] ?? order[i]),
+          // أسهم الترتيب + مفتاح الإظهار.
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.keyboard_arrow_up),
+                tooltip: 'تحريك لأعلى',
+                visualDensity: VisualDensity.compact,
+                onPressed:
+                    i == 0 ? null : () => st.moveTool(order[i], up: true),
+              ),
+              IconButton(
+                icon: const Icon(Icons.keyboard_arrow_down),
+                tooltip: 'تحريك لأسفل',
+                visualDensity: VisualDensity.compact,
+                onPressed: i == order.length - 1
+                    ? null
+                    : () => st.moveTool(order[i], up: false),
+              ),
+              Switch(
+                value: st.isToolVisible(order[i]),
+                activeColor: scheme.primary,
+                onChanged: (v) => st.setToolVisible(order[i], v),
+              ),
+            ],
+          ),
         ),
     ];
   }

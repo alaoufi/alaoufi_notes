@@ -37,6 +37,8 @@ class SettingsProvider extends ChangeNotifier {
   double _noteLineHeight = 1.6; // تباعد الأسطر (مضاعف ارتفاع السطر)
   // أزرار شريط التنسيق المخفية (بمعرّفاتها) — تخصيص الشريط لتقصيره.
   Set<String> _hiddenTools = {};
+  // ترتيب أزرار شريط التنسيق (بمعرّفاتها) — يحدّده المستخدم بالسحب والإفلات.
+  List<String> _toolOrder = toolbarTools.keys.toList();
   // ---- تنسيق تسطير الصفحة ----
   double _ruleThickness = 1.0; // سماكة الأسطر
   double _ruleOpacity = 0.12; // شفافية الأسطر (0..1)
@@ -77,6 +79,22 @@ class SettingsProvider extends ChangeNotifier {
 
   /// هل زرّ شريط التنسيق [id] ظاهر؟ (الافتراضي: كل الأزرار ظاهرة).
   bool isToolVisible(String id) => !_hiddenTools.contains(id);
+
+  /// ترتيب أزرار شريط التنسيق كما حدّده المستخدم (كلّها، ظاهرها ومخفيّها).
+  List<String> get toolOrder => List.unmodifiable(_toolOrder);
+
+  /// ينقل الأداة [id] خطوة لأعلى (مبكّرًا) أو لأسفل (متأخّرًا) في الترتيب.
+  Future<void> moveTool(String id, {required bool up}) async {
+    final i = _toolOrder.indexOf(id);
+    if (i < 0) return;
+    final j = up ? i - 1 : i + 1;
+    if (j < 0 || j >= _toolOrder.length) return;
+    final item = _toolOrder.removeAt(i);
+    _toolOrder.insert(j, item);
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_kToolOrder, _toolOrder);
+  }
 
   /// أزرار شريط التنسيق القابلة للإظهار/الإخفاء: المعرّف ← الاسم المعروض.
   /// (الترتيب هو ترتيب ظهورها في شاشة الإعدادات.)
@@ -165,6 +183,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kNoteFontSize = 'note_font_size';
   static const _kNoteLineHeight = 'note_line_height';
   static const _kHiddenTools = 'hidden_toolbar_tools';
+  static const _kToolOrder = 'toolbar_order';
   static const _kRuleThickness = 'rule_thickness';
   static const _kRuleOpacity = 'rule_opacity';
   static const _kRuleOnLine = 'rule_on_line';
@@ -217,6 +236,19 @@ class SettingsProvider extends ChangeNotifier {
     _noteFontSize = prefs.getDouble(_kNoteFontSize) ?? 16;
     _noteLineHeight = prefs.getDouble(_kNoteLineHeight) ?? 1.6;
     _hiddenTools = (prefs.getStringList(_kHiddenTools) ?? const []).toSet();
+    // الترتيب المحفوظ مع مواءمته لأي أدوات أُضيفت/أُزيلت في التحديثات: نُبقي
+    // المعروفة بترتيب المستخدم ثم نُلحق أيّ أداة جديدة لم تكن محفوظة.
+    final valid = toolbarTools.keys.toList();
+    final saved = prefs.getStringList(_kToolOrder);
+    if (saved == null) {
+      _toolOrder = valid;
+    } else {
+      final order = saved.where(valid.contains).toList();
+      for (final k in valid) {
+        if (!order.contains(k)) order.add(k);
+      }
+      _toolOrder = order;
+    }
     _ruleThickness = prefs.getDouble(_kRuleThickness) ?? 1.0;
     _ruleOpacity = prefs.getDouble(_kRuleOpacity) ?? 0.12;
     _ruleOnLine = prefs.getBool(_kRuleOnLine) ?? true;

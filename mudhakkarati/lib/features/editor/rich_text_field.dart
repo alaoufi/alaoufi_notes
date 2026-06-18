@@ -377,11 +377,130 @@ class RichTextToolbar extends StatelessWidget {
           onPressed: () => q.formatSelection(attr),
         );
 
-    Widget sep() => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 2),
-          child: SizedBox(
-              height: 26, child: VerticalDivider(width: 1, thickness: 1)),
-        );
+    // يبني زرّ الأداة [id]؛ تُرتَّب الأزرار حسب ترتيب المستخدم (settings.toolOrder)
+    // وتُخفى المعطَّلة. المجموعات (المحاذاة/التصدير) تُبنى كصفّ أزرار واحد.
+    Widget buildTool(String id) {
+      switch (id) {
+        case 'undo':
+          return QuillToolbarHistoryButton(controller: q, isUndo: true);
+        case 'redo':
+          return QuillToolbarHistoryButton(controller: q, isUndo: false);
+        case 'voice':
+          return IconButton(
+            icon: const Icon(Icons.mic, size: 22),
+            tooltip: S.of(context).t('voice_typing'),
+            visualDensity: VisualDensity.compact,
+            color: Theme.of(context).colorScheme.primary,
+            onPressed: () async {
+              final text = await showVoiceDictation(context);
+              if (text == null || text.trim().isEmpty) return;
+              final sel = q.selection;
+              final docLen = q.document.length; // ينتهي دائمًا بـ \n
+              var index = sel.isValid ? sel.baseOffset : docLen - 1;
+              if (index < 0 || index > docLen - 1) index = docLen - 1;
+              final insert = '${text.trim()} ';
+              q.replaceText(index, 0, insert,
+                  TextSelection.collapsed(offset: index + insert.length));
+            },
+          );
+        case 'font':
+          return QuillToolbarFontFamilyButton(
+            controller: q,
+            options: const QuillToolbarFontFamilyButtonOptions(
+                items: _fontFamilies),
+          );
+        case 'size':
+          return QuillToolbarFontSizeButton(
+            controller: q,
+            options:
+                const QuillToolbarFontSizeButtonOptions(items: _fontSizes),
+          );
+        case 'bold':
+          return fmtBtn(Icons.format_bold, 'غامق', Attribute.bold);
+        case 'italic':
+          return fmtBtn(Icons.format_italic, 'مائل', Attribute.italic);
+        case 'underline':
+          return fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline);
+        case 'strike':
+          return fmtBtn(
+              Icons.format_strikethrough, 'شطب', Attribute.strikeThrough);
+        case 'color':
+          return QuillToolbarColorButton(controller: q, isBackground: false);
+        case 'highlight':
+          return QuillToolbarColorButton(controller: q, isBackground: true);
+        case 'header':
+          return QuillToolbarSelectHeaderStyleDropdownButton(controller: q);
+        case 'ul':
+          return QuillToolbarToggleStyleButton(
+              controller: q, attribute: Attribute.ul);
+        case 'ol':
+          return QuillToolbarToggleStyleButton(
+              controller: q, attribute: Attribute.ol);
+        case 'quote':
+          return QuillToolbarToggleStyleButton(
+              controller: q, attribute: Attribute.blockQuote);
+        case 'align':
+          return Row(mainAxisSize: MainAxisSize.min, children: [
+            alignBtn(Icons.format_align_right, 'محاذاة لليمين',
+                Attribute.rightAlignment),
+            alignBtn(
+                Icons.format_align_center, 'توسيط', Attribute.centerAlignment),
+            alignBtn(Icons.format_align_left, 'محاذاة لليسار',
+                Attribute.leftAlignment),
+            alignBtn(
+                Icons.format_align_justify, 'ضبط', Attribute.justifyAlignment),
+          ]);
+        case 'lineSpacing':
+          return PopupMenuButton<double>(
+            tooltip: 'تباعد الأسطر (للأسطر المحدّدة)',
+            icon: const Icon(Icons.format_line_spacing, size: 22),
+            onSelected: (v) => q.formatSelection(
+              Attribute<double?>(
+                  'line-height', AttributeScope.block, v == 0 ? null : v),
+            ),
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 1.0, child: Text('1.0')),
+              PopupMenuItem(value: 1.25, child: Text('1.25')),
+              PopupMenuItem(value: 1.5, child: Text('1.5')),
+              PopupMenuItem(value: 1.75, child: Text('1.75')),
+              PopupMenuItem(value: 2.0, child: Text('2.0')),
+              PopupMenuItem(value: 0.0, child: Text('افتراضي')),
+            ],
+          );
+        case 'clearFormat':
+          return QuillToolbarClearFormatButton(controller: q);
+        case 'pasteMenu':
+          return IconButton(
+            icon: Icon(hide
+                ? Icons.content_paste_off_outlined
+                : Icons.content_paste_outlined),
+            tooltip: hide
+                ? 'إظهار قائمة النسخ/اللصق'
+                : 'إخفاء قائمة النسخ/اللصق',
+            visualDensity: VisualDensity.compact,
+            onPressed: () => settings.setHideSelectionMenu(!hide),
+          );
+        case 'export':
+          return Row(mainAxisSize: MainAxisSize.min, children: [
+            if (onExportPdf != null)
+              IconButton(
+                icon: const Icon(Icons.picture_as_pdf, size: 22),
+                tooltip: 'تصدير PDF',
+                visualDensity: VisualDensity.compact,
+                onPressed: onExportPdf,
+              ),
+            if (onExportWord != null)
+              IconButton(
+                icon: const Icon(Icons.description, size: 22),
+                tooltip: 'تصدير Word‏ (.doc)',
+                visualDensity: VisualDensity.compact,
+                onPressed: onExportWord,
+              ),
+          ]);
+        default:
+          return const SizedBox.shrink();
+      }
+    }
 
     return TextFieldTapRegion(
       // مهمّ: نُلحق الشريط بمنطقة لمس المحرّر كي لا يفقد المحرّر التركيز/التحديد
@@ -420,142 +539,11 @@ class RichTextToolbar extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 children: [
-                // التراجع/الإعادة في أول الصفّ.
-                if (settings.isToolVisible('undo'))
-                  QuillToolbarHistoryButton(controller: q, isUndo: true),
-                if (settings.isToolVisible('redo'))
-                  QuillToolbarHistoryButton(controller: q, isUndo: false),
-                sep(),
-                // إملاء صوتيّ: تحدّث فيُكتب النصّ في موضع المؤشر.
-                if (settings.isToolVisible('voice'))
-                  IconButton(
-                    icon: const Icon(Icons.mic, size: 22),
-                    tooltip: S.of(context).t('voice_typing'),
-                    visualDensity: VisualDensity.compact,
-                    color: Theme.of(context).colorScheme.primary,
-                    onPressed: () async {
-                      final text = await showVoiceDictation(context);
-                      if (text == null || text.trim().isEmpty) return;
-                      final sel = q.selection;
-                      final docLen = q.document.length; // ينتهي دائمًا بـ \n
-                      var index = sel.isValid ? sel.baseOffset : docLen - 1;
-                      if (index < 0 || index > docLen - 1) index = docLen - 1;
-                      final insert = '${text.trim()} ';
-                      q.replaceText(
-                          index,
-                          0,
-                          insert,
-                          TextSelection.collapsed(
-                              offset: index + insert.length));
-                    },
-                  ),
-                sep(),
-                // الخط + الحجم (قابلة للإخفاء من الإعدادات).
-                if (settings.isToolVisible('font'))
-                  QuillToolbarFontFamilyButton(
-                    controller: q,
-                    options: const QuillToolbarFontFamilyButtonOptions(
-                        items: _fontFamilies),
-                  ),
-                if (settings.isToolVisible('size'))
-                  QuillToolbarFontSizeButton(
-                    controller: q,
-                    options: const QuillToolbarFontSizeButtonOptions(
-                        items: _fontSizes),
-                  ),
-                // غامق/مائل/تسطير/شطب (تنسيق ذكي للكلمة كاملة).
-                if (settings.isToolVisible('bold'))
-                  fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
-                if (settings.isToolVisible('italic'))
-                  fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
-                if (settings.isToolVisible('underline'))
-                  fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
-                if (settings.isToolVisible('strike'))
-                  fmtBtn(Icons.format_strikethrough, 'شطب',
-                      Attribute.strikeThrough),
-                sep(),
-                // الألوان (نص + خلفية).
-                if (settings.isToolVisible('color'))
-                  QuillToolbarColorButton(controller: q, isBackground: false),
-                if (settings.isToolVisible('highlight'))
-                  QuillToolbarColorButton(controller: q, isBackground: true),
-                sep(),
-                // العناوين + القوائم + الاقتباس.
-                if (settings.isToolVisible('header'))
-                  QuillToolbarSelectHeaderStyleDropdownButton(controller: q),
-                if (settings.isToolVisible('ul'))
-                  QuillToolbarToggleStyleButton(
-                      controller: q, attribute: Attribute.ul),
-                if (settings.isToolVisible('ol'))
-                  QuillToolbarToggleStyleButton(
-                      controller: q, attribute: Attribute.ol),
-                if (settings.isToolVisible('quote'))
-                  QuillToolbarToggleStyleButton(
-                      controller: q, attribute: Attribute.blockQuote),
-                sep(),
-                // المحاذاة (يمين/وسط/يسار/ضبط) — مجموعة واحدة.
-                if (settings.isToolVisible('align')) ...[
-                  alignBtn(Icons.format_align_right, 'محاذاة لليمين',
-                      Attribute.rightAlignment),
-                  alignBtn(Icons.format_align_center, 'توسيط',
-                      Attribute.centerAlignment),
-                  alignBtn(Icons.format_align_left, 'محاذاة لليسار',
-                      Attribute.leftAlignment),
-                  alignBtn(Icons.format_align_justify, 'ضبط',
-                      Attribute.justifyAlignment),
-                  sep(),
+                  // الأزرار بترتيب المستخدم؛ المخفيّة تُستبعد. (تخصيص الشريط من
+                  // الإعدادات ← أزرار شريط التنسيق: ترتيب وإظهار/إخفاء.)
+                  for (final id in settings.toolOrder)
+                    if (settings.isToolVisible(id)) buildTool(id),
                 ],
-                // تباعد الأسطر (مضاعِف ارتفاع السطر) — يُطبَّق على **الأسطر
-                // المحدّدة فقط** (أو السطر الحالي عند المؤشر) عبر سمة line-height،
-                // بلا أي تسطير. القيمة 0 ⇒ إزالة التباعد الخاص (العودة للافتراضي).
-                if (settings.isToolVisible('lineSpacing'))
-                  PopupMenuButton<double>(
-                    tooltip: 'تباعد الأسطر (للأسطر المحدّدة)',
-                    icon: const Icon(Icons.format_line_spacing, size: 22),
-                    onSelected: (v) => q.formatSelection(
-                      Attribute<double?>('line-height', AttributeScope.block,
-                          v == 0 ? null : v),
-                    ),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 1.0, child: Text('1.0')),
-                      PopupMenuItem(value: 1.25, child: Text('1.25')),
-                      PopupMenuItem(value: 1.5, child: Text('1.5')),
-                      PopupMenuItem(value: 1.75, child: Text('1.75')),
-                      PopupMenuItem(value: 2.0, child: Text('2.0')),
-                      PopupMenuItem(value: 0.0, child: Text('افتراضي')),
-                    ],
-                  ),
-                // مسح التنسيق.
-                if (settings.isToolVisible('clearFormat'))
-                  QuillToolbarClearFormatButton(controller: q),
-                // إظهار/إخفاء قائمة النسخ واللصق.
-                if (settings.isToolVisible('pasteMenu'))
-                  IconButton(
-                    icon: Icon(hide
-                        ? Icons.content_paste_off_outlined
-                        : Icons.content_paste_outlined),
-                    tooltip: hide
-                        ? 'إظهار قائمة النسخ/اللصق'
-                        : 'إخفاء قائمة النسخ/اللصق',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: () => settings.setHideSelectionMenu(!hide),
-                  ),
-                // تصدير PDF / Word — أيقونتان في آخر الصفّ (استخدامها قليل).
-                if (onExportPdf != null && settings.isToolVisible('export'))
-                  IconButton(
-                    icon: const Icon(Icons.picture_as_pdf, size: 22),
-                    tooltip: 'تصدير PDF',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onExportPdf,
-                  ),
-                if (onExportWord != null && settings.isToolVisible('export'))
-                  IconButton(
-                    icon: const Icon(Icons.description, size: 22),
-                    tooltip: 'تصدير Word‏ (.doc)',
-                    visualDensity: VisualDensity.compact,
-                    onPressed: onExportWord,
-                  ),
-              ],
             ),
           ),
         ),
