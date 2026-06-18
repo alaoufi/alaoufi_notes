@@ -110,13 +110,18 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
   late final TextEditingController _c =
       TextEditingController(text: widget.initial);
 
-  Future<void> _again() async {
+  /// يفتح نافذة الإملاء ويُضيف الكلام الجديد للنصّ الموجود.
+  /// [newLine] = true ⇒ يُضاف في **سطر جديد**؛ وإلا يُكمل على نفس السطر بمسافة.
+  Future<void> _again({bool newLine = false}) async {
     try {
       final t = await SystemDictation.recognize(widget.locale);
       if (t != null && t.trim().isNotEmpty && mounted) {
         // متابعة الكلام: نُضيف للنصّ الموجود بدل استبداله.
-        final cur = _c.text.trim();
-        final merged = cur.isEmpty ? t.trim() : '$cur ${t.trim()}';
+        final cur = _c.text.trimRight();
+        final piece = t.trim();
+        final merged = cur.isEmpty
+            ? piece
+            : (newLine ? '$cur\n$piece' : '$cur $piece');
         setState(() {
           _c.text = merged;
           _c.selection = TextSelection.collapsed(offset: merged.length);
@@ -170,14 +175,31 @@ class _ConfirmSheetState extends State<_ConfirmSheet> {
               ),
             ),
             const SizedBox(height: 14),
+            // صفّ الإملاء: متابعة على نفس السطر / متابعة في سطر جديد.
             Row(
               children: [
-                // متابعة الكلام: يفتح نافذة النظام ويُضيف للنصّ.
-                OutlinedButton.icon(
-                  onPressed: _again,
-                  icon: const Icon(Icons.mic, size: 18),
-                  label: Text(s.t('stt_continue')),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _again,
+                    icon: const Icon(Icons.mic, size: 18),
+                    label: Text(s.t('stt_continue')),
+                  ),
                 ),
+                const SizedBox(width: 10),
+                // سطر جديد: يُكمل الإملاء لكن في سطر جديد.
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _again(newLine: true),
+                    icon: const Icon(Icons.subdirectory_arrow_left, size: 18),
+                    label: const Text('سطر جديد'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            // صفّ الإجراءات: إلغاء / إدراج.
+            Row(
+              children: [
                 const Spacer(),
                 OutlinedButton(
                   onPressed: () => Navigator.pop(context),
