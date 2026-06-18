@@ -421,29 +421,35 @@ class RichTextToolbar extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 6),
                 children: [
                 // التراجع/الإعادة في أول الصفّ.
-                QuillToolbarHistoryButton(controller: q, isUndo: true),
-                QuillToolbarHistoryButton(controller: q, isUndo: false),
+                if (settings.isToolVisible('undo'))
+                  QuillToolbarHistoryButton(controller: q, isUndo: true),
+                if (settings.isToolVisible('redo'))
+                  QuillToolbarHistoryButton(controller: q, isUndo: false),
                 sep(),
                 // إملاء صوتيّ: تحدّث فيُكتب النصّ في موضع المؤشر.
-                IconButton(
-                  icon: const Icon(Icons.mic, size: 22),
-                  tooltip: S.of(context).t('voice_typing'),
-                  visualDensity: VisualDensity.compact,
-                  color: Theme.of(context).colorScheme.primary,
-                  onPressed: () async {
-                    final text = await showVoiceDictation(context);
-                    if (text == null || text.trim().isEmpty) return;
-                    final sel = q.selection;
-                    final docLen = q.document.length; // ينتهي دائمًا بـ \n
-                    var index = sel.isValid ? sel.baseOffset : docLen - 1;
-                    if (index < 0 || index > docLen - 1) index = docLen - 1;
-                    final insert = '${text.trim()} ';
-                    q.replaceText(index, 0, insert,
-                        TextSelection.collapsed(offset: index + insert.length));
-                  },
-                ),
+                if (settings.isToolVisible('voice'))
+                  IconButton(
+                    icon: const Icon(Icons.mic, size: 22),
+                    tooltip: S.of(context).t('voice_typing'),
+                    visualDensity: VisualDensity.compact,
+                    color: Theme.of(context).colorScheme.primary,
+                    onPressed: () async {
+                      final text = await showVoiceDictation(context);
+                      if (text == null || text.trim().isEmpty) return;
+                      final sel = q.selection;
+                      final docLen = q.document.length; // ينتهي دائمًا بـ \n
+                      var index = sel.isValid ? sel.baseOffset : docLen - 1;
+                      if (index < 0 || index > docLen - 1) index = docLen - 1;
+                      final insert = '${text.trim()} ';
+                      q.replaceText(
+                          index,
+                          0,
+                          insert,
+                          TextSelection.collapsed(
+                              offset: index + insert.length));
+                    },
+                  ),
                 sep(),
-                // الخط + الحجم.
                 // الخط + الحجم (قابلة للإخفاء من الإعدادات).
                 if (settings.isToolVisible('font'))
                   QuillToolbarFontFamilyButton(
@@ -523,25 +529,26 @@ class RichTextToolbar extends StatelessWidget {
                 if (settings.isToolVisible('clearFormat'))
                   QuillToolbarClearFormatButton(controller: q),
                 // إظهار/إخفاء قائمة النسخ واللصق.
-                IconButton(
-                  icon: Icon(hide
-                      ? Icons.content_paste_off_outlined
-                      : Icons.content_paste_outlined),
-                  tooltip: hide
-                      ? 'إظهار قائمة النسخ/اللصق'
-                      : 'إخفاء قائمة النسخ/اللصق',
-                  visualDensity: VisualDensity.compact,
-                  onPressed: () => settings.setHideSelectionMenu(!hide),
-                ),
+                if (settings.isToolVisible('pasteMenu'))
+                  IconButton(
+                    icon: Icon(hide
+                        ? Icons.content_paste_off_outlined
+                        : Icons.content_paste_outlined),
+                    tooltip: hide
+                        ? 'إظهار قائمة النسخ/اللصق'
+                        : 'إخفاء قائمة النسخ/اللصق',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () => settings.setHideSelectionMenu(!hide),
+                  ),
                 // تصدير PDF / Word — أيقونتان في آخر الصفّ (استخدامها قليل).
-                if (onExportPdf != null)
+                if (onExportPdf != null && settings.isToolVisible('export'))
                   IconButton(
                     icon: const Icon(Icons.picture_as_pdf, size: 22),
                     tooltip: 'تصدير PDF',
                     visualDensity: VisualDensity.compact,
                     onPressed: onExportPdf,
                   ),
-                if (onExportWord != null)
+                if (onExportWord != null && settings.isToolVisible('export'))
                   IconButton(
                     icon: const Icon(Icons.description, size: 22),
                     tooltip: 'تصدير Word‏ (.doc)',

@@ -81,14 +81,17 @@ class SettingsProvider extends ChangeNotifier {
   /// أزرار شريط التنسيق القابلة للإظهار/الإخفاء: المعرّف ← الاسم المعروض.
   /// (الترتيب هو ترتيب ظهورها في شاشة الإعدادات.)
   static const toolbarTools = <String, String>{
+    'undo': 'تراجع',
+    'redo': 'إعادة',
+    'voice': 'إملاء صوتي',
+    'font': 'نوع الخط',
+    'size': 'حجم الخط',
     'bold': 'غامق',
     'italic': 'مائل',
     'underline': 'تسطير',
     'strike': 'شطب',
     'color': 'لون الخط',
     'highlight': 'تظليل الخط',
-    'font': 'نوع الخط',
-    'size': 'حجم الخط',
     'header': 'العناوين',
     'ul': 'قائمة نقطية',
     'ol': 'قائمة رقمية',
@@ -96,6 +99,8 @@ class SettingsProvider extends ChangeNotifier {
     'align': 'المحاذاة',
     'lineSpacing': 'تباعد الأسطر',
     'clearFormat': 'مسح التنسيق',
+    'pasteMenu': 'زرّ قائمة النسخ/اللصق',
+    'export': 'تصدير (PDF/Word)',
   };
   double get ruleThickness => _ruleThickness;
   double get ruleOpacity => _ruleOpacity;
