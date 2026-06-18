@@ -133,4 +133,57 @@ void main() {
         reason: 'يبقى التحديد بعد لمس زرّ التنسيق');
     c.dispose();
   });
+
+  // الغامق الافتراضي: غامق مضمّن حقيقيّ قابل للتبديل (لا نمط أساسي غير قابل للإلغاء).
+
+  testWidgets(
+      '٦) الغامق الافتراضي: ملاحظة عادية تُغمَّق كاملةً ويبقى الغامق قابلًا للإلغاء',
+      (tester) async {
+    final delta = jsonEncode([
+      {'insert': 'سلام عليكم\n'}
+    ]);
+    final c = RichTextController(delta, (_) {}, defaultBold: true);
+    expect(_hasBold(c.quill), isTrue, reason: 'تُغمَّق الملاحظة الموجودة كاملةً');
+    await _pump(tester, c);
+    expect(_rendersBold(tester), isTrue);
+    // الأهمّ: زرّ B يُلغي الغامق فعلًا (لا نمط أساسي يبقيه غامقًا).
+    c.quill.updateSelection(
+        const TextSelection(baseOffset: 0, extentOffset: 10),
+        ChangeSource.local);
+    await tester.pump();
+    await tester.tap(find.byTooltip('غامق'));
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(_hasBold(c.quill), isFalse, reason: 'زرّ B يُلغي الغامق');
+    expect(_rendersBold(tester), isFalse);
+    c.dispose();
+  });
+
+  testWidgets('٧) الغامق الافتراضي: لا يُعيد تغميق ملاحظة فيها غامق مسبقًا',
+      (tester) async {
+    final delta = jsonEncode([
+      {
+        'insert': 'غامق',
+        'attributes': {'bold': true}
+      },
+      {'insert': ' عادي\n'},
+    ]);
+    final c = RichTextController(delta, (_) {}, defaultBold: true);
+    final plainStaysPlain = c.quill.document.toDelta().toList().any((op) =>
+        op.data is String &&
+        (op.data as String).contains('عادي') &&
+        op.attributes?['bold'] != true);
+    expect(plainStaysPlain, isTrue,
+        reason: 'الجزء العادي يبقى عاديًّا (لا تُلغى اختيارات المستخدم)');
+    c.dispose();
+  });
+
+  testWidgets('٨) الغامق الافتراضي: ملاحظة فارغة ⇒ الكتابة الجديدة غامقة',
+      (tester) async {
+    final c = RichTextController('', (_) {}, defaultBold: true);
+    await _pump(tester, c);
+    c.quill.replaceText(0, 0, 'نص', const TextSelection.collapsed(offset: 2));
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(_hasBold(c.quill), isTrue);
+    c.dispose();
+  });
 }

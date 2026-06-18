@@ -16,7 +16,10 @@ import 'voice_dictation.dart';
 /// نفصلها عن الواجهة حتى نتمكن من وضع منطقة التحرير في الصفحة القابلة للتمرير،
 /// وتثبيت شريط الأدوات أسفل الشاشة فوق لوحة المفاتيح (فلا يختفي عند التحديد).
 class RichTextController {
-  RichTextController(String initialContent, this._onChanged) {
+  /// [defaultBold] = إعداد «الخط الغامق الافتراضي»: حين يكون مفعّلًا نجعل الغامق
+  /// **مضمّنًا حقيقيًّا قابلًا للتبديل** (لا نمطًا أساسيًّا لا يمكن لزرّ B إلغاؤه).
+  RichTextController(String initialContent, this._onChanged,
+      {bool defaultBold = false}) {
     quill = QuillController(
       document: _documentFrom(initialContent),
       selection: const TextSelection.collapsed(offset: 0),
@@ -31,6 +34,29 @@ class RichTextController {
     // نتتبّع آخر تحديد فعّال (غير منهار) كي نطبّق التنسيق عليه حتى لو انهار
     // التحديد لحظة لمس زرّ الشريط على بعض الأجهزة.
     quill.addListener(_trackSelection);
+    if (defaultBold) _applyDefaultBold();
+  }
+
+  /// يُفعّل «الغامق الافتراضي» كغامقٍ مضمّن قابل للتبديل:
+  /// - ملاحظة فارغة جديدة ⇒ نضبط نمطًا معلَّقًا غامقًا فتُكتب الحروف غامقة (ويمكن
+  ///   لزرّ B إلغاؤها لأي جزء). لا يُعدّل المستند ⇒ لا حفظ.
+  /// - ملاحظة موجودة بلا أيّ غامق ⇒ نُغمّق نصّها كاملًا **مرّة واحدة** (يحافظ على
+  ///   مظهرها الغامق السابق ويجعله قابلًا للإلغاء). وجود أيّ غامق فيها ⇒ لا نلمسها
+  ///   (فلا يُلغى تبديل المستخدم عند إعادة الفتح).
+  void _applyDefaultBold() {
+    final text = quill.document.toPlainText();
+    if (text.trim().isEmpty) {
+      quill.formatSelection(Attribute.bold);
+      return;
+    }
+    final hasBold = quill.document.toDelta().toList().any((op) =>
+        op.data is String &&
+        (op.data as String).trim().isNotEmpty &&
+        op.attributes?[Attribute.bold.key] == true);
+    if (!hasBold) {
+      final len = quill.document.length;
+      if (len > 1) quill.formatText(0, len - 1, Attribute.bold);
+    }
   }
 
   late final QuillController quill;
@@ -221,11 +247,13 @@ void applyLineDirections(QuillController quill) {
 DefaultStyles buildNoteDefaultStyles(
     BuildContext context, SettingsProvider settings,
     {double? lineHeight}) {
+  // لا نُغمّق النمط الأساسي هنا: «الغامق الافتراضي» يُطبَّق كغامقٍ مضمّن قابل
+  // للتبديل (انظر RichTextController._applyDefaultBold)، وإلا تعذّر على زرّ B
+  // إلغاء الغامق لأن النمط الأساسي لا يملك حالة «ليس غامقًا».
   final base = TextStyle(
     fontFamily: settings.noteFontFamily,
     fontSize: settings.noteFontSize,
     height: lineHeight ?? settings.noteLineHeight,
-    fontWeight: settings.noteBold ? FontWeight.bold : null,
     color: DefaultTextStyle.of(context).style.color,
   );
   const hs = HorizontalSpacing(0, 0);
