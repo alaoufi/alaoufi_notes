@@ -5,6 +5,7 @@ import '../../core/text/line_direction.dart';
 import '../../data/database/app_database.dart';
 import '../../data/models/med_dose.dart';
 import '../../data/repositories/med_repository.dart';
+import '../../services/med_dose_logger.dart';
 import '../../widgets/confirm_dialog.dart';
 
 /// طريقة عرض سجلّ الجرعات: مجمّع حسب الدواء، أو السجل الكامل مسطّحًا.
@@ -31,6 +32,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _load() async {
+    // سجّل أولًا أي جرعات فائتة لمنبّهات الدواء 💊 منذ آخر فتح، ثم اعرض السجلّ.
+    await MedDoseLogger.instance.run();
     final list = await _repo.getAll();
     if (mounted) setState(() {
       _doses = list;

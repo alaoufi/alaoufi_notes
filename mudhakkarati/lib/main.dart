@@ -14,6 +14,7 @@ import 'features/home/notes_provider.dart';
 import 'features/reminders/alarm_screen.dart';
 import 'features/reminders/reminders_provider.dart';
 import 'features/settings/settings_provider.dart';
+import 'services/med_dose_logger.dart';
 import 'services/notification_service.dart';
 import 'services/vault_service.dart';
 
@@ -108,6 +109,9 @@ Future<void> main() async {
 
     // إعادة جدولة ذاتية: تضمن بقاء كل تذكير نشط مجدولًا (لا تضيع التذكيرات).
     await _safe('reschedule', () => remindersProvider.ensureScheduled());
+
+    // تسجيل جرعات الأدوية الفائتة منذ آخر فتح (لمنبّهات الدواء 💊) في السجلّ.
+    await _safe('med_log', () => MedDoseLogger.instance.run());
 
     runApp(
       MultiProvider(
