@@ -260,6 +260,8 @@ class _BackupScreenState extends State<BackupScreen> {
     if (result.success && mounted) {
       await context.read<NotesProvider>().init();
       await context.read<RemindersProvider>().refresh();
+      // أعد جدولة التذكيرات المستعادة فورًا كي تعمل دون انتظار إعادة التشغيل.
+      if (mounted) await context.read<RemindersProvider>().ensureScheduled();
     }
   }
 
@@ -443,6 +445,8 @@ class _BackupScreenState extends State<BackupScreen> {
     if (r.success && mounted) {
       await context.read<NotesProvider>().init();
       await context.read<RemindersProvider>().refresh();
+      // أعد جدولة التذكيرات المستعادة فورًا كي تعمل دون انتظار إعادة التشغيل.
+      if (mounted) await context.read<RemindersProvider>().ensureScheduled();
     }
   }
 

@@ -7,6 +7,9 @@ import '../../data/models/med_dose.dart';
 import '../../data/repositories/med_repository.dart';
 import '../../widgets/confirm_dialog.dart';
 
+/// طريقة عرض سجلّ الجرعات: مجمّع حسب الدواء، أو السجل الكامل مسطّحًا.
+enum _MedView { byMed, all }
+
 /// وضع الدواء/العلاج: تسجيل أخذ الجرعات أو فواتها، مع سجلّ كامل ونسبة التزام.
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
@@ -19,6 +22,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
   final _repo = MedRepository(AppDatabase.instance);
   List<MedDose> _doses = [];
   bool _loading = true;
+  _MedView _view = _MedView.byMed; // الافتراضي: مجمّع حسب الدواء.
 
   @override
   void initState() {
@@ -125,11 +129,101 @@ class _MedicationScreenState extends State<MedicationScreen> {
                     padding: const EdgeInsets.only(top: 40),
                     child: Center(child: Text(s.t('no_med_log'))),
                   )
-                else
-                  for (final d in _doses) _doseTile(d, s),
+                else ...[
+                  // مبدّل العرض: مجمّع حسب الدواء / السجل الكامل.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: SegmentedButton<_MedView>(
+                      segments: const [
+                        ButtonSegment(
+                            value: _MedView.byMed,
+                            icon: Icon(Icons.medication_liquid),
+                            label: Text('حسب الدواء')),
+                        ButtonSegment(
+                            value: _MedView.all,
+                            icon: Icon(Icons.list_alt),
+                            label: Text('السجل الكامل')),
+                      ],
+                      selected: {_view},
+                      onSelectionChanged: (v) =>
+                          setState(() => _view = v.first),
+                    ),
+                  ),
+                  if (_view == _MedView.all)
+                    for (final d in _doses) _doseTile(d, s)
+                  else
+                    for (final entry in _groupedByName().entries)
+                      _medGroupCard(entry.key, entry.value, s),
+                ],
               ],
             ),
     );
+  }
+
+  /// يجمع الجرعات حسب اسم الدواء (محافظًا على ترتيب الأحدث أولًا داخل كلٍّ).
+  Map<String, List<MedDose>> _groupedByName() {
+    final map = <String, List<MedDose>>{};
+    for (final d in _doses) {
+      (map[d.name] ??= []).add(d);
+    }
+    return map;
+  }
+
+  /// بطاقة دواء واحد: الاسم + عدد الجرعات المأخوذة + قائمة التواريخ (قابلة للطيّ).
+  Widget _medGroupCard(String name, List<MedDose> list, S s) {
+    final taken = list.where((d) => d.taken).length;
+    final missed = list.length - taken;
+    final scheme = Theme.of(context).colorScheme;
+    String two(int n) => n.toString().padLeft(2, '0');
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 3),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: CircleAvatar(
+            backgroundColor: scheme.primaryContainer,
+            child: Text('$taken',
+                style: TextStyle(
+                    color: scheme.onPrimaryContainer,
+                    fontWeight: FontWeight.bold)),
+          ),
+          title: Text(name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(
+            'أُخذت: $taken جرعة${missed > 0 ? '  •  فاتت: $missed' : ''}',
+            style: const TextStyle(fontSize: 12),
+          ),
+          children: [
+            for (final d in list)
+              ListTile(
+                dense: true,
+                leading: Icon(d.taken ? Icons.check_circle : Icons.cancel,
+                    color: d.taken ? Colors.green : Colors.red, size: 20),
+                title: Text(
+                    '${d.at.year}/${two(d.at.month)}/${two(d.at.day)}  '
+                    '${two(d.at.hour)}:${two(d.at.minute)}',
+                    style: const TextStyle(fontSize: 13)),
+                subtitle: (d.dose ?? '').isEmpty ? null : Text(d.dose!),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  onPressed: () => _deleteDose(d),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteDose(MedDose d) async {
+    if (!await confirmDelete(context,
+        title: 'حذف السجلّ؟', message: 'سيُحذف سجلّ هذه الجرعة نهائيًا.')) {
+      return;
+    }
+    await _repo.delete(d.id!);
+    await _load();
   }
 
   Widget _metric(String v, String label, Color color) => Column(
@@ -156,15 +250,7 @@ class _MedicationScreenState extends State<MedicationScreen> {
             style: const TextStyle(fontSize: 12)),
         trailing: IconButton(
           icon: const Icon(Icons.delete_outline),
-          onPressed: () async {
-            if (!await confirmDelete(context,
-                title: 'حذف السجلّ؟',
-                message: 'سيُحذف سجلّ هذه الجرعة نهائيًا.')) {
-              return;
-            }
-            await _repo.delete(d.id!);
-            await _load();
-          },
+          onPressed: () => _deleteDose(d),
         ),
       ),
     );

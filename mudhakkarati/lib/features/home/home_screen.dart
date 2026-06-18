@@ -101,6 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (r.success) {
       await context.read<NotesProvider>().init();
       if (mounted) await context.read<RemindersProvider>().refresh();
+      // أعد جدولة التذكيرات المستعادة فورًا كي تعمل دون انتظار إعادة التشغيل.
+      if (mounted) await context.read<RemindersProvider>().ensureScheduled();
     }
   }
 
