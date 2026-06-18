@@ -28,6 +28,9 @@ class RichTextController {
     // **دلتا التغيير** الصغيرة فقط (لا نُسلسِل المستند كاملًا في كل مرة) ⇒ كتابة
     // وتراجع سريعان وناعمان حتى في الملاحظات الكبيرة.
     _docSub = quill.document.changes.listen(_onDocChanged);
+    // نتتبّع آخر تحديد فعّال (غير منهار) كي نطبّق التنسيق عليه حتى لو انهار
+    // التحديد لحظة لمس زرّ الشريط على بعض الأجهزة.
+    quill.addListener(_trackSelection);
   }
 
   late final QuillController quill;
@@ -38,6 +41,54 @@ class RichTextController {
   Timer? _debounce; // تأجيل الحفظ
   bool _pending = false; // ضبط اتجاه مؤجَّل لما بعد الإطار (مجدوَل بالفعل)
   StreamSubscription? _docSub; // اشتراك في تعديلات المستند (دون أحداث التحديد)
+  /// آخر تحديد فعّال (غير منهار) رأيناه — لتطبيق التنسيق عليه عند انهيار التحديد.
+  TextSelection _lastSelection = const TextSelection.collapsed(offset: 0);
+
+  void _trackSelection() {
+    final s = quill.selection;
+    if (s.isValid && !s.isCollapsed) _lastSelection = s;
+  }
+
+  /// يبدّل سمة تنسيق مضمّنة (غامق/مائل/تسطير/شطب) بأثرٍ فوريّ مرئيّ، بمرونة:
+  /// 1) تحديد فعّال الآن ⇒ يُطبَّق عليه.
+  /// 2) مؤشّر داخل/ملاصق لكلمة ⇒ يُطبَّق على الكلمة كاملة.
+  /// 3) انهار التحديد لحظة اللمس ⇒ يُطبَّق على آخر تحديد فعّال (إصلاح «الزرّ لا
+  ///    يفعل شيئًا» على بعض الأجهزة).
+  /// 4) لا شيء ⇒ يضبط نمطًا معلَّقًا لما سيُكتب.
+  void toggleInline(Attribute attr) {
+    final sel = quill.selection;
+    if (sel.isValid && !sel.isCollapsed) {
+      _applyToggle(sel.start, sel.end, attr);
+      return;
+    }
+    if (sel.isValid && sel.isCollapsed) {
+      final range = wordRangeAt(quill.document.toPlainText(), sel.baseOffset);
+      if (range != null) {
+        _applyToggle(range[0], range[1], attr);
+        return;
+      }
+    }
+    final last = _lastSelection;
+    if (last.isValid &&
+        !last.isCollapsed &&
+        last.end <= quill.document.length) {
+      _applyToggle(last.start, last.end, attr);
+      return;
+    }
+    bool isOn;
+    try {
+      isOn = quill.getSelectionStyle().attributes.containsKey(attr.key);
+    } catch (_) {
+      isOn = false;
+    }
+    quill.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
+  }
+
+  void _applyToggle(int start, int end, Attribute attr) {
+    final isOn = _rangeHasAttr(quill, start, end - start, attr);
+    quill.formatText(
+        start, end - start, isOn ? Attribute.clone(attr, null) : attr);
+  }
 
   static Document _documentFrom(String content) {
     final trimmed = content.trim();
@@ -114,6 +165,7 @@ class RichTextController {
   void dispose() {
     _debounce?.cancel();
     _docSub?.cancel();
+    quill.removeListener(_trackSelection);
     quill.dispose();
     focus.dispose();
     scroll.dispose();
@@ -310,13 +362,11 @@ class RichTextToolbar extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final q = controller.quill;
 
-    // زرّ تنسيق ذكي: مؤشر داخل كلمة بلا تحديد ⇒ يطبّقه على الكلمة كاملة.
-    Widget fmtBtn(IconData icon, String tip, Attribute attr) => IconButton(
-          icon: Icon(icon, size: 22),
-          tooltip: tip,
-          visualDensity: VisualDensity.compact,
-          onPressed: () => _smartToggleInline(q, attr),
-        );
+    // زرّ تنسيق: يُبرِز حالته (لون مميّز) حين تكون السمة فعّالة على التحديد/المؤشّر
+    // ⇒ تغذية بصريّة واضحة، ويطبّق التبديل المرن (تحديد/كلمة/آخر تحديد).
+    Widget fmtBtn(IconData icon, String tip, Attribute attr) =>
+        _InlineFormatButton(
+            controller: controller, icon: icon, tooltip: tip, attribute: attr);
 
     // زرّ محاذاة: يطبّق محاذاة السطر الحالي (يمين/وسط/يسار/ضبط).
     Widget alignBtn(IconData icon, String tip, Attribute attr) => IconButton(
@@ -559,29 +609,49 @@ class _SmoothToolbarScrollBehavior extends MaterialScrollBehavior {
       };
 }
 
-/// يبدّل سمة تنسيق مضمّنة (غامق/مائل/تسطير/شطب) بأثرٍ فوريّ مرئيّ:
-/// - مع تحديد نصّ: يطبّق/يزيل السمة على المعلَّم فقط.
-/// - بلا تحديد لكنّ المؤشّر داخل/ملاصق لكلمة: يطبّق/يزيل السمة على **الكلمة
-///   كاملة** فيظهر الأثر فورًا (أكثر فاعلية وبديهية على الجوال).
-/// - بلا تحديد ولا كلمة (سطر فارغ/مسافة): يضبط نمطًا معلَّقًا لما سيُكتب.
-void _smartToggleInline(QuillController c, Attribute attr) {
-  final sel = c.selection;
-  if (sel.isValid && sel.isCollapsed) {
-    final range = wordRangeAt(c.document.toPlainText(), sel.baseOffset);
-    if (range != null) {
-      final isOn = _rangeHasAttr(c, range[0], range[1] - range[0], attr);
-      c.formatText(range[0], range[1] - range[0],
-          isOn ? Attribute.clone(attr, null) : attr);
-      return;
-    }
+/// زرّ تنسيق مضمّن (غامق/مائل/تسطير/شطب) يُبرِز حالته بصريًّا حين تكون السمة
+/// فعّالة على التحديد/المؤشّر، ويستدعي التبديل المرن في [RichTextController].
+class _InlineFormatButton extends StatelessWidget {
+  final RichTextController controller;
+  final IconData icon;
+  final String tooltip;
+  final Attribute attribute;
+  const _InlineFormatButton({
+    required this.controller,
+    required this.icon,
+    required this.tooltip,
+    required this.attribute,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final q = controller.quill;
+    final scheme = Theme.of(context).colorScheme;
+    // نُعيد البناء مع كل تغيّر في المحرّر (تحديد/تنسيق) كي تنعكس الحالة فورًا.
+    return AnimatedBuilder(
+      animation: q,
+      builder: (context, _) {
+        bool active;
+        try {
+          active = q.getSelectionStyle().attributes.containsKey(attribute.key);
+        } catch (_) {
+          active = false;
+        }
+        return IconButton(
+          icon: Icon(icon, size: 22),
+          tooltip: tooltip,
+          visualDensity: VisualDensity.compact,
+          isSelected: active,
+          color: active ? scheme.primary : null,
+          style: active
+              ? IconButton.styleFrom(
+                  backgroundColor: scheme.primary.withOpacity(0.16))
+              : null,
+          onPressed: () => controller.toggleInline(attribute),
+        );
+      },
+    );
   }
-  bool isOn;
-  try {
-    isOn = c.getSelectionStyle().attributes.containsKey(attr.key);
-  } catch (_) {
-    isOn = false;
-  }
-  c.formatSelection(isOn ? Attribute.clone(attr, null) : attr);
 }
 
 /// نطاق الكلمة المحيطة بالموضع [offset] في [text] كـ`[start, end]`، أو `null`
