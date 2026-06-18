@@ -42,17 +42,14 @@ class RemindersScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: gradientAppBar(context, s.t('reminders'), actions: [
-        // «وضع الدواء» بارز كزرّ مباشر (وصول سريع).
-        IconButton(
-          tooltip: s.t('med_mode'),
-          icon: const Icon(Icons.medication_outlined),
-          onPressed: () => _open(context, const MedicationScreen()),
-        ),
         PopupMenuButton<String>(
           icon: const Icon(Icons.settings),
           tooltip: s.t('reminder_tools'),
           onSelected: (v) {
             switch (v) {
+              case 'med_mode':
+                _open(context, const MedicationScreen());
+                break;
               case 'reminder_defaults':
                 _open(context, const ReminderDefaultsScreen());
                 break;
@@ -68,6 +65,7 @@ class RemindersScreen extends StatelessWidget {
             }
           },
           itemBuilder: (context) => [
+            _menuItem('med_mode', Icons.medication_outlined, s.t('med_mode')),
             _menuItem('reminder_defaults', Icons.tune,
                 s.t('reminder_defaults')),
             _menuItem('notif_center', Icons.notifications_active_outlined,
