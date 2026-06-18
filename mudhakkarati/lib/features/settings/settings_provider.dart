@@ -35,7 +35,8 @@ class SettingsProvider extends ChangeNotifier {
   String _noteFontFamily = 'Cairo'; // خط متن الملاحظة
   double _noteFontSize = 16; // حجم خط المتن
   double _noteLineHeight = 1.6; // تباعد الأسطر (مضاعف ارتفاع السطر)
-  bool _noteBold = false; // خط متن غامق افتراضيًّا
+  // أزرار شريط التنسيق المخفية (بمعرّفاتها) — تخصيص الشريط لتقصيره.
+  Set<String> _hiddenTools = {};
   // ---- تنسيق تسطير الصفحة ----
   double _ruleThickness = 1.0; // سماكة الأسطر
   double _ruleOpacity = 0.12; // شفافية الأسطر (0..1)
@@ -73,7 +74,29 @@ class SettingsProvider extends ChangeNotifier {
   String get noteFontFamily => _noteFontFamily;
   double get noteFontSize => _noteFontSize;
   double get noteLineHeight => _noteLineHeight;
-  bool get noteBold => _noteBold;
+
+  /// هل زرّ شريط التنسيق [id] ظاهر؟ (الافتراضي: كل الأزرار ظاهرة).
+  bool isToolVisible(String id) => !_hiddenTools.contains(id);
+
+  /// أزرار شريط التنسيق القابلة للإظهار/الإخفاء: المعرّف ← الاسم المعروض.
+  /// (الترتيب هو ترتيب ظهورها في شاشة الإعدادات.)
+  static const toolbarTools = <String, String>{
+    'bold': 'غامق',
+    'italic': 'مائل',
+    'underline': 'تسطير',
+    'strike': 'شطب',
+    'color': 'لون الخط',
+    'highlight': 'تظليل الخط',
+    'font': 'نوع الخط',
+    'size': 'حجم الخط',
+    'header': 'العناوين',
+    'ul': 'قائمة نقطية',
+    'ol': 'قائمة رقمية',
+    'quote': 'اقتباس',
+    'align': 'المحاذاة',
+    'lineSpacing': 'تباعد الأسطر',
+    'clearFormat': 'مسح التنسيق',
+  };
   double get ruleThickness => _ruleThickness;
   double get ruleOpacity => _ruleOpacity;
   bool get ruleOnLine => _ruleOnLine;
@@ -136,7 +159,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kNoteFont = 'note_font_family';
   static const _kNoteFontSize = 'note_font_size';
   static const _kNoteLineHeight = 'note_line_height';
-  static const _kNoteBold = 'note_bold';
+  static const _kHiddenTools = 'hidden_toolbar_tools';
   static const _kRuleThickness = 'rule_thickness';
   static const _kRuleOpacity = 'rule_opacity';
   static const _kRuleOnLine = 'rule_on_line';
@@ -188,7 +211,7 @@ class SettingsProvider extends ChangeNotifier {
     if (nf != null && fontFamilies.contains(nf)) _noteFontFamily = nf;
     _noteFontSize = prefs.getDouble(_kNoteFontSize) ?? 16;
     _noteLineHeight = prefs.getDouble(_kNoteLineHeight) ?? 1.6;
-    _noteBold = prefs.getBool(_kNoteBold) ?? false;
+    _hiddenTools = (prefs.getStringList(_kHiddenTools) ?? const []).toSet();
     _ruleThickness = prefs.getDouble(_kRuleThickness) ?? 1.0;
     _ruleOpacity = prefs.getDouble(_kRuleOpacity) ?? 0.12;
     _ruleOnLine = prefs.getBool(_kRuleOnLine) ?? true;
@@ -254,11 +277,16 @@ class SettingsProvider extends ChangeNotifier {
     await prefs.setDouble(_kNoteLineHeight, h);
   }
 
-  Future<void> setNoteBold(bool v) async {
-    _noteBold = v;
+  /// إظهار/إخفاء زرّ شريط التنسيق [id].
+  Future<void> setToolVisible(String id, bool visible) async {
+    if (visible) {
+      _hiddenTools.remove(id);
+    } else {
+      _hiddenTools.add(id);
+    }
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_kNoteBold, v);
+    await prefs.setStringList(_kHiddenTools, _hiddenTools.toList());
   }
 
   Future<void> setRuleThickness(double t) async {

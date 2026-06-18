@@ -81,6 +81,13 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 _groupCard(
                   context,
+                  icon: Icons.build_outlined,
+                  title: 'أزرار شريط التنسيق',
+                  subtitle: 'اختر الأدوات الظاهرة في المحرّر',
+                  children: _toolbarButtons(context, s, settings),
+                ),
+                _groupCard(
+                  context,
                   icon: Icons.edit_outlined,
                   title: 'التحرير والعرض',
                   subtitle: 'سلوك المحرّر وطريقة العرض',
@@ -411,14 +418,29 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
 
-      // خط غامق
-      SwitchListTile(
-        secondary: const Icon(Icons.format_bold),
-        title: const Text('خط غامق'),
-        subtitle: const Text('يجعل خط متن الملاحظة غامقًا افتراضيًّا'),
-        value: st.noteBold,
-        onChanged: st.setNoteBold,
+    ];
+  }
+
+  // ===================== أزرار شريط التنسيق =====================
+
+  /// مفاتيح إظهار/إخفاء كل زرّ في شريط تنسيق المحرّر (لتقصير الشريط).
+  List<Widget> _toolbarButtons(BuildContext context, S s, SettingsProvider st) {
+    return [
+      const Padding(
+        padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: Text(
+          'اختر الأزرار التي تريد ظهورها في شريط التنسيق أثناء تحرير الملاحظة. '
+          'الأزرار المخفاة لا تُحذف وظيفتها — يمكنك إعادتها في أيّ وقت.',
+          style: TextStyle(fontSize: 12.5, height: 1.4),
+        ),
       ),
+      for (final entry in SettingsProvider.toolbarTools.entries)
+        SwitchListTile(
+          dense: true,
+          title: Text(entry.value),
+          value: st.isToolVisible(entry.key),
+          onChanged: (v) => st.setToolVisible(entry.key, v),
+        ),
     ];
   }
 
@@ -740,8 +762,6 @@ class _NotePreview extends StatelessWidget {
                     fontFamily: settings.noteFontFamily,
                     fontSize: settings.noteFontSize,
                     height: settings.noteLineHeight,
-                    fontWeight:
-                        settings.noteBold ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
             ],

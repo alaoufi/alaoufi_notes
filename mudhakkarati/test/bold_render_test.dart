@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mudhakkarati/features/editor/rich_text_field.dart';
 import 'package:mudhakkarati/features/settings/settings_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// حارس انحدار للغامق: يضمن أنّ الغامق (أ) يُعرض فعلًا، (ب) يُطبَّق من زرّ الشريط
 /// في كل الحالات، (ج) لا يُفقد التحديد عند لمس الشريط (TextFieldTapRegion).
@@ -134,56 +135,28 @@ void main() {
     c.dispose();
   });
 
-  // الغامق الافتراضي: غامق مضمّن حقيقيّ قابل للتبديل (لا نمط أساسي غير قابل للإلغاء).
-
-  testWidgets(
-      '٦) الغامق الافتراضي: ملاحظة عادية تُغمَّق كاملةً ويبقى الغامق قابلًا للإلغاء',
-      (tester) async {
-    final delta = jsonEncode([
-      {'insert': 'سلام عليكم\n'}
-    ]);
-    final c = RichTextController(delta, (_) {}, defaultBold: true);
-    expect(_hasBold(c.quill), isTrue, reason: 'تُغمَّق الملاحظة الموجودة كاملةً');
-    await _pump(tester, c);
-    expect(_rendersBold(tester), isTrue);
-    // الأهمّ: زرّ B يُلغي الغامق فعلًا (لا نمط أساسي يبقيه غامقًا).
-    c.quill.updateSelection(
-        const TextSelection(baseOffset: 0, extentOffset: 10),
-        ChangeSource.local);
-    await tester.pump();
-    await tester.tap(find.byTooltip('غامق'));
+  testWidgets('٦) إخفاء زرّ من الإعدادات يزيله من شريط التنسيق', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final settings = SettingsProvider();
+    await settings.setToolVisible('bold', false); // أخفِ الغامق فقط.
+    final c = RichTextController('', (_) {});
+    await tester.pumpWidget(ChangeNotifierProvider<SettingsProvider>.value(
+      value: settings,
+      child: MaterialApp(
+        locale: const Locale('ar'),
+        supportedLocales: const [Locale('ar'), Locale('en')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+          FlutterQuillLocalizations.delegate,
+        ],
+        home: Scaffold(body: RichTextToolbar(controller: c)),
+      ),
+    ));
     await tester.pump(const Duration(milliseconds: 50));
-    expect(_hasBold(c.quill), isFalse, reason: 'زرّ B يُلغي الغامق');
-    expect(_rendersBold(tester), isFalse);
-    c.dispose();
-  });
-
-  testWidgets('٧) الغامق الافتراضي: لا يُعيد تغميق ملاحظة فيها غامق مسبقًا',
-      (tester) async {
-    final delta = jsonEncode([
-      {
-        'insert': 'غامق',
-        'attributes': {'bold': true}
-      },
-      {'insert': ' عادي\n'},
-    ]);
-    final c = RichTextController(delta, (_) {}, defaultBold: true);
-    final plainStaysPlain = c.quill.document.toDelta().toList().any((op) =>
-        op.data is String &&
-        (op.data as String).contains('عادي') &&
-        op.attributes?['bold'] != true);
-    expect(plainStaysPlain, isTrue,
-        reason: 'الجزء العادي يبقى عاديًّا (لا تُلغى اختيارات المستخدم)');
-    c.dispose();
-  });
-
-  testWidgets('٨) الغامق الافتراضي: ملاحظة فارغة ⇒ الكتابة الجديدة غامقة',
-      (tester) async {
-    final c = RichTextController('', (_) {}, defaultBold: true);
-    await _pump(tester, c);
-    c.quill.replaceText(0, 0, 'نص', const TextSelection.collapsed(offset: 2));
-    await tester.pump(const Duration(milliseconds: 50));
-    expect(_hasBold(c.quill), isTrue);
+    expect(find.byTooltip('غامق'), findsNothing, reason: 'زرّ الغامق مخفيّ');
+    expect(find.byTooltip('مائل'), findsOneWidget, reason: 'بقية الأزرار باقية');
     c.dispose();
   });
 }

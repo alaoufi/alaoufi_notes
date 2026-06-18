@@ -16,10 +16,7 @@ import 'voice_dictation.dart';
 /// نفصلها عن الواجهة حتى نتمكن من وضع منطقة التحرير في الصفحة القابلة للتمرير،
 /// وتثبيت شريط الأدوات أسفل الشاشة فوق لوحة المفاتيح (فلا يختفي عند التحديد).
 class RichTextController {
-  /// [defaultBold] = إعداد «الخط الغامق الافتراضي»: حين يكون مفعّلًا نجعل الغامق
-  /// **مضمّنًا حقيقيًّا قابلًا للتبديل** (لا نمطًا أساسيًّا لا يمكن لزرّ B إلغاؤه).
-  RichTextController(String initialContent, this._onChanged,
-      {bool defaultBold = false}) {
+  RichTextController(String initialContent, this._onChanged) {
     quill = QuillController(
       document: _documentFrom(initialContent),
       selection: const TextSelection.collapsed(offset: 0),
@@ -34,29 +31,6 @@ class RichTextController {
     // نتتبّع آخر تحديد فعّال (غير منهار) كي نطبّق التنسيق عليه حتى لو انهار
     // التحديد لحظة لمس زرّ الشريط على بعض الأجهزة.
     quill.addListener(_trackSelection);
-    if (defaultBold) _applyDefaultBold();
-  }
-
-  /// يُفعّل «الغامق الافتراضي» كغامقٍ مضمّن قابل للتبديل:
-  /// - ملاحظة فارغة جديدة ⇒ نضبط نمطًا معلَّقًا غامقًا فتُكتب الحروف غامقة (ويمكن
-  ///   لزرّ B إلغاؤها لأي جزء). لا يُعدّل المستند ⇒ لا حفظ.
-  /// - ملاحظة موجودة بلا أيّ غامق ⇒ نُغمّق نصّها كاملًا **مرّة واحدة** (يحافظ على
-  ///   مظهرها الغامق السابق ويجعله قابلًا للإلغاء). وجود أيّ غامق فيها ⇒ لا نلمسها
-  ///   (فلا يُلغى تبديل المستخدم عند إعادة الفتح).
-  void _applyDefaultBold() {
-    final text = quill.document.toPlainText();
-    if (text.trim().isEmpty) {
-      quill.formatSelection(Attribute.bold);
-      return;
-    }
-    final hasBold = quill.document.toDelta().toList().any((op) =>
-        op.data is String &&
-        (op.data as String).trim().isNotEmpty &&
-        op.attributes?[Attribute.bold.key] == true);
-    if (!hasBold) {
-      final len = quill.document.length;
-      if (len > 1) quill.formatText(0, len - 1, Attribute.bold);
-    }
   }
 
   late final QuillController quill;
@@ -247,9 +221,8 @@ void applyLineDirections(QuillController quill) {
 DefaultStyles buildNoteDefaultStyles(
     BuildContext context, SettingsProvider settings,
     {double? lineHeight}) {
-  // لا نُغمّق النمط الأساسي هنا: «الغامق الافتراضي» يُطبَّق كغامقٍ مضمّن قابل
-  // للتبديل (انظر RichTextController._applyDefaultBold)، وإلا تعذّر على زرّ B
-  // إلغاء الغامق لأن النمط الأساسي لا يملك حالة «ليس غامقًا».
+  // لا نُغمّق النمط الأساسي هنا: الغامق يُطبَّق كسمة مضمّنة عبر زرّ B فقط، وإلا
+  // تعذّر على الزرّ إلغاء الغامق لأن النمط الأساسي لا يملك حالة «ليس غامقًا».
   final base = TextStyle(
     fontFamily: settings.noteFontFamily,
     fontSize: settings.noteFontSize,
@@ -471,67 +444,84 @@ class RichTextToolbar extends StatelessWidget {
                 ),
                 sep(),
                 // الخط + الحجم.
-                QuillToolbarFontFamilyButton(
-                  controller: q,
-                  options: const QuillToolbarFontFamilyButtonOptions(
-                      items: _fontFamilies),
-                ),
-                QuillToolbarFontSizeButton(
-                  controller: q,
-                  options:
-                      const QuillToolbarFontSizeButtonOptions(items: _fontSizes),
-                ),
+                // الخط + الحجم (قابلة للإخفاء من الإعدادات).
+                if (settings.isToolVisible('font'))
+                  QuillToolbarFontFamilyButton(
+                    controller: q,
+                    options: const QuillToolbarFontFamilyButtonOptions(
+                        items: _fontFamilies),
+                  ),
+                if (settings.isToolVisible('size'))
+                  QuillToolbarFontSizeButton(
+                    controller: q,
+                    options: const QuillToolbarFontSizeButtonOptions(
+                        items: _fontSizes),
+                  ),
                 // غامق/مائل/تسطير/شطب (تنسيق ذكي للكلمة كاملة).
-                fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
-                fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
-                fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
-                fmtBtn(Icons.format_strikethrough, 'شطب',
-                    Attribute.strikeThrough),
+                if (settings.isToolVisible('bold'))
+                  fmtBtn(Icons.format_bold, 'غامق', Attribute.bold),
+                if (settings.isToolVisible('italic'))
+                  fmtBtn(Icons.format_italic, 'مائل', Attribute.italic),
+                if (settings.isToolVisible('underline'))
+                  fmtBtn(Icons.format_underline, 'تسطير', Attribute.underline),
+                if (settings.isToolVisible('strike'))
+                  fmtBtn(Icons.format_strikethrough, 'شطب',
+                      Attribute.strikeThrough),
                 sep(),
                 // الألوان (نص + خلفية).
-                QuillToolbarColorButton(controller: q, isBackground: false),
-                QuillToolbarColorButton(controller: q, isBackground: true),
+                if (settings.isToolVisible('color'))
+                  QuillToolbarColorButton(controller: q, isBackground: false),
+                if (settings.isToolVisible('highlight'))
+                  QuillToolbarColorButton(controller: q, isBackground: true),
                 sep(),
                 // العناوين + القوائم + الاقتباس.
-                QuillToolbarSelectHeaderStyleDropdownButton(controller: q),
-                QuillToolbarToggleStyleButton(
-                    controller: q, attribute: Attribute.ul),
-                QuillToolbarToggleStyleButton(
-                    controller: q, attribute: Attribute.ol),
-                QuillToolbarToggleStyleButton(
-                    controller: q, attribute: Attribute.blockQuote),
+                if (settings.isToolVisible('header'))
+                  QuillToolbarSelectHeaderStyleDropdownButton(controller: q),
+                if (settings.isToolVisible('ul'))
+                  QuillToolbarToggleStyleButton(
+                      controller: q, attribute: Attribute.ul),
+                if (settings.isToolVisible('ol'))
+                  QuillToolbarToggleStyleButton(
+                      controller: q, attribute: Attribute.ol),
+                if (settings.isToolVisible('quote'))
+                  QuillToolbarToggleStyleButton(
+                      controller: q, attribute: Attribute.blockQuote),
                 sep(),
-                // المحاذاة (يمين/وسط/يسار/ضبط).
-                alignBtn(Icons.format_align_right, 'محاذاة لليمين',
-                    Attribute.rightAlignment),
-                alignBtn(Icons.format_align_center, 'توسيط',
-                    Attribute.centerAlignment),
-                alignBtn(Icons.format_align_left, 'محاذاة لليسار',
-                    Attribute.leftAlignment),
-                alignBtn(Icons.format_align_justify, 'ضبط',
-                    Attribute.justifyAlignment),
-                sep(),
+                // المحاذاة (يمين/وسط/يسار/ضبط) — مجموعة واحدة.
+                if (settings.isToolVisible('align')) ...[
+                  alignBtn(Icons.format_align_right, 'محاذاة لليمين',
+                      Attribute.rightAlignment),
+                  alignBtn(Icons.format_align_center, 'توسيط',
+                      Attribute.centerAlignment),
+                  alignBtn(Icons.format_align_left, 'محاذاة لليسار',
+                      Attribute.leftAlignment),
+                  alignBtn(Icons.format_align_justify, 'ضبط',
+                      Attribute.justifyAlignment),
+                  sep(),
+                ],
                 // تباعد الأسطر (مضاعِف ارتفاع السطر) — يُطبَّق على **الأسطر
                 // المحدّدة فقط** (أو السطر الحالي عند المؤشر) عبر سمة line-height،
                 // بلا أي تسطير. القيمة 0 ⇒ إزالة التباعد الخاص (العودة للافتراضي).
-                PopupMenuButton<double>(
-                  tooltip: 'تباعد الأسطر (للأسطر المحدّدة)',
-                  icon: const Icon(Icons.format_line_spacing, size: 22),
-                  onSelected: (v) => q.formatSelection(
-                    Attribute<double?>(
-                        'line-height', AttributeScope.block, v == 0 ? null : v),
+                if (settings.isToolVisible('lineSpacing'))
+                  PopupMenuButton<double>(
+                    tooltip: 'تباعد الأسطر (للأسطر المحدّدة)',
+                    icon: const Icon(Icons.format_line_spacing, size: 22),
+                    onSelected: (v) => q.formatSelection(
+                      Attribute<double?>('line-height', AttributeScope.block,
+                          v == 0 ? null : v),
+                    ),
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 1.0, child: Text('1.0')),
+                      PopupMenuItem(value: 1.25, child: Text('1.25')),
+                      PopupMenuItem(value: 1.5, child: Text('1.5')),
+                      PopupMenuItem(value: 1.75, child: Text('1.75')),
+                      PopupMenuItem(value: 2.0, child: Text('2.0')),
+                      PopupMenuItem(value: 0.0, child: Text('افتراضي')),
+                    ],
                   ),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 1.0, child: Text('1.0')),
-                    PopupMenuItem(value: 1.25, child: Text('1.25')),
-                    PopupMenuItem(value: 1.5, child: Text('1.5')),
-                    PopupMenuItem(value: 1.75, child: Text('1.75')),
-                    PopupMenuItem(value: 2.0, child: Text('2.0')),
-                    PopupMenuItem(value: 0.0, child: Text('افتراضي')),
-                  ],
-                ),
                 // مسح التنسيق.
-                QuillToolbarClearFormatButton(controller: q),
+                if (settings.isToolVisible('clearFormat'))
+                  QuillToolbarClearFormatButton(controller: q),
                 // إظهار/إخفاء قائمة النسخ واللصق.
                 IconButton(
                   icon: Icon(hide

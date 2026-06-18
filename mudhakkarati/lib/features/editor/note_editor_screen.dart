@@ -118,12 +118,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
     // وحدة تحكّم النص الغني (لنوع النص) — تُهيّأ بعد معرفة المحتوى.
     if (_note.type == NoteType.text) {
-      // «الخط الغامق الافتراضي»: يُطبَّق كغامقٍ مضمّن قابل للتبديل بزرّ B.
-      final defaultBold = context.read<SettingsProvider>().noteBold;
       _richCtrl = RichTextController(_richContent, (json) {
         _richContent = json;
         _onChanged();
-      }, defaultBold: defaultBold);
+      });
     }
 
     setState(() => _loaded = true);
@@ -771,7 +769,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       fontFamily: settings.noteFontFamily,
       fontSize: settings.noteFontSize,
       height: settings.noteLineHeight,
-      fontWeight: settings.noteBold ? FontWeight.bold : null,
       color: _fgColor,
     );
     return [
