@@ -66,6 +66,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invitation', 'Attach an image or PDF'),
       HgItem(Icons.library_music, 'Sound library', 'Tones + your device tones'),
       HgItem(Icons.alarm_on, 'Reliable alarm', 'Works when closed/rebooted, full-screen, raises volume'),
+      HgItem(Icons.history, 'Notification center log', 'Every fired reminder — logged automatically, with delete'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Recent improvements', [
       HgItem(Icons.brush, 'Advanced drawing', 'Per-stroke color & width, brush, eraser'),
@@ -122,6 +123,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'الدعوة', 'إرفاق صورة أو PDF'),
       HgItem(Icons.library_music, 'مكتبة الأصوات', 'نغمات + نغمات جهازك'),
       HgItem(Icons.alarm_on, 'منبّه موثوق', 'يعمل والتطبيق مغلق/بعد التشغيل، شاشة كاملة، يرفع الصوت'),
+      HgItem(Icons.history, 'سجلّ مركز التنبيهات', 'كل تنبيه يفوت وقته يُسجَّل تلقائيًّا في تبويب «السجل» — مع حذف'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'تحسينات حديثة', [
       HgItem(Icons.brush, 'الرسم المتقدّم', 'لون وسماكة لكل خط + فرشاة وممحاة'),
@@ -178,6 +180,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invitación', 'Adjuntar imagen o PDF'),
       HgItem(Icons.library_music, 'Biblioteca de sonidos', 'Tonos + tonos del dispositivo'),
       HgItem(Icons.alarm_on, 'Alarma fiable', 'Funciona cerrada/reiniciada, pantalla completa, sube volumen'),
+      HgItem(Icons.history, 'Registro del centro de notificaciones', 'Cada recordatorio disparado se registra solo — con borrado'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Mejoras recientes', [
       HgItem(Icons.brush, 'Dibujo avanzado', 'Color y grosor por trazo, pincel, goma'),
@@ -234,6 +237,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Einladung', 'Bild oder PDF anhängen'),
       HgItem(Icons.library_music, 'Klangbibliothek', 'Töne + Gerätetöne'),
       HgItem(Icons.alarm_on, 'Zuverlässiger Wecker', 'Auch geschlossen/nach Neustart, Vollbild, lauter'),
+      HgItem(Icons.history, 'Protokoll der Mitteilungszentrale', 'Jede ausgelöste Erinnerung wird automatisch protokolliert — löschbar'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Neue Verbesserungen', [
       HgItem(Icons.brush, 'Erweitertes Zeichnen', 'Farbe & Stärke pro Strich, Pinsel, Radierer'),
@@ -290,6 +294,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Imbitasyon', 'Maglakip ng larawan o PDF'),
       HgItem(Icons.library_music, 'Aklatan ng tunog', 'Mga tono + tono ng device'),
       HgItem(Icons.alarm_on, 'Maaasahang alarm', 'Gumagana kahit sarado/na-restart, full-screen, nilalakasan'),
+      HgItem(Icons.history, 'Log ng notification center', 'Bawat na-trigger na paalala, awtomatikong naitatala — may delete'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Mga bagong pagpapabuti', [
       HgItem(Icons.brush, 'Advanced na pagguhit', 'Kulay at kapal kada guhit, brush, pambura'),
@@ -346,6 +351,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invitation', 'Joindre une image ou un PDF'),
       HgItem(Icons.library_music, 'Bibliothèque de sons', 'Sonneries + sons de l’appareil'),
       HgItem(Icons.alarm_on, 'Alarme fiable', 'Marche fermée/redémarrée, plein écran, monte le volume'),
+      HgItem(Icons.history, 'Journal du centre de notifications', 'Chaque rappel déclenché est enregistré — avec suppression'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Améliorations récentes', [
       HgItem(Icons.brush, 'Dessin avancé', 'Couleur et épaisseur par trait, pinceau, gomme'),
@@ -402,6 +408,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Undangan', 'Lampirkan gambar atau PDF'),
       HgItem(Icons.library_music, 'Pustaka suara', 'Nada + nada perangkat'),
       HgItem(Icons.alarm_on, 'Alarm andal', 'Jalan saat tertutup/restart, layar penuh, naikkan volume'),
+      HgItem(Icons.history, 'Log pusat notifikasi', 'Setiap pengingat yang berbunyi dicatat otomatis — bisa dihapus'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Peningkatan terbaru', [
       HgItem(Icons.brush, 'Gambar lanjutan', 'Warna & tebal per goresan, kuas, penghapus'),
@@ -458,6 +465,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Invito', 'Allega immagine o PDF'),
       HgItem(Icons.library_music, 'Libreria suoni', 'Suoni + suoni del dispositivo'),
       HgItem(Icons.alarm_on, 'Sveglia affidabile', 'Funziona chiusa/riavviata, schermo intero, alza volume'),
+      HgItem(Icons.history, 'Registro del centro notifiche', 'Ogni promemoria attivato registrato in automatico — eliminabile'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Miglioramenti recenti', [
       HgItem(Icons.brush, 'Disegno avanzato', 'Colore e spessore per tratto, pennello, gomma'),
@@ -514,6 +522,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Jemputan', 'Lampirkan imej atau PDF'),
       HgItem(Icons.library_music, 'Pustaka bunyi', 'Nada + nada peranti'),
       HgItem(Icons.alarm_on, 'Penggera boleh harap', 'Berfungsi ditutup/dimulakan semula, skrin penuh, naik kuat'),
+      HgItem(Icons.history, 'Log pusat pemberitahuan', 'Setiap peringatan berbunyi direkod automatik — boleh padam'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Penambahbaikan terkini', [
       HgItem(Icons.brush, 'Lukisan lanjutan', 'Warna & ketebalan setiap lakaran, berus, pemadam'),
@@ -570,6 +579,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'निमंत्रण', 'इमेज या PDF जोड़ें'),
       HgItem(Icons.library_music, 'ध्वनि लाइब्रेरी', 'टोन + डिवाइस टोन'),
       HgItem(Icons.alarm_on, 'भरोसेमंद अलार्म', 'बंद/रीस्टार्ट पर भी, फुल-स्क्रीन, आवाज़ बढ़ाता है'),
+      HgItem(Icons.history, 'नोटिफिकेशन सेंटर लॉग', 'हर चला रिमाइंडर अपने आप दर्ज — हटाने की सुविधा'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'हाल के सुधार', [
       HgItem(Icons.brush, 'उन्नत ड्रॉइंग', 'हर स्ट्रोक का रंग व मोटाई, ब्रश, इरेज़र'),
@@ -626,6 +636,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'আমন্ত্রণ', 'ছবি বা PDF সংযুক্ত করুন'),
       HgItem(Icons.library_music, 'সাউন্ড লাইব্রেরি', 'টোন + ডিভাইস টোন'),
       HgItem(Icons.alarm_on, 'নির্ভরযোগ্য অ্যালার্ম', 'বন্ধ/রিস্টার্টেও চলে, ফুল-স্ক্রিন, ভলিউম বাড়ায়'),
+      HgItem(Icons.history, 'নোটিফিকেশন সেন্টার লগ', 'প্রতিটি বাজা রিমাইন্ডার স্বয়ংক্রিয় রেকর্ড — মুছে ফেলা যায়'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'সাম্প্রতিক উন্নতি', [
       HgItem(Icons.brush, 'উন্নত অঙ্কন', 'প্রতি স্ট্রোকে রং ও পুরুত্ব, ব্রাশ, ইরেজার'),
@@ -682,6 +693,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'دعوت‌نامه', 'پیوست عکس یا PDF'),
       HgItem(Icons.library_music, 'کتابخانه صداها', 'آهنگ‌ها + آهنگ‌های دستگاه'),
       HgItem(Icons.alarm_on, 'زنگ مطمئن', 'حتی بسته/پس از ری‌استارت، تمام‌صفحه، صدا را بالا می‌برد'),
+      HgItem(Icons.history, 'گزارش مرکز اعلان‌ها', 'هر یادآور اجراشده خودکار ثبت می‌شود — با حذف'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'بهبودهای اخیر', [
       HgItem(Icons.brush, 'طراحی پیشرفته', 'رنگ و ضخامت برای هر خط، قلم‌مو، پاک‌کن'),
@@ -738,6 +750,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.attach_file, 'Приглашение', 'Прикрепить изображение или PDF'),
       HgItem(Icons.library_music, 'Библиотека звуков', 'Сигналы + сигналы устройства'),
       HgItem(Icons.alarm_on, 'Надёжный будильник', 'Работает закрытым/после перезагрузки, на весь экран, повышает громкость'),
+      HgItem(Icons.history, 'Журнал центра уведомлений', 'Каждое сработавшее напоминание записывается само — можно удалить'),
     ]),
     HgSection(Icons.auto_awesome, _c7, false, 'Последние улучшения', [
       HgItem(Icons.brush, 'Продвинутое рисование', 'Цвет и толщина для каждого штриха, кисть, ластик'),
@@ -754,19 +767,19 @@ const Map<String, List<HgSection>> _hg = {
 };
 
 const Map<String, HgChrome> _hgChrome = {
-  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-16'),
-  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-16'),
-  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-16'),
-  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-16'),
-  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-16'),
-  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-16'),
-  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-16'),
-  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-16'),
-  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-16'),
-  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-16'),
-  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-16'),
-  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-16'),
-  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-16'),
+  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-19'),
+  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-19'),
+  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-19'),
+  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-19'),
+  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-19'),
+  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-19'),
+  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-19'),
+  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-19'),
+  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-19'),
+  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-19'),
+  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-19'),
+  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-19'),
+  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-19'),
 };
 
 List<HgSection> helpSections(String lang) => _hg[lang] ?? _hg['en']!;
