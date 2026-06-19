@@ -47,9 +47,9 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Future<void> _clearLog() async {
+    final s = S.of(context);
     if (!await confirmDelete(context,
-        title: 'مسح السجلّ؟',
-        message: 'سيُحذف كل سجلّ التنبيهات المنفّذة. لا يؤثّر على التنبيهات نفسها.')) {
+        title: s.t('nc_log_clear_q'), message: s.t('nc_log_clear_msg'))) {
       return;
     }
     await _logRepo.deleteAll();
@@ -105,15 +105,15 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
             child: SegmentedButton<bool>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                     value: false,
-                    label: Text('القادمة'),
-                    icon: Icon(Icons.upcoming)),
+                    label: Text(s.t('nc_tab_upcoming')),
+                    icon: const Icon(Icons.upcoming)),
                 ButtonSegment(
                     value: true,
-                    label: Text('السجل'),
-                    icon: Icon(Icons.history)),
+                    label: Text(s.t('nc_tab_log')),
+                    icon: const Icon(Icons.history)),
               ],
               selected: {_showLog},
               onSelectionChanged: (sel) => setState(() {
@@ -167,13 +167,10 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
     }
     final log = _log ?? const <ReminderLogEntry>[];
     if (log.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'لا سجلّ بعد.\nعند فوات وقت أي تنبيه يُسجَّل هنا تلقائيًّا.',
-            textAlign: TextAlign.center,
-          ),
+          padding: const EdgeInsets.all(24),
+          child: Text(s.t('nc_log_empty'), textAlign: TextAlign.center),
         ),
       );
     }
@@ -185,13 +182,13 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Row(
             children: [
-              Text('${log.length} تنبيه',
+              Text('${log.length} ${s.t('nc_log_unit')}',
                   style: const TextStyle(fontWeight: FontWeight.bold)),
               const Spacer(),
               TextButton.icon(
                 onPressed: _clearLog,
                 icon: const Icon(Icons.delete_sweep_outlined, size: 20),
-                label: const Text('مسح الكل'),
+                label: Text(s.t('nc_log_clear')),
               ),
             ],
           ),
