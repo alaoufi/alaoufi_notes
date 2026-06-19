@@ -80,6 +80,8 @@ class RemindersProvider extends ChangeNotifier {
     List<int> preAlerts = const [],
     String location = '',
     String attachmentPath = '',
+    int intervalDays = 0,
+    int doseCount = 0,
     Reminder? existing,
   }) async {
     if (existing != null) {
@@ -96,6 +98,8 @@ class RemindersProvider extends ChangeNotifier {
       location: location,
       attachmentPath: attachmentPath,
       notificationId: notifId,
+      intervalDays: intervalDays,
+      doseCount: doseCount,
     );
     final id = await _repo.insert(reminder);
     await NotificationService.instance.schedule(

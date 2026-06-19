@@ -2,11 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
-import '../data/models/enums.dart';
 import '../data/models/med_dose.dart';
-import '../data/models/reminder.dart';
 import '../data/repositories/med_repository.dart';
 import '../data/repositories/reminder_repository.dart';
+import 'med_occurrences.dart';
 
 /// يُسجّل جرعة في «سجلّ الأدوية» تلقائيًّا عن كل **موعد** لمنبّه دواء (العنوان
 /// يحمل الرمز 💊) منذ آخر فحص. الهدف: معرفة **كم جرعة** ومتى — لا «أُخذت/فاتت».
@@ -42,7 +41,7 @@ class MedDoseLogger {
         }
 
         final after = DateTime.fromMillisecondsSinceEpoch(lastMs);
-        final occ = occurrencesBetween(r.repeat, r.time, after, now);
+        final occ = medOccurrencesBetween(r, after, now);
         if (occ.isNotEmpty) {
           final parsed = parseMedTitle(title);
           for (final o in occ) {
@@ -69,63 +68,5 @@ class MedDoseLogger {
       t = t.substring(0, idx).trim();
     }
     return (t.isEmpty ? 'دواء' : t, dose);
-  }
-
-  /// مواعيد منبّه بتكرار [repeat] وزمن أساس [base] الواقعة بعد [after] وحتى
-  /// [until] (شاملة [until]). محدودة بسقف أمان لتفادي أي حلقة طويلة.
-  @visibleForTesting
-  static List<DateTime> occurrencesBetween(
-      ReminderRepeat repeat, DateTime base, DateTime after, DateTime until) {
-    final res = <DateTime>[];
-    if (repeat == ReminderRepeat.once) {
-      if (base.isAfter(after) && !base.isAfter(until)) res.add(base);
-      return res;
-    }
-    DateTime t;
-    switch (repeat) {
-      case ReminderRepeat.daily:
-        t = DateTime(after.year, after.month, after.day, base.hour, base.minute);
-        while (!t.isAfter(after)) {
-          t = t.add(const Duration(days: 1));
-        }
-        while (!t.isAfter(until) && res.length < 400) {
-          res.add(t);
-          t = t.add(const Duration(days: 1));
-        }
-        break;
-      case ReminderRepeat.weekly:
-        t = DateTime(after.year, after.month, after.day, base.hour, base.minute);
-        while (t.weekday != base.weekday || !t.isAfter(after)) {
-          t = t.add(const Duration(days: 1));
-        }
-        while (!t.isAfter(until) && res.length < 200) {
-          res.add(t);
-          t = t.add(const Duration(days: 7));
-        }
-        break;
-      case ReminderRepeat.monthly:
-        t = DateTime(after.year, after.month, base.day, base.hour, base.minute);
-        while (!t.isAfter(after)) {
-          t = DateTime(t.year, t.month + 1, base.day, base.hour, base.minute);
-        }
-        while (!t.isAfter(until) && res.length < 60) {
-          res.add(t);
-          t = DateTime(t.year, t.month + 1, base.day, base.hour, base.minute);
-        }
-        break;
-      case ReminderRepeat.yearly:
-        t = DateTime(after.year, base.month, base.day, base.hour, base.minute);
-        while (!t.isAfter(after)) {
-          t = DateTime(t.year + 1, base.month, base.day, base.hour, base.minute);
-        }
-        while (!t.isAfter(until) && res.length < 20) {
-          res.add(t);
-          t = DateTime(t.year + 1, base.month, base.day, base.hour, base.minute);
-        }
-        break;
-      case ReminderRepeat.once:
-        break;
-    }
-    return res;
   }
 }

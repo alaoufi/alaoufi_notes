@@ -24,6 +24,12 @@ class Reminder {
   /// معرّف الإشعار في flutter_local_notifications (لإلغائه لاحقًا).
   final int notificationId;
 
+  /// **دواء**: فاصل الأيام بين الجرعات (≥ 2 ⇒ «كل N يوم»). 0 = تكرار عاديّ.
+  final int intervalDays;
+
+  /// **دواء**: عدد جرعات الكورس (> 0 ⇒ يتوقّف بعدها). 0 = مستمر.
+  final int doseCount;
+
   const Reminder({
     this.id,
     this.noteId,
@@ -36,6 +42,8 @@ class Reminder {
     this.location = '',
     this.attachmentPath = '',
     required this.notificationId,
+    this.intervalDays = 0,
+    this.doseCount = 0,
   });
 
   /// تنبيه مستقلّ (غير مرتبط بملاحظة).
@@ -54,6 +62,8 @@ class Reminder {
       'pre_alerts': preAlerts.join(','),
       'location': location,
       'attachment': attachmentPath,
+      'interval_days': intervalDays,
+      'dose_count': doseCount,
     };
   }
 
@@ -74,6 +84,8 @@ class Reminder {
           .toList(),
       location: (map['location'] as String?) ?? '',
       attachmentPath: (map['attachment'] as String?) ?? '',
+      intervalDays: (map['interval_days'] as int?) ?? 0,
+      doseCount: (map['dose_count'] as int?) ?? 0,
     );
   }
 
@@ -89,6 +101,8 @@ class Reminder {
     String? location,
     String? attachmentPath,
     int? notificationId,
+    int? intervalDays,
+    int? doseCount,
   }) {
     return Reminder(
       id: id ?? this.id,
@@ -102,6 +116,8 @@ class Reminder {
       location: location ?? this.location,
       attachmentPath: attachmentPath ?? this.attachmentPath,
       notificationId: notificationId ?? this.notificationId,
+      intervalDays: intervalDays ?? this.intervalDays,
+      doseCount: doseCount ?? this.doseCount,
     );
   }
 }

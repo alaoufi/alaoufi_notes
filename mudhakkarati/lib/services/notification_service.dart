@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../data/models/enums.dart';
 import '../data/models/reminder.dart';
+import 'med_occurrences.dart';
 import 'time_service.dart';
 
 /// مفتاح تنقّل عام لفتح الملاحظة عند الضغط على التذكير.
@@ -245,6 +246,14 @@ class NotificationService {
     final safeBody =
         body.trim().isEmpty ? 'لديك تذكير من Alaoufi Notes' : body.trim();
 
+    // كورس دواء (فاصل أيام مخصّص أو عدد جرعات محدّد): لا يوجد تكرار «كل N يوم» أو
+    // «أوقف بعد N» أصليّ في الإضافة ⇒ نجدول مجموعة من المواعيد القادمة يدويًّا،
+    // وتُحدَّث عند كل فتح للتطبيق (ensureScheduled).
+    if (reminder.intervalDays >= 2 || reminder.doseCount > 0) {
+      await _scheduleMedCourse(reminder, safeTitle, safeBody);
+      return;
+    }
+
     DateTimeComponents? match;
     switch (reminder.repeat) {
       case ReminderRepeat.once:
@@ -326,6 +335,49 @@ class NotificationService {
         }
         i++;
       }
+    }
+  }
+
+  /// يجدول مجموعة من المواعيد القادمة لكورس دواء (حتى 14 موعدًا أو نهاية الكورس)
+  /// كإشعارات لمرّة واحدة بمعرّفات `base + k*_forgetStride` (يُلغيها cancel معًا).
+  Future<void> _scheduleMedCourse(
+      Reminder reminder, String safeTitle, String safeBody) async {
+    final base = reminder.notificationId;
+    final now = tz.TZDateTime.now(tz.local);
+    final limit = reminder.doseCount; // 0 = مستمر
+
+    // امسح أي مواعيد سابقة لهذا الكورس (قد يكون تقلّص) قبل إعادة الجدولة.
+    await _plugin.cancel(base);
+    await _cancelFollowups(base);
+
+    // نقطة بداية الفهرس (قفزة سريعة للكورس المستمر بفاصل أيام).
+    var i = 0;
+    if (limit == 0 && reminder.intervalDays >= 2) {
+      final passed = now.difference(reminder.time).inDays;
+      if (passed > 0) i = passed ~/ reminder.intervalDays;
+    }
+
+    var scheduled = 0;
+    var guard = 0;
+    while (scheduled < 14 && guard < 8000) {
+      guard++;
+      if (limit > 0 && i >= limit) break;
+      final occ = tz.TZDateTime.from(medOccurrenceAt(reminder, i), tz.local);
+      i++;
+      if (!occ.isAfter(now)) continue; // موعد فات ⇒ تخطٍّ.
+      await _plugin.zonedSchedule(
+        base + scheduled * _forgetStride,
+        safeTitle,
+        safeBody,
+        occ,
+        _detailsFor(reminder.importance),
+        androidScheduleMode: _mode(reminder.importance),
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
+            '|imp:${reminder.importance.dbValue}|base:$base',
+      );
+      scheduled++;
     }
   }
 

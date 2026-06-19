@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 15;
+  static const _dbVersion = 16;
 
   Database? _db;
   Future<Database>? _opening;
@@ -252,6 +252,8 @@ class AppDatabase {
         pre_alerts TEXT NOT NULL DEFAULT '',
         location TEXT NOT NULL DEFAULT '',
         attachment TEXT NOT NULL DEFAULT '',
+        interval_days INTEGER NOT NULL DEFAULT 0,
+        dose_count INTEGER NOT NULL DEFAULT 0,
         FOREIGN KEY (note_id) REFERENCES notes (id) ON DELETE CASCADE
       )
     ''');
@@ -359,6 +361,13 @@ class AppDatabase {
       // مرفق الدعوة (صورة/PDF) — للمواعيد.
       await db.execute(
           "ALTER TABLE reminders ADD COLUMN attachment TEXT NOT NULL DEFAULT ''");
+    }
+    if (oldVersion < 16) {
+      // الدواء: فاصل أيام مخصّص + عدد جرعات الكورس.
+      await db.execute(
+          'ALTER TABLE reminders ADD COLUMN interval_days INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+          'ALTER TABLE reminders ADD COLUMN dose_count INTEGER NOT NULL DEFAULT 0');
     }
   }
 

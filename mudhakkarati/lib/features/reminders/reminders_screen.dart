@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
+import '../../services/med_occurrences.dart';
 import '../../widgets/confirm_dialog.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/editor_attachments.dart';
@@ -172,10 +173,16 @@ class RemindersScreen extends StatelessWidget {
         : (note?.title.isNotEmpty == true
             ? note!.title
             : (note?.content ?? 'ملاحظة'));
-    // وصف التكرار (مع اليوم عند الأسبوعي).
-    final repeatInfo = r.repeat == ReminderRepeat.weekly
-        ? '${_repeatLabel(s, r.repeat)} • ${_weekdayAr[r.time.weekday]}'
-        : _repeatLabel(s, r.repeat);
+    // وصف التكرار (مع اليوم عند الأسبوعي، وفاصل/مدّة الدواء إن وُجدت).
+    String repeatInfo;
+    if (r.intervalDays >= 2) {
+      repeatInfo = 'كل ${r.intervalDays} يوم';
+    } else if (r.repeat == ReminderRepeat.weekly) {
+      repeatInfo = '${_repeatLabel(s, r.repeat)} • ${_weekdayAr[r.time.weekday]}';
+    } else {
+      repeatInfo = _repeatLabel(s, r.repeat);
+    }
+    if (r.doseCount > 0) repeatInfo += ' • ${r.doseCount} جرعة';
 
     return AppCard(
       onTap: r.isStandalone
@@ -265,6 +272,12 @@ class RemindersScreen extends StatelessWidget {
   DateTime _nextFire(Reminder r) {
     final now = DateTime.now();
     final t = r.time;
+    // كورس دواء (فاصل أيام/عدد جرعات): أوّل موعد قادم، أو لا شيء إن انتهى.
+    if (r.intervalDays >= 2 || r.doseCount > 0) {
+      final next =
+          medOccurrencesBetween(r, now, now.add(const Duration(days: 3650)));
+      return next.isEmpty ? DateTime(9999) : next.first;
+    }
     switch (r.repeat) {
       case ReminderRepeat.once:
         return t;
