@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 16;
+  static const _dbVersion = 17;
 
   Database? _db;
   Future<Database>? _opening;
@@ -260,6 +260,7 @@ class AppDatabase {
 
     await _createInfoTable(db);
     await _createMedTable(db);
+    await _createReminderLogTable(db);
 
     await db.execute('CREATE INDEX idx_notes_uuid ON notes (uuid)');
     await db.execute('CREATE INDEX idx_notes_category ON notes (category_id)');
@@ -369,6 +370,22 @@ class AppDatabase {
       await db.execute(
           'ALTER TABLE reminders ADD COLUMN dose_count INTEGER NOT NULL DEFAULT 0');
     }
+    if (oldVersion < 17) {
+      // سجلّ التنبيهات المنفّذة (لكل الأنواع).
+      await _createReminderLogTable(db);
+    }
+  }
+
+  /// جدول سجلّ التنبيهات المنفّذة (كل تنبيه فات وقته — لكل الأنواع).
+  Future<void> _createReminderLogTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reminder_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        reminder_id INTEGER,
+        title TEXT NOT NULL,
+        at INTEGER NOT NULL
+      )
+    ''');
   }
 
   /// جدول سجلّ جرعات الدواء (وضع العلاج).

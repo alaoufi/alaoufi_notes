@@ -3,12 +3,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
 import '../data/models/med_dose.dart';
+import '../data/models/reminder_log_entry.dart';
 import '../data/repositories/med_repository.dart';
+import '../data/repositories/note_repository.dart';
+import '../data/repositories/reminder_log_repository.dart';
 import '../data/repositories/reminder_repository.dart';
 import 'med_occurrences.dart';
 
-/// يُسجّل جرعة في «سجلّ الأدوية» تلقائيًّا عن كل **موعد** لمنبّه دواء (العنوان
-/// يحمل الرمز 💊) منذ آخر فحص. الهدف: معرفة **كم جرعة** ومتى — لا «أُخذت/فاتت».
+/// يُسجّل تلقائيًّا كل **موعد** تنبيهٍ فات منذ آخر فحص في «سجلّ التنبيهات
+/// المنفّذة» (لكل الأنواع) — ويُسجّل أيضًا جرعةً في «وضع الدواء» إن كان منبّه
+/// دواء (عنوانه يحمل 💊).
 ///
 /// لماذا «عند الفتح» لا لحظة الرنين؟ لأن أندرويد لا يتيح لـFlutter تشغيل كود
 /// موثوق عند **ظهور** الإشعار والتطبيق مغلق. لذا نعوّض بحساب كل المواعيد الفائتة
@@ -25,12 +29,12 @@ class MedDoseLogger {
       final reminders =
           await ReminderRepository(AppDatabase.instance).getAll();
       final medRepo = MedRepository(AppDatabase.instance);
+      final logRepo = ReminderLogRepository(AppDatabase.instance);
+      final notes = NoteRepository(AppDatabase.instance);
       final now = DateTime.now();
 
       for (final r in reminders) {
         if (!r.isActive || r.id == null) continue;
-        final title = r.title ?? '';
-        if (!title.contains('💊')) continue; // ليس منبّه دواء.
 
         final key = '$_prefix${r.id}';
         final lastMs = prefs.getInt(key);
@@ -40,13 +44,33 @@ class MedDoseLogger {
           continue;
         }
 
+        // عنوان السجلّ: عنوان التنبيه المستقلّ، أو عنوان الملاحظة المرتبطة.
+        var logTitle = (r.title ?? '').trim();
+        if (r.noteId != null) {
+          final n = await notes.getNote(r.noteId!);
+          if (n == null || n.isDeleted) {
+            // ملاحظة محذوفة ⇒ لا نُسجّل، ونُقدّم المؤشّر لتفادي تسجيل لاحق.
+            await prefs.setInt(key, now.millisecondsSinceEpoch);
+            continue;
+          }
+          if (logTitle.isEmpty) logTitle = n.title.trim();
+        }
+        if (logTitle.isEmpty) logTitle = 'تنبيه';
+
         final after = DateTime.fromMillisecondsSinceEpoch(lastMs);
         final occ = medOccurrencesBetween(r, after, now);
         if (occ.isNotEmpty) {
-          final parsed = parseMedTitle(title);
+          final isMed = (r.title ?? '').contains('💊');
+          final parsed = isMed ? parseMedTitle(r.title!) : null;
           for (final o in occ) {
-            await medRepo.insert(MedDose(
-                name: parsed.$1, dose: parsed.$2, taken: true, at: o));
+            // السجلّ العامّ: كل تنبيه مُنفَّذ (لكل الأنواع).
+            await logRepo
+                .insert(ReminderLogEntry(reminderId: r.id, title: logTitle, at: o));
+            // الدواء: نُسجّل أيضًا جرعةً في «وضع الدواء».
+            if (isMed) {
+              await medRepo.insert(MedDose(
+                  name: parsed!.$1, dose: parsed.$2, taken: true, at: o));
+            }
           }
         }
         await prefs.setInt(key, now.millisecondsSinceEpoch);

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../data/database/app_database.dart';
 import '../../data/models/enums.dart';
+import '../../data/models/reminder_log_entry.dart';
+import '../../data/repositories/reminder_log_repository.dart';
+import '../../services/med_dose_logger.dart';
+import '../../widgets/confirm_dialog.dart';
 import 'reminders_provider.dart';
 
 /// مركز التنبيهات: يعرض التذكيرات مجمّعة (اليوم/القادمة/المتأخرة) مع بحث.
@@ -16,6 +21,41 @@ class NotificationCenterScreen extends StatefulWidget {
 
 class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   String _q = '';
+  bool _showLog = false; // false = القادمة، true = السجل
+
+  final _logRepo = ReminderLogRepository(AppDatabase.instance);
+  List<ReminderLogEntry>? _log;
+  bool _logLoading = false;
+
+  /// يُحدِّث السجلّ: يُسجّل أوّلًا أي تنبيهات فاتت منذ آخر فتح، ثم يقرأ السجلّ.
+  Future<void> _loadLog() async {
+    setState(() => _logLoading = true);
+    await MedDoseLogger.instance.run();
+    final list = await _logRepo.getAll();
+    if (!mounted) return;
+    setState(() {
+      _log = list;
+      _logLoading = false;
+    });
+  }
+
+  Future<void> _deleteLogEntry(ReminderLogEntry e) async {
+    if (e.id == null) return;
+    await _logRepo.delete(e.id!);
+    if (!mounted) return;
+    setState(() => _log = _log?.where((x) => x.id != e.id).toList());
+  }
+
+  Future<void> _clearLog() async {
+    if (!await confirmDelete(context,
+        title: 'مسح السجلّ؟',
+        message: 'سيُحذف كل سجلّ التنبيهات المنفّذة. لا يؤثّر على التنبيهات نفسها.')) {
+      return;
+    }
+    await _logRepo.deleteAll();
+    if (!mounted) return;
+    setState(() => _log = const []);
+  }
 
   String _titleOf(ReminderView v) {
     final t = v.note?.title.trim();
@@ -64,36 +104,139 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: TextField(
-              onChanged: (v) => setState(() => _q = v),
-              decoration: InputDecoration(
-                hintText: s.t('search'),
-                prefixIcon: const Icon(Icons.search),
-                isDense: true,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14)),
-              ),
+            child: SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(
+                    value: false,
+                    label: Text('القادمة'),
+                    icon: Icon(Icons.upcoming)),
+                ButtonSegment(
+                    value: true,
+                    label: Text('السجل'),
+                    icon: Icon(Icons.history)),
+              ],
+              selected: {_showLog},
+              onSelectionChanged: (sel) => setState(() {
+                _showLog = sel.first;
+                if (_showLog && _log == null) _loadLog();
+              }),
             ),
           ),
+          if (!_showLog)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+              child: TextField(
+                onChanged: (v) => setState(() => _q = v),
+                decoration: InputDecoration(
+                  hintText: s.t('search'),
+                  prefixIcon: const Icon(Icons.search),
+                  isDense: true,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+            ),
           Expanded(
-            child: (overdue.isEmpty && todayL.isEmpty && upcoming.isEmpty)
-                ? Center(child: Text(s.t('no_reminders')))
-                : ListView(
-                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
-                    children: [
-                      _statsCard(context, s, items.length, todayL.length,
-                          upcoming.length, overdue.length),
-                      _section(s.t('nc_overdue'), Icons.error_outline,
-                          Colors.red, overdue),
-                      _section(s.t('nc_today'), Icons.today,
-                          Colors.blue, todayL),
-                      _section(s.t('nc_upcoming'), Icons.upcoming,
-                          Colors.teal, upcoming),
-                    ],
-                  ),
+            child: _showLog
+                ? _logView(s)
+                : (overdue.isEmpty && todayL.isEmpty && upcoming.isEmpty)
+                    ? Center(child: Text(s.t('no_reminders')))
+                    : ListView(
+                        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+                        children: [
+                          _statsCard(context, s, items.length, todayL.length,
+                              upcoming.length, overdue.length),
+                          _section(s.t('nc_overdue'), Icons.error_outline,
+                              Colors.red, overdue),
+                          _section(s.t('nc_today'), Icons.today, Colors.blue,
+                              todayL),
+                          _section(s.t('nc_upcoming'), Icons.upcoming,
+                              Colors.teal, upcoming),
+                        ],
+                      ),
           ),
         ],
       ),
+    );
+  }
+
+  /// تبويب «السجل»: كل تنبيه فات وقته (لكل الأنواع)، مجمّعًا بالأيام، مع حذف.
+  Widget _logView(S s) {
+    if (_logLoading && _log == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final log = _log ?? const <ReminderLogEntry>[];
+    if (log.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text(
+            'لا سجلّ بعد.\nعند فوات وقت أي تنبيه يُسجَّل هنا تلقائيًّا.',
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    String two(int n) => n.toString().padLeft(2, '0');
+    String dayKey(DateTime d) => '${d.year}/${two(d.month)}/${two(d.day)}';
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Row(
+            children: [
+              Text('${log.length} تنبيه',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const Spacer(),
+              TextButton.icon(
+                onPressed: _clearLog,
+                icon: const Icon(Icons.delete_sweep_outlined, size: 20),
+                label: const Text('مسح الكل'),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+            itemCount: log.length,
+            itemBuilder: (context, i) {
+              final e = log[i];
+              final showHeader =
+                  i == 0 || dayKey(log[i - 1].at) != dayKey(e.at);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (showHeader)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(4, 12, 4, 4),
+                      child: Text(dayKey(e.at),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary)),
+                    ),
+                  Card(
+                    margin: const EdgeInsets.symmetric(vertical: 3),
+                    child: ListTile(
+                      dense: true,
+                      leading: const Icon(Icons.check_circle,
+                          color: Colors.green),
+                      title: Text(e.title),
+                      subtitle:
+                          Text('${two(e.at.hour)}:${two(e.at.minute)}'),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: s.t('delete'),
+                        onPressed: () => _deleteLogEntry(e),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
