@@ -5,16 +5,22 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData light(Color seed, double fontScale,
-          [String fontFamily = 'Cairo']) =>
-      _build(seed, Brightness.light, fontScale, fontFamily);
+          [String fontFamily = 'Cairo', ColorScheme? dynamicScheme]) =>
+      _build(seed, Brightness.light, fontScale, fontFamily, dynamicScheme);
 
   static ThemeData dark(Color seed, double fontScale,
-          [String fontFamily = 'Cairo']) =>
-      _build(seed, Brightness.dark, fontScale, fontFamily);
+          [String fontFamily = 'Cairo', ColorScheme? dynamicScheme]) =>
+      _build(seed, Brightness.dark, fontScale, fontFamily, dynamicScheme);
 
-  static ThemeData _build(Color seed, Brightness brightness, double fontScale,
-      String fontFamily) {
-    final scheme = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
+  static ThemeData _build(
+      Color seed, Brightness brightness, double fontScale, String fontFamily,
+      [ColorScheme? dynamicScheme]) {
+    // عند تفعيل «ألوان النظام» نستعمل لوحة الجهاز (أندرويد 12+)؛ وإلا نشتقّ من
+    // لون البذرة — مع ضمان مطابقة السطوع (نهاري/ليلي).
+    final scheme =
+        (dynamicScheme != null && dynamicScheme.brightness == brightness)
+            ? dynamicScheme
+            : ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
     final isDark = brightness == Brightness.dark;
 
     final base = ThemeData(
@@ -89,19 +95,29 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
       textTheme: _scaleTextTheme(base.textTheme, fontScale),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
+      // انتقالات سلسة موحّدة بين الشاشات (تلاشٍ + انزلاق خفيف من الأسفل) على كل
+      // المنصّات بدل القفزة الافتراضية.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: _SharedAxisLikeTransitionBuilder(),
+          TargetPlatform.iOS: _SharedAxisLikeTransitionBuilder(),
+        },
+      ),
     );
   }
 
   static TextTheme _scaleTextTheme(TextTheme t, double s) {
-    TextStyle? sc(TextStyle? style) =>
-        style == null ? null : style.copyWith(fontSize: (style.fontSize ?? 14) * s);
+    TextStyle? sc(TextStyle? style) => style == null
+        ? null
+        : style.copyWith(fontSize: (style.fontSize ?? 14) * s);
     return t.copyWith(
       displayLarge: sc(t.displayLarge),
       displayMedium: sc(t.displayMedium),
@@ -118,6 +134,37 @@ class AppTheme {
       labelLarge: sc(t.labelLarge),
       labelMedium: sc(t.labelMedium),
       labelSmall: sc(t.labelSmall),
+    );
+  }
+}
+
+/// انتقال صفحات هادئ: تلاشٍ مع انزلاق رأسيّ خفيف للصفحة الداخلة (مستوحى من
+/// Material shared-axis) — أنعم من القفزة الافتراضية ودون مكتبة خارجية.
+class _SharedAxisLikeTransitionBuilder extends PageTransitionsBuilder {
+  const _SharedAxisLikeTransitionBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.035),
+          end: Offset.zero,
+        ).animate(curved),
+        child: child,
+      ),
     );
   }
 }

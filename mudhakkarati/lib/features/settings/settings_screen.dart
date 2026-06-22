@@ -258,6 +258,15 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
 
+        // ألوان النظام (Dynamic Color) — أندرويد 12+
+        SwitchListTile(
+          secondary: const Icon(Icons.palette_outlined),
+          title: Text(s.t('dynamic_color')),
+          subtitle: Text(s.t('dynamic_color_desc')),
+          value: st.dynamicColor,
+          onChanged: st.setDynamicColor,
+        ),
+
         // حجم الخط (واجهة التطبيق)
         ListTile(
           leading: const Icon(Icons.format_size),

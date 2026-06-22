@@ -74,6 +74,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Encrypted & safe', 'On-device encrypted data + auto backup'),
       HgItem(Icons.cloud_done, 'Secure sync', 'Authenticated & resilient (never deletes data)'),
       HgItem(Icons.dashboard_outlined, 'Streamlined navigation', 'Header: quick actions • ⋮: quick services • ☰: settings & management'),
+      HgItem(Icons.palette_outlined, 'System colors', 'Theme from your wallpaper (Android 12+) — in Settings'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'More', [
       HgItem(Icons.format_textdirection_r_to_l, 'Per-line direction', 'Arabic right, English left'),
@@ -132,6 +133,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'تخزين مشفّر آمن', 'بياناتك محليّة مشفّرة + نسخ تلقائي'),
       HgItem(Icons.cloud_done, 'مزامنة مؤمّنة', 'مشفّرة ومتينة (لا تحذف بياناتك)'),
       HgItem(Icons.dashboard_outlined, 'تنظيم الواجهة', 'الهيدر إجراءات سريعة • ⋮ خدمات سريعة • ☰ الإعدادات والإدارة'),
+      HgItem(Icons.palette_outlined, 'ألوان النظام', 'سمة مشتقّة من خلفية جهازك (أندرويد 12+) — من الإعدادات'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'المزيد', [
       HgItem(Icons.format_textdirection_r_to_l, 'اتجاه لكل سطر', 'العربي يمين والإنجليزي يسار'),
@@ -190,6 +192,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Cifrado y seguro', 'Datos cifrados en el dispositivo + copia automática'),
       HgItem(Icons.cloud_done, 'Sync segura', 'Autenticada y resistente (nunca borra datos)'),
       HgItem(Icons.dashboard_outlined, 'Navegación organizada', 'Cabecera: acciones rápidas • ⋮: servicios rápidos • ☰: ajustes y gestión'),
+      HgItem(Icons.palette_outlined, 'Colores del sistema', 'Tema desde tu fondo (Android 12+) — en Ajustes'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Más', [
       HgItem(Icons.format_textdirection_r_to_l, 'Dirección por línea', 'Árabe a la derecha, inglés a la izquierda'),
@@ -248,6 +251,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Verschlüsselt & sicher', 'Daten verschlüsselt auf dem Gerät + Auto-Backup'),
       HgItem(Icons.cloud_done, 'Sichere Sync', 'Authentifiziert & robust (löscht nie Daten)'),
       HgItem(Icons.dashboard_outlined, 'Aufgeräumte Navigation', 'Kopf: Schnellaktionen • ⋮: Schnellzugriff • ☰: Einstellungen & Verwaltung'),
+      HgItem(Icons.palette_outlined, 'Systemfarben', 'Theme vom Hintergrundbild (Android 12+) — in Einstellungen'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Mehr', [
       HgItem(Icons.format_textdirection_r_to_l, 'Richtung pro Zeile', 'Arabisch rechts, Englisch links'),
@@ -306,6 +310,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Naka-encrypt at ligtas', 'Naka-encrypt sa device + auto backup'),
       HgItem(Icons.cloud_done, 'Ligtas na sync', 'May pagpapatunay at matatag (di nagbubura)'),
       HgItem(Icons.dashboard_outlined, 'Maayos na navigation', 'Header: mabilis na aksyon • ⋮: mabilis na serbisyo • ☰: setting at pamamahala'),
+      HgItem(Icons.palette_outlined, 'Mga kulay ng system', 'Tema mula sa wallpaper (Android 12+) — sa Settings'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Iba pa', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direksyon kada linya', 'Arabe kanan, Ingles kaliwa'),
@@ -364,6 +369,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Chiffré et sûr', 'Données chiffrées sur l’appareil + sauvegarde auto'),
       HgItem(Icons.cloud_done, 'Sync sécurisée', 'Authentifiée et robuste (ne supprime jamais)'),
       HgItem(Icons.dashboard_outlined, 'Navigation organisée', 'En-tête : actions rapides • ⋮ : services rapides • ☰ : réglages et gestion'),
+      HgItem(Icons.palette_outlined, 'Couleurs du système', 'Thème depuis le fond d’écran (Android 12+) — dans Réglages'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Plus', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direction par ligne', 'Arabe à droite, anglais à gauche'),
@@ -422,6 +428,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Terenkripsi & aman', 'Data terenkripsi di perangkat + cadangan otomatis'),
       HgItem(Icons.cloud_done, 'Sinkron aman', 'Terautentikasi & tangguh (tidak menghapus data)'),
       HgItem(Icons.dashboard_outlined, 'Navigasi tertata', 'Header: aksi cepat • ⋮: layanan cepat • ☰: pengaturan & pengelolaan'),
+      HgItem(Icons.palette_outlined, 'Warna sistem', 'Tema dari wallpaper (Android 12+) — di Pengaturan'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lainnya', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah per baris', 'Arab kanan, Inggris kiri'),
@@ -480,6 +487,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Cifrato e sicuro', 'Dati cifrati sul dispositivo + backup automatico'),
       HgItem(Icons.cloud_done, 'Sync sicura', 'Autenticata e robusta (non cancella mai i dati)'),
       HgItem(Icons.dashboard_outlined, 'Navigazione ordinata', 'Intestazione: azioni rapide • ⋮: servizi rapidi • ☰: impostazioni e gestione'),
+      HgItem(Icons.palette_outlined, 'Colori di sistema', 'Tema dallo sfondo (Android 12+) — nelle Impostazioni'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Altro', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direzione per riga', 'Arabo a destra, inglese a sinistra'),
@@ -538,6 +546,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Tersulit & selamat', 'Data tersulit dalam peranti + sandaran auto'),
       HgItem(Icons.cloud_done, 'Segerak selamat', 'Disahkan & teguh (tidak memadam data)'),
       HgItem(Icons.dashboard_outlined, 'Navigasi tersusun', 'Pengepala: tindakan pantas • ⋮: perkhidmatan pantas • ☰: tetapan & pengurusan'),
+      HgItem(Icons.palette_outlined, 'Warna sistem', 'Tema dari kertas dinding (Android 12+) — dalam Tetapan'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lagi', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah setiap baris', 'Arab kanan, Inggeris kiri'),
@@ -596,6 +605,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'एन्क्रिप्टेड व सुरक्षित', 'डिवाइस पर एन्क्रिप्टेड डेटा + ऑटो बैकअप'),
       HgItem(Icons.cloud_done, 'सुरक्षित सिंक', 'प्रमाणित व मज़बूत (डेटा नहीं मिटाता)'),
       HgItem(Icons.dashboard_outlined, 'व्यवस्थित नेविगेशन', 'हेडर: त्वरित क्रियाएँ • ⋮: त्वरित सेवाएँ • ☰: सेटिंग्स और प्रबंधन'),
+      HgItem(Icons.palette_outlined, 'सिस्टम रंग', 'वॉलपेपर से थीम (Android 12+) — सेटिंग्स में'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'अधिक', [
       HgItem(Icons.format_textdirection_r_to_l, 'हर लाइन की दिशा', 'अरबी दाएँ, अंग्रेज़ी बाएँ'),
@@ -654,6 +664,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'এনক্রিপ্টেড ও নিরাপদ', 'ডিভাইসে এনক্রিপ্টেড ডেটা + অটো ব্যাকআপ'),
       HgItem(Icons.cloud_done, 'নিরাপদ সিঙ্ক', 'প্রমাণিত ও দৃঢ় (ডেটা মোছে না)'),
       HgItem(Icons.dashboard_outlined, 'সাজানো নেভিগেশন', 'হেডার: দ্রুত অ্যাকশন • ⋮: দ্রুত সেবা • ☰: সেটিংস ও ব্যবস্থাপনা'),
+      HgItem(Icons.palette_outlined, 'সিস্টেম রং', 'ওয়ালপেপার থেকে থিম (Android 12+) — সেটিংসে'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'আরও', [
       HgItem(Icons.format_textdirection_r_to_l, 'প্রতি লাইনে দিক', 'আরবি ডানে, ইংরেজি বামে'),
@@ -712,6 +723,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'رمزنگاری‌شده و امن', 'داده‌های رمزنگاری‌شده روی دستگاه + پشتیبان خودکار'),
       HgItem(Icons.cloud_done, 'همگام‌سازی امن', 'احرازشده و مقاوم (داده‌ها را حذف نمی‌کند)'),
       HgItem(Icons.dashboard_outlined, 'ناوبری منظم', 'سربرگ: کارهای سریع • ⋮: خدمات سریع • ☰: تنظیمات و مدیریت'),
+      HgItem(Icons.palette_outlined, 'رنگ‌های سیستم', 'تم از تصویر زمینه (اندروید ۱۲+) — در تنظیمات'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'بیشتر', [
       HgItem(Icons.format_textdirection_r_to_l, 'جهت هر خط', 'عربی راست، انگلیسی چپ'),
@@ -770,6 +782,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.lock, 'Шифрование и защита', 'Данные зашифрованы на устройстве + авто-резерв'),
       HgItem(Icons.cloud_done, 'Безопасная синхронизация', 'С проверкой и устойчивая (не удаляет данные)'),
       HgItem(Icons.dashboard_outlined, 'Упорядоченная навигация', 'Шапка: быстрые действия • ⋮: быстрые сервисы • ☰: настройки и управление'),
+      HgItem(Icons.palette_outlined, 'Системные цвета', 'Тема из обоев (Android 12+) — в настройках'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Ещё', [
       HgItem(Icons.format_textdirection_r_to_l, 'Направление по строке', 'Арабский справа, английский слева'),
