@@ -14,6 +14,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
 import '../data/database/db_key.dart';
+import '../data/models/note.dart';
+import '../data/repositories/category_repository.dart';
+import '../data/repositories/note_repository.dart';
 import 'encryption_service.dart';
 import 'file_service.dart';
 
@@ -363,6 +366,110 @@ class BackupService {
       );
     } catch (e) {
       return BackupResult(false, 'فشل التصدير: $e');
+    }
+  }
+
+  /// تصدير الملاحظات (مع التصنيفات والوسوم) إلى ملفّ **JSON** مقروء وقابل للنقل
+  /// — غير مشفّر، لمشاركته أو الاحتفاظ به أو نقله لتطبيق آخر. لا يشمل المرفقات.
+  Future<BackupResult> exportNotesJson() async {
+    try {
+      final repo = NoteRepository(AppDatabase.instance);
+      final catRepo = CategoryRepository(AppDatabase.instance);
+      final notes =
+          (await repo.getEverything()).where((n) => !n.isDeleted).toList();
+      final cats = await catRepo.getAll();
+      final data = <String, dynamic>{
+        'app': 'AlaoufiNotes',
+        'type': 'notes-json',
+        'version': 1,
+        'exportedAt': DateTime.now().toIso8601String(),
+        'categories': cats.map((c) => c.toMap()).toList(),
+        'notes': notes.map((n) {
+          final m = Map<String, dynamic>.from(n.toMap());
+          m['tags'] = n.tags;
+          return m;
+        }).toList(),
+      };
+      final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
+      final bytes = Uint8List.fromList(utf8.encode(jsonStr));
+      final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
+      final fileName = 'AlaoufiNotes_$stamp.json';
+      final saved = await FilePicker.platform.saveFile(
+        dialogTitle: 'حفظ ملف JSON',
+        fileName: fileName,
+        bytes: bytes,
+      );
+      if (saved == null) {
+        // المستخدم ألغى الحفظ (على بعض الأجهزة يُكتفى بالبايتات أعلاه).
+        final tmp = p.join((await getTemporaryDirectory()).path, fileName);
+        await File(tmp).writeAsBytes(bytes, flush: true);
+        return BackupResult(true, 'تم التصدير (${notes.length})', filePath: tmp);
+      }
+      return BackupResult(true, 'تم تصدير ${notes.length} ملاحظة',
+          filePath: saved);
+    } catch (e) {
+      return BackupResult(false, 'فشل التصدير: $e');
+    }
+  }
+
+  /// استيراد ملاحظات من ملفّ JSON (يدمج بلا حذف): يتخطّى المكرّر حسب المعرّف
+  /// الفريد uuid، ويعيد ربط التصنيفات بالاسم. يعيد عدد الملاحظات المضافة.
+  Future<BackupResult> importNotesJson() async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        dialogTitle: 'اختر ملف JSON',
+        type: FileType.any,
+      );
+      final path = picked?.files.single.path;
+      if (path == null) return const BackupResult(false, 'لم يتم اختيار ملف');
+
+      final raw = await File(path).readAsString();
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map || decoded['notes'] is! List) {
+        return const BackupResult(false, 'الملف ليس بصيغة JSON صحيحة');
+      }
+
+      final repo = NoteRepository(AppDatabase.instance);
+      final catRepo = CategoryRepository(AppDatabase.instance);
+
+      // إعادة ربط التصنيفات بالاسم (معرّف قديم ⇒ معرّف جديد).
+      final catMap = <int, int>{};
+      for (final c in (decoded['categories'] as List? ?? const [])) {
+        if (c is! Map) continue;
+        final oldId = c['id'] as int?;
+        final name = (c['name'] as String?)?.trim();
+        if (name == null || name.isEmpty) continue;
+        final newId = await catRepo.ensureByName(name,
+            color: c['color'] as int? ?? 0xFF9E9E9E,
+            iconCode: c['icon_code'] as int? ?? 0xe148);
+        if (oldId != null) catMap[oldId] = newId;
+      }
+
+      // المعرّفات الفريدة الموجودة (لتفادي التكرار).
+      final existing = (await repo.getEverything())
+          .map((n) => n.uuid)
+          .where((u) => u.isNotEmpty)
+          .toSet();
+
+      var added = 0;
+      for (final raw in (decoded['notes'] as List)) {
+        if (raw is! Map) continue;
+        final m = Map<String, dynamic>.from(raw);
+        final uuid = m['uuid'] as String?;
+        if (uuid != null && uuid.isNotEmpty && existing.contains(uuid)) {
+          continue; // مكرّرة ⇒ تخطٍّ.
+        }
+        m.remove('id');
+        final oldCat = m['category_id'] as int?;
+        m['category_id'] = oldCat == null ? null : catMap[oldCat];
+        final tags = (m.remove('tags') as List?)?.cast<String>() ?? const [];
+        await repo.insertNote(Note.fromMap(m, tags: tags));
+        if (uuid != null) existing.add(uuid);
+        added++;
+      }
+      return BackupResult(true, 'تم استيراد $added ملاحظة');
+    } catch (e) {
+      return BackupResult(false, 'فشل الاستيراد: $e');
     }
   }
 

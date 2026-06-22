@@ -229,6 +229,25 @@ class _BackupScreenState extends State<BackupScreen> {
     _toast(result.message);
   }
 
+  Future<void> _exportJson() async {
+    setState(() => _busy = true);
+    final result = await BackupService.instance.exportNotesJson();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    _toast(result.message);
+  }
+
+  Future<void> _importJson() async {
+    setState(() => _busy = true);
+    final result = await BackupService.instance.importNotesJson();
+    if (!mounted) return;
+    setState(() => _busy = false);
+    _toast(result.message);
+    if (result.success) {
+      await context.read<NotesProvider>().init();
+    }
+  }
+
   Future<void> _import() async {
     final s = S.of(context);
 
@@ -523,6 +542,31 @@ class _BackupScreenState extends State<BackupScreen> {
                   subtitle: const Text(
                       'اختر ملف النسخة الاحتياطية (.backup) من تطبيق Easy Notes لنقل ملاحظاتك.'),
                   onTap: _busy ? null : _importEasyNotes,
+                ),
+              ),
+              const SizedBox(height: 16),
+              // تصدير/استيراد JSON (نصّ مقروء قابل للنقل، غير مشفّر، بلا مرفقات).
+              Text('JSON',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.data_object),
+                  title: Text(s.t('export_json')),
+                  subtitle: Text(s.t('export_json_desc')),
+                  onTap: _busy ? null : _exportJson,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.file_open_outlined),
+                  title: Text(s.t('import_json')),
+                  subtitle: Text(s.t('import_json_desc')),
+                  onTap: _busy ? null : _importJson,
                 ),
               ),
               const SizedBox(height: 16),
