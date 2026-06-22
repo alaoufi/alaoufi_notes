@@ -87,6 +87,67 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   /// بطاقة تعرض تاريخ ووقت آخر العمليات (محلي/مشاركة/Drive/استعادة).
+  /// لافتة «حالة الحماية»: تحسب أحدث نسخة (محلي/سحابي/تلقائي) وتُظهر مؤشّرًا
+  /// ملوّنًا واضحًا — أهمّ ما يفيد المستخدم: هل بياناته محميّة؟
+  Widget _protectionBanner(BuildContext context, List<DateTime?> dates) {
+    final s = S.of(context);
+    final live = dates.whereType<DateTime>().toList();
+    final fresh = live.isEmpty
+        ? null
+        : live.reduce((a, b) => a.isAfter(b) ? a : b);
+    final ageDays =
+        fresh == null ? null : DateTime.now().difference(fresh).inDays;
+    late final Color c;
+    late final IconData ic;
+    late final String msg;
+    if (fresh == null) {
+      c = Colors.red;
+      ic = Icons.gpp_bad_outlined;
+      msg = s.t('not_protected');
+    } else if (ageDays! < 7) {
+      c = Colors.green;
+      ic = Icons.verified_user_outlined;
+      msg = s.t('protected');
+    } else if (ageDays < 30) {
+      c = Colors.orange;
+      ic = Icons.gpp_maybe_outlined;
+      msg = s.t('backup_recommended');
+    } else {
+      c = Colors.red;
+      ic = Icons.gpp_bad_outlined;
+      msg = s.t('backup_recommended');
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: c.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.withOpacity(0.4)),
+      ),
+      child: Row(
+        children: [
+          Icon(ic, color: c, size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(msg,
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, color: c)),
+                if (fresh != null)
+                  Text(
+                    '${s.t('last_backup')}: ${DateFormat('yyyy/MM/dd HH:mm').format(fresh)}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _statusCard(BuildContext context) {
     final bs = BackupService.instance;
     String fmt(DateTime? d) =>
@@ -130,6 +191,8 @@ class _BackupScreenState extends State<BackupScreen> {
                     );
                 return Column(
                   children: [
+                    _protectionBanner(context, [d[0], d[1], d[3]]),
+                    const SizedBox(height: 8),
                     row(Icons.save_alt, 'حفظ محلي', d[0]),
                     row(Icons.ios_share, 'مشاركة سحابية', d[1]),
                     row(Icons.autorenew, 'نسخة تلقائية', d[3]),
@@ -229,6 +292,32 @@ class _BackupScreenState extends State<BackupScreen> {
     _toast(result.message);
   }
 
+  /// بعد أي استعادة ناجحة: إشعار يتيح **التراجع** فورًا (يرجع لقطة ما-قبل-الاستعادة).
+  void _showRestoreUndo() {
+    final s = S.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: const Duration(seconds: 8),
+      content: Text(s.t('restore_done')),
+      action: SnackBarAction(
+        label: s.t('undo_restore'),
+        onPressed: () async {
+          setState(() => _busy = true);
+          final r = await BackupService.instance.undoLastRestore();
+          if (!mounted) return;
+          setState(() => _busy = false);
+          _toast(r.message);
+          if (r.success) {
+            await context.read<NotesProvider>().init();
+            await context.read<RemindersProvider>().refresh();
+            if (mounted) {
+              await context.read<RemindersProvider>().ensureScheduled();
+            }
+          }
+        },
+      ),
+    ));
+  }
+
   Future<void> _exportJson() async {
     setState(() => _busy = true);
     final result = await BackupService.instance.exportNotesJson();
@@ -281,6 +370,7 @@ class _BackupScreenState extends State<BackupScreen> {
       await context.read<RemindersProvider>().refresh();
       // أعد جدولة التذكيرات المستعادة فورًا كي تعمل دون انتظار إعادة التشغيل.
       if (mounted) await context.read<RemindersProvider>().ensureScheduled();
+      if (mounted) _showRestoreUndo();
     }
   }
 
@@ -466,6 +556,7 @@ class _BackupScreenState extends State<BackupScreen> {
       await context.read<RemindersProvider>().refresh();
       // أعد جدولة التذكيرات المستعادة فورًا كي تعمل دون انتظار إعادة التشغيل.
       if (mounted) await context.read<RemindersProvider>().ensureScheduled();
+      if (mounted) _showRestoreUndo();
     }
   }
 

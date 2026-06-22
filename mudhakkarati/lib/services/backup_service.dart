@@ -298,9 +298,52 @@ class BackupService {
         return const BackupResult(false, 'لا توجد كلمة مرور للنسخ التلقائي');
       }
       final encrypted = await file.readAsBytes();
+      await _safetySnapshotBeforeRestore();
       return _restoreFromBytes(encrypted, pwd);
     } catch (e) {
       return BackupResult(false, 'فشل الاستعادة: $e');
+    }
+  }
+
+  // ===== شبكة أمان الاستعادة: لقطة تلقائية قبل أي استعادة، مع تراجع بضغطة. =====
+  static const _safetyName = 'pre_restore';
+
+  /// يحفظ الحالة الحالية (قبل الاستعادة) في ملفّ داخليّ مشفّر بمفتاح القاعدة —
+  /// كي يستطيع المستخدم **التراجع** لو استعاد نسخةً خاطئة. لا يُعطّل الاستعادة.
+  Future<void> _safetySnapshotBeforeRestore() async {
+    try {
+      final pwd = await DbKeyManager.instance.getOrCreateKey();
+      final encrypted = await _buildEncrypted(pwd);
+      final dir = await autoBackupDir();
+      final file = File(p.join(dir.path, '$_safetyName.$_ext'));
+      await file.writeAsBytes(encrypted, flush: true);
+    } catch (_) {
+      // لقطة الأمان ليست حرجة؛ لا نمنع الاستعادة إن فشلت.
+    }
+  }
+
+  Future<bool> hasPreRestoreSnapshot() async {
+    try {
+      final dir = await autoBackupDir();
+      return File(p.join(dir.path, '$_safetyName.$_ext')).exists();
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// يتراجع عن آخر استعادة بإرجاع لقطة ما-قبل-الاستعادة (لا يأخذ لقطة جديدة).
+  Future<BackupResult> undoLastRestore() async {
+    try {
+      final dir = await autoBackupDir();
+      final file = File(p.join(dir.path, '$_safetyName.$_ext'));
+      if (!await file.exists()) {
+        return const BackupResult(false, 'لا توجد لقطة قبل الاستعادة');
+      }
+      final pwd = await DbKeyManager.instance.getOrCreateKey();
+      final encrypted = await file.readAsBytes();
+      return _restoreFromBytes(encrypted, pwd);
+    } catch (e) {
+      return BackupResult(false, 'تعذّر التراجع: $e');
     }
   }
 
@@ -541,6 +584,7 @@ class BackupService {
       }
 
       final encrypted = await File(path).readAsBytes();
+      await _safetySnapshotBeforeRestore();
       return _restoreFromBytes(encrypted, password);
     } catch (e) {
       return BackupResult(false, 'فشل الاستيراد: $e');
