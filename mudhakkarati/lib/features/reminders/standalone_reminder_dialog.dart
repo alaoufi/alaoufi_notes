@@ -492,9 +492,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                 time.format(context), pickTime),
                           ]),
                           const SizedBox(height: 14),
-                          // «كل N يوم» للدواء يحجب خيارات التكرار العاديّة.
-                          if (!(kind == ReminderKind.medication &&
-                              intervalDays >= 2)) ...[
+                          // التكرار المخصّص «كل N يوم» يحجب خيارات التكرار العاديّة.
+                          if (intervalDays < 2) ...[
                             label('التكرار'),
                             Wrap(
                               spacing: 8,
@@ -529,6 +528,50 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                 ],
                               ),
                             ],
+                          ],
+                          // تكرار مخصّص «كل N يوم» لكل الأنواع عدا الدواء (له قسمه
+                          // الخاصّ أدناه بفاصل الجرعات ومدّة العلاج).
+                          if (kind != ReminderKind.medication) ...[
+                            const SizedBox(height: 14),
+                            label(s.t('custom_repeat')),
+                            Wrap(spacing: 8, runSpacing: 6, children: [
+                              ChoiceChip(
+                                label: Text(s.t('repeat_off')),
+                                selected: intervalDays < 2,
+                                onSelected: (_) =>
+                                    setState(() => intervalDays = 0),
+                              ),
+                              ChoiceChip(
+                                label: Text(s.t('repeat_every_days')),
+                                selected: intervalDays >= 2,
+                                onSelected: (_) => setState(() => intervalDays =
+                                    intervalDays >= 2 ? intervalDays : 2),
+                              ),
+                            ]),
+                            if (intervalDays >= 2)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 6),
+                                child: Row(children: [
+                                  Text(s.t('every')),
+                                  IconButton(
+                                    icon: const Icon(
+                                        Icons.remove_circle_outline),
+                                    onPressed: intervalDays > 2
+                                        ? () => setState(() => intervalDays--)
+                                        : null,
+                                  ),
+                                  Text('$intervalDays ${s.t('day_unit')}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15)),
+                                  IconButton(
+                                    icon: const Icon(Icons.add_circle_outline),
+                                    onPressed: intervalDays < 365
+                                        ? () => setState(() => intervalDays++)
+                                        : null,
+                                  ),
+                                ]),
+                              ),
                           ],
                           // خيارات خاصّة بالدواء: فاصل الجرعات + مدّة العلاج.
                           if (kind == ReminderKind.medication) ...[
@@ -815,21 +858,24 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             onPressed: () async {
                               final finalTitle = composeTitle();
                               final isMed = kind == ReminderKind.medication;
-                              final medInterval = isMed && intervalDays >= 2;
-                              // كورس دواء (فاصل/عدد) يمرّ دومًا عبر setStandalone.
-                              final isMedCourse =
-                                  isMed && (intervalDays >= 2 || doseCount > 0);
+                              // تكرار مخصّص «كل N يوم» متاح لكل الأنواع (لا الدواء
+                              // فقط)؛ يُجدوَل عبر آليّة المواعيد المتكرّرة نفسها.
+                              final hasInterval = intervalDays >= 2;
+                              // كورس (فاصل مخصّص أو عدد جرعات) يمرّ دومًا عبر
+                              // setStandalone لا التكرار الأسبوعيّ.
+                              final isCourse =
+                                  hasInterval || (isMed && doseCount > 0);
                               try {
                                 if (repeat == ReminderRepeat.weekly &&
                                     weekdays.isNotEmpty &&
-                                    !isMedCourse) {
+                                    !isCourse) {
                                   await provider.setStandaloneWeekly(
                                       finalTitle, time, weekdays,
                                       existing: existing);
                                 } else {
                                   await provider.setStandalone(
                                       combined(),
-                                      medInterval
+                                      hasInterval
                                           ? ReminderRepeat.daily
                                           : repeat,
                                       finalTitle,
@@ -837,7 +883,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                       preAlerts: preAlerts.toList()..sort(),
                                       location: mapLinkCtrl.text.trim(),
                                       attachmentPath: attachmentPath,
-                                      intervalDays: isMed ? intervalDays : 0,
+                                      intervalDays: hasInterval ? intervalDays : 0,
                                       doseCount: isMed ? doseCount : 0,
                                       existing: existing);
                                 }
