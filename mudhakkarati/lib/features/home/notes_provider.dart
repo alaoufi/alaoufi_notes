@@ -77,8 +77,22 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await ensureInbox();
-    await Future.wait([loadCategories(), refresh()]);
+    await Future.wait([loadCategories(), refresh(), _loadTagColors()]);
     await notes.purgeOldTrash();
+  }
+
+  /// ألوان الوسوم التي اختارها المستخدم (الاسم ⇒ لون). الوسوم بلا لون مختار
+  /// (0) تُحسب تلقائيًّا من اسمها، فلا نخزّنها هنا.
+  Map<String, int> _tagColors = {};
+  Map<String, int> get tagColors => _tagColors;
+
+  Future<void> _loadTagColors() async {
+    final list = await notes.getAllTagsWithColors();
+    _tagColors = {
+      for (final t in list)
+        if (t.color != 0) t.name: t.color,
+    };
+    notifyListeners();
   }
 
   /// يضمن وجود تصنيف «الوارد» (يظهر أولًا) ويحفظ معرّفه.
@@ -325,6 +339,7 @@ class NotesProvider extends ChangeNotifier {
 
   Future<void> setTagColor(String name, int color) async {
     await notes.setTagColor(name, color);
+    await _loadTagColors();
     await refresh();
   }
 }

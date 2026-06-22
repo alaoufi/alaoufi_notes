@@ -12,6 +12,7 @@ import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../data/models/password_entry.dart';
 import '../features/editor/rich_text_field.dart';
+import '../features/home/notes_provider.dart';
 
 /// بطاقة عرض ملاحظة في الصفحة الرئيسية.
 class NoteCard extends StatelessWidget {
@@ -99,8 +100,10 @@ class NoteCard extends StatelessWidget {
                 _lockedBody(context, onBg)
               else if (context.watch<SettingsProvider>().privacyMode)
                 _hiddenBody(context, onBg)
-              else
+              else ...[
                 _body(context, onBg),
+                _tagChips(context, onBg),
+              ],
               _footer(onBg),
             ],
           ),
@@ -328,6 +331,62 @@ class NoteCard extends StatelessWidget {
       case NoteType.text:
         return _text(context, onBg);
     }
+  }
+
+  /// شرائح الوسوم الملوّنة على البطاقة (حتى 3 + «N+») — تُظهر التنظيم بنظرة.
+  Widget _tagChips(BuildContext context, Color onBg) {
+    if (note.tags.isEmpty) return const SizedBox.shrink();
+    final colors = context.watch<NotesProvider>().tagColors;
+    Color colorOf(String t) {
+      final c = colors[t];
+      if (c != null) return Color(c);
+      final hue = (t.hashCode % 360).abs().toDouble();
+      return HSLColor.fromAHSL(1, hue, 0.5, 0.55).toColor();
+    }
+
+    final shown = note.tags.take(3).toList();
+    final extra = note.tags.length - shown.length;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 6,
+        children: [
+          for (final t in shown)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: colorOf(t).withOpacity(0.16),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: colorOf(t).withOpacity(0.5)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                        color: colorOf(t), shape: BoxShape.circle),
+                  ),
+                  const SizedBox(width: 5),
+                  Text(t,
+                      style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: onBg.withOpacity(0.85))),
+                ],
+              ),
+            ),
+          if (extra > 0)
+            Text('+$extra',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: onBg.withOpacity(0.6))),
+        ],
+      ),
+    );
   }
 
   /// شريط تقدّم مدمج لقائمة المهام على البطاقة (المنجَز/الإجمالي).
