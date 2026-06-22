@@ -255,17 +255,23 @@ class NoteCard extends StatelessWidget {
         );
       case NoteType.checklist:
         final noteFont = context.watch<SettingsProvider>().noteFontFamily;
-        final lines = note.content
+        final allLines = note.content
             .split('\n')
             .where((l) => l.trim().isNotEmpty)
-            .take(4)
             .toList();
+        final tasks =
+            allLines.where((l) => RegExp(r'^\[[ x]\]').hasMatch(l)).toList();
+        final total = tasks.length;
+        final doneCount = tasks.where((l) => l.startsWith('[x]')).length;
+        final lines = allLines.take(4).toList();
         if (lines.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.only(top: 8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: lines.map((l) {
+            children: [
+              if (total > 0) _checklistBar(context, onBg, doneCount, total),
+              ...lines.map((l) {
               // سطر مهمة يبدأ بـ [x]/[ ]، وإلا فهو نصّ عادي بلا مربع.
               final isTask = RegExp(r'^\[[ x]\]\s?').hasMatch(l);
               final done = l.startsWith('[x]');
@@ -295,7 +301,8 @@ class NoteCard extends StatelessWidget {
                   ),
                 ]),
               );
-            }).toList(),
+            }),
+            ],
           ),
         );
       case NoteType.password:
@@ -321,6 +328,43 @@ class NoteCard extends StatelessWidget {
       case NoteType.text:
         return _text(context, onBg);
     }
+  }
+
+  /// شريط تقدّم مدمج لقائمة المهام على البطاقة (المنجَز/الإجمالي).
+  Widget _checklistBar(BuildContext context, Color onBg, int done, int total) {
+    final ratio = total == 0 ? 0.0 : done / total;
+    final complete = done == total;
+    final color = complete ? Colors.green : onBg;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(complete ? Icons.check_circle : Icons.checklist,
+                  size: 13, color: color.withOpacity(0.8)),
+              const SizedBox(width: 4),
+              Text('$done/$total',
+                  style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: color.withOpacity(0.8))),
+            ],
+          ),
+          const SizedBox(height: 3),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 4,
+              backgroundColor: onBg.withOpacity(0.15),
+              color: complete ? Colors.green : onBg.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _text(BuildContext context, Color onBg) {

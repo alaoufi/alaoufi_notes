@@ -762,6 +762,47 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
+  /// شريط تقدّم قائمة المهام: نسبة المنجَز + «منجَز/الإجمالي» (يتلوّن أخضرَ عند
+  /// اكتمال كل المهام).
+  Widget _checklistProgress(S s, int done, int total) {
+    final ratio = total == 0 ? 0.0 : done / total;
+    final complete = done == total;
+    final scheme = Theme.of(context).colorScheme;
+    final color = complete ? Colors.green : scheme.primary;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(complete ? Icons.check_circle : Icons.checklist,
+                  size: 18, color: color),
+              const SizedBox(width: 6),
+              Text('${s.t('checklist_progress')}: $done/$total',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: color, fontSize: 13)),
+              const Spacer(),
+              Text('${(ratio * 100).round()}%',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: color, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: ratio,
+              minHeight: 7,
+              backgroundColor: scheme.surfaceContainerHighest,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _checklistBody(S s) {
     // نمط الكتابة من إعدادات الصفحة الافتراضية (الخط/الحجم/التباعد/اللون).
     final settings = context.read<SettingsProvider>();
@@ -771,7 +812,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       height: settings.noteLineHeight,
       color: _fgColor,
     );
+    final total = _checklist.where((c) => c.isTask).length;
+    final done = _checklist.where((c) => c.isTask && c.isDone).length;
     return [
+      if (total > 0) _checklistProgress(s, done, total),
       for (var i = 0; i < _checklist.length; i++)
         ChecklistTile(
           key: ValueKey('item_${_itemCtrls[i].hashCode}'),
