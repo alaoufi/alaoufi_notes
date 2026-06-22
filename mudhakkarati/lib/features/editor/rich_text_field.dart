@@ -367,7 +367,6 @@ class _RichTextEditorBodyState extends State<RichTextEditorBody> {
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
-    final hide = settings.hideSelectionMenu;
     final expand = widget.expand;
     final controller = widget.controller;
     final lineHeight = widget.lineHeight;
@@ -396,12 +395,16 @@ class _RichTextEditorBodyState extends State<RichTextEditorBody> {
         quillMagnifierBuilder: defaultQuillMagnifierBuilder,
         placeholder: 'اكتب ملاحظتك هنا...',
         // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
-        // التبديل المباشر). عند الإخفاء نعيد عنصرًا فارغًا فلا تظهر القائمة،
-        // وعند الإظهار نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
-        contextMenuBuilder: (context, state) {
-          if (hide) return const SizedBox.shrink();
-          final top = MediaQuery.of(context).padding.top + kToolbarHeight + 8;
-          final anchor = Offset(MediaQuery.of(context).size.width / 2, top);
+        // التبديل المباشر). نقرأ الإعداد **لحظة ظهور القائمة** لا وقت البناء، كي
+        // يَنفُذ الإخفاء فورًا ولا تظهر القائمة ثانيةً عند تحديد جديد. عند الإظهار
+        // نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
+        contextMenuBuilder: (menuContext, state) {
+          final hideNow = context.read<SettingsProvider>().hideSelectionMenu;
+          if (hideNow) return const SizedBox.shrink();
+          final top =
+              MediaQuery.of(menuContext).padding.top + kToolbarHeight + 8;
+          final anchor =
+              Offset(MediaQuery.of(menuContext).size.width / 2, top);
           return TextFieldTapRegion(
             child: AdaptiveTextSelectionToolbar.buttonItems(
               anchors: TextSelectionToolbarAnchors(primaryAnchor: anchor),
