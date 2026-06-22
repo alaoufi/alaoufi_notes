@@ -9,7 +9,9 @@ import '../../data/models/enums.dart';
 import '../../services/ringtone_picker.dart';
 import '../../services/tone_preview.dart';
 import '../../widgets/color_picker_sheet.dart';
+import '../../widgets/confirm_dialog.dart';
 import '../../widgets/paper_background.dart';
+import '../home/notes_provider.dart';
 import '../backup/backup_screen.dart';
 import '../backup/daily_backup_switch.dart';
 import '../categories/manage_categories_screen.dart';
@@ -366,6 +368,44 @@ class SettingsScreen extends StatelessWidget {
             if (res.ruleLineHeight != null) {
               await st.setNoteLineHeight(res.ruleLineHeight!);
             }
+          }
+        },
+      ),
+
+      // تعميم الخلفية على كل الملاحظات الحالية
+      ListTile(
+        leading: const Icon(Icons.format_paint_outlined),
+        title: const Text('تطبيق الخلفية على كل الملاحظات'),
+        subtitle: const Text('يغيّر لون/خلفية كل ملاحظاتك الحالية دفعةً واحدة'),
+        onTap: () async {
+          final res = await showColorPicker(context, st.defaultNoteColor,
+              currentStyle: st.defaultBgStyle,
+              currentGradient: st.defaultGradient,
+              currentOnLine: st.ruleOnLine,
+              currentThickness: st.ruleThickness,
+              currentOpacity: st.ruleOpacity,
+              currentLineHeight: st.noteLineHeight);
+          if (res == null || !context.mounted) return;
+          if (!await confirmAction(context,
+              title: 'تطبيق على كل الملاحظات؟',
+              message:
+                  'ستأخذ كل ملاحظاتك الحالية هذه الخلفية. يمكنك تغيير أي ملاحظة لاحقًا.',
+              confirmLabel: 'تطبيق',
+              icon: Icons.format_paint_outlined,
+              destructive: false)) {
+            return;
+          }
+          final notesProvider = context.read<NotesProvider>();
+          final n = await notesProvider.notes.applyBackgroundToAll(
+            color: res.value,
+            bgStyle: res.bgStyle ?? st.defaultBgStyle,
+            gradient: res.gradient,
+          );
+          await notesProvider.refresh();
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('طُبّقت الخلفية على $n ملاحظة')),
+            );
           }
         },
       ),

@@ -214,6 +214,22 @@ class NoteRepository {
     return note.id!;
   }
 
+  /// يطبّق الخلفية نفسها (لون + نمط الصفحة + تدرّج) على **كل الملاحظات** غير
+  /// المحذوفة دفعةً واحدة. يعيد عدد الملاحظات المُحدَّثة. لا يغيّر updated_at كي لا
+  /// يُعيد ترتيب القائمة (تغيير شكليّ).
+  Future<int> applyBackgroundToAll({
+    int? color,
+    required int bgStyle,
+    String? gradient,
+  }) async {
+    final db = await _db;
+    return db.update(
+      'notes',
+      {'color': color, 'bg_style': bgStyle, 'gradient': gradient},
+      where: 'is_deleted = 0',
+    );
+  }
+
   Future<void> togglePin(Note note) async {
     final db = await _db;
     await db.update(
