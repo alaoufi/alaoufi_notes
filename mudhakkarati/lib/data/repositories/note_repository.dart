@@ -402,6 +402,25 @@ class NoteRepository {
     return rows.map((e) => e['name'] as String).toList();
   }
 
+  /// كل الوسوم مع ألوانها المختارة (0 = اشتقاق تلقائيّ من الاسم).
+  Future<List<({String name, int color})>> getAllTagsWithColors() async {
+    final db = await _db;
+    final rows = await db.query('tags', orderBy: 'name ASC');
+    return rows
+        .map((e) => (
+              name: e['name'] as String,
+              color: (e['color'] as int?) ?? 0,
+            ))
+        .toList();
+  }
+
+  /// يضبط لون وسم (بالاسم). 0 يعيده إلى اللون التلقائيّ.
+  Future<void> setTagColor(String name, int color) async {
+    final db = await _db;
+    await db.update('tags', {'color': color},
+        where: 'name = ?', whereArgs: [name]);
+  }
+
   Future<void> _saveTags(Database db, int noteId, List<String> tags) async {
     await db.delete('note_tags', where: 'note_id = ?', whereArgs: [noteId]);
     for (final raw in tags) {

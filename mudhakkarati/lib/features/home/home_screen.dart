@@ -454,27 +454,63 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: _empty(context, s, provider),
                 )
               else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  sliver: SliverMasonryGrid.count(
-                    crossAxisCount: settings.layout == NoteLayout.grid ? 2 : 1,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childCount: provider.items.length,
-                    itemBuilder: (context, i) {
-                      final n = provider.items[i];
-                      return NoteCard(
-                        note: n,
-                        category: provider.categoryById(n.categoryId),
-                        onTap: () => _openNote(n),
-                        onLongPress: () => showNoteActions(context, n),
-                      );
-                    },
-                  ),
-                ),
+                ..._noteSlivers(context, s, settings, provider),
               const SliverToBoxAdapter(child: SizedBox(height: 90)),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// شرائح الملاحظات: عند وجود ملاحظات مثبّتة نفصلها في قسم «مثبّتة» يعلوه عنوان،
+  /// ثم بقيّة الملاحظات تحت عنوان «أخرى» — وإلا شبكة واحدة.
+  List<Widget> _noteSlivers(BuildContext context, S s,
+      SettingsProvider settings, NotesProvider provider) {
+    final cross = settings.layout == NoteLayout.grid ? 2 : 1;
+    Widget grid(List<Note> notes) => SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          sliver: SliverMasonryGrid.count(
+            crossAxisCount: cross,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childCount: notes.length,
+            itemBuilder: (context, i) {
+              final n = notes[i];
+              return NoteCard(
+                note: n,
+                category: provider.categoryById(n.categoryId),
+                onTap: () => _openNote(n),
+                onLongPress: () => showNoteActions(context, n),
+              );
+            },
+          ),
+        );
+    final pinned = provider.pinned;
+    final unpinned = provider.unpinned;
+    if (pinned.isEmpty) return [grid(provider.items)];
+    return [
+      _sectionHeader(context, Icons.push_pin, s.t('pinned')),
+      grid(pinned),
+      if (unpinned.isNotEmpty)
+        _sectionHeader(context, Icons.notes_outlined, s.t('others')),
+      if (unpinned.isNotEmpty) grid(unpinned),
+    ];
+  }
+
+  Widget _sectionHeader(BuildContext context, IconData icon, String text) {
+    final c = Theme.of(context).colorScheme.primary;
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: Row(
+          children: [
+            Icon(icon, size: 16, color: c),
+            const SizedBox(width: 6),
+            Text(text,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: c, fontSize: 13)),
+          ],
         ),
       ),
     );

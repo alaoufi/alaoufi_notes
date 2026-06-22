@@ -319,4 +319,12 @@ class NotesProvider extends ChangeNotifier {
   }
 
   Future<List<String>> allTags() => notes.getAllTags();
+
+  Future<List<({String name, int color})>> allTagsWithColors() =>
+      notes.getAllTagsWithColors();
+
+  Future<void> setTagColor(String name, int color) async {
+    await notes.setTagColor(name, color);
+    await refresh();
+  }
 }

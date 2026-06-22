@@ -15,7 +15,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'mudhakkarati.db';
-  static const _dbVersion = 17;
+  static const _dbVersion = 18;
 
   Database? _db;
   Future<Database>? _opening;
@@ -225,7 +225,8 @@ class AppDatabase {
     await db.execute('''
       CREATE TABLE tags (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE
+        name TEXT NOT NULL UNIQUE,
+        color INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -373,6 +374,11 @@ class AppDatabase {
     if (oldVersion < 17) {
       // سجلّ التنبيهات المنفّذة (لكل الأنواع).
       await _createReminderLogTable(db);
+    }
+    if (oldVersion < 18) {
+      // علامات ملوّنة: لون يختاره المستخدم (0 = اشتقاق تلقائيّ من الاسم).
+      await db.execute(
+          'ALTER TABLE tags ADD COLUMN color INTEGER NOT NULL DEFAULT 0');
     }
   }
 
