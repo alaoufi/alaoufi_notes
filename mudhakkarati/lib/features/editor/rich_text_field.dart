@@ -798,16 +798,26 @@ class _RichTextViewerState extends State<RichTextViewer> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<SettingsProvider>();
     // اتجاه محيط LTR كي يُعرض كل سطر باتجاهه (المعلّم بـ`rtl` يمينًا).
     return Directionality(
       textDirection: TextDirection.ltr,
       child: QuillEditor.basic(
         controller: _controller,
-        config: const QuillEditorConfig(
+        config: QuillEditorConfig(
           showCursor: false,
           expands: false,
           padding: EdgeInsets.zero,
           autoFocus: false,
+          // نفس خطّ المتن وحجمه وتباعده في المحرّر، كي لا تختلف المعاينة/البطاقة
+          // عن داخل الملاحظة (كانت تستخدم خطّ flutter_quill الافتراضي).
+          customStyles: buildNoteDefaultStyles(context, settings),
+          customStyleBuilder: (attribute) {
+            if (attribute.key == 'line-height' && attribute.value is num) {
+              return TextStyle(height: (attribute.value as num).toDouble());
+            }
+            return const TextStyle();
+          },
         ),
       ),
     );

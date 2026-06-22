@@ -217,7 +217,7 @@ class NoteCard extends StatelessWidget {
             ),
           );
         }
-        return _text(onBg);
+        return _text(context, onBg);
       case NoteType.drawing:
         if (note.drawingPath != null && File(note.drawingPath!).existsSync()) {
           return Padding(
@@ -229,7 +229,7 @@ class NoteCard extends StatelessWidget {
             ),
           );
         }
-        return _text(onBg);
+        return _text(context, onBg);
       case NoteType.audio:
         return Padding(
           padding: const EdgeInsets.only(top: 10),
@@ -254,6 +254,7 @@ class NoteCard extends StatelessWidget {
           ]),
         );
       case NoteType.checklist:
+        final noteFont = context.watch<SettingsProvider>().noteFontFamily;
         final lines = note.content
             .split('\n')
             .where((l) => l.trim().isNotEmpty)
@@ -287,6 +288,7 @@ class NoteCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: onBg.withOpacity(0.85),
+                          fontFamily: noteFont,
                           decoration:
                               done ? TextDecoration.lineThrough : null,
                         )),
@@ -317,13 +319,14 @@ class NoteCard extends StatelessWidget {
           ),
         );
       case NoteType.text:
-        return _text(onBg);
+        return _text(context, onBg);
     }
   }
 
-  Widget _text(Color onBg) {
+  Widget _text(BuildContext context, Color onBg) {
     final plain = richToPlainText(note.content);
     if (plain.trim().isEmpty) return const SizedBox.shrink();
+    final noteFont = context.watch<SettingsProvider>().noteFontFamily;
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: AutoDirText(
@@ -331,7 +334,10 @@ class NoteCard extends StatelessWidget {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-            color: onBg.withOpacity(0.8), height: 1.3, fontSize: 13),
+            color: onBg.withOpacity(0.8),
+            height: 1.3,
+            fontSize: 13,
+            fontFamily: noteFont),
       ),
     );
   }
