@@ -278,7 +278,7 @@ double? noteRulingFontSize(QuillController controller, double fallback) {
 ///
 /// [expand] = true يجعل المحرّر يملأ مساحته ويمرّر داخليًا (مع تمرير الـ viewport
 /// = أداء أفضل بكثير للمستندات الكبيرة لأنه يعرض الجزء المرئي فقط).
-class RichTextEditorBody extends StatelessWidget {
+class RichTextEditorBody extends StatefulWidget {
   final RichTextController controller;
   final bool expand;
 
@@ -291,9 +291,86 @@ class RichTextEditorBody extends StatelessWidget {
       this.lineHeight});
 
   @override
+  State<RichTextEditorBody> createState() => _RichTextEditorBodyState();
+}
+
+class _RichTextEditorBodyState extends State<RichTextEditorBody> {
+  String? _posLabel; // «سطر N · حرف C»
+  bool _showPos = false;
+  Timer? _hideTimer;
+  int _lastOffset = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.quill.addListener(_onCursorChange);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.quill.removeListener(_onCursorChange);
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  /// يحسب موقع المؤشّر (سطر/حرف) عند تحرّكه ويُظهر شارة تختفي تلقائيًّا — تفيد في
+  /// ضبط التنسيق والمحاذاة دون أن تشغل الشاشة.
+  void _onCursorChange() {
+    if (!widget.controller.focus.hasFocus) return;
+    final sel = widget.controller.quill.selection;
+    if (!sel.isValid) return;
+    final offset = sel.baseOffset;
+    if (offset == _lastOffset) return; // لم يتحرّك المؤشّر فعليًّا
+    _lastOffset = offset;
+    final text = widget.controller.quill.document.toPlainText();
+    final o = offset.clamp(0, text.length);
+    final before = text.substring(0, o);
+    final line = '\n'.allMatches(before).length + 1;
+    final col = o - (before.lastIndexOf('\n') + 1) + 1;
+    if (!mounted) return;
+    setState(() {
+      _posLabel = 'سطر $line · حرف $col';
+      _showPos = true;
+    });
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => _showPos = false);
+    });
+  }
+
+  Widget _posBadge() {
+    final scheme = Theme.of(context).colorScheme;
+    return Positioned(
+      top: 6,
+      left: 8,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          opacity: _showPos ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: scheme.inverseSurface.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(_posLabel ?? '',
+                style: TextStyle(
+                    color: scheme.onInverseSurface,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final hide = settings.hideSelectionMenu;
+    final expand = widget.expand;
+    final controller = widget.controller;
+    final lineHeight = widget.lineHeight;
     final editor = QuillEditor.basic(
       controller: controller.quill,
       focusNode: controller.focus,
@@ -335,15 +412,26 @@ class RichTextEditorBody extends StatelessWidget {
       ),
     );
     // اتجاه محيط LTR: العربي معلّم `rtl` ⇒ يمين؛ والإنجليزي بلا سمة ⇒ يسار
-    // (فالشرطة/الترقيم أوّل السطر الإنجليزي يظهران يسارًا بشكل صحيح).
+    // (فالشرطة/الترقيم أوّل السطر الإنجليزي يظهران يسارًا بشكل صحيح). نضع شارة
+    // موقع المؤشّر فوق المحرّر في Stack.
     if (expand) {
-      return Directionality(textDirection: TextDirection.ltr, child: editor);
+      return Directionality(
+        textDirection: TextDirection.ltr,
+        child: Stack(
+          children: [Positioned.fill(child: editor), _posBadge()],
+        ),
+      );
     }
     return Directionality(
       textDirection: TextDirection.ltr,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 240),
-        child: editor,
+      child: Stack(
+        children: [
+          Container(
+            constraints: const BoxConstraints(minHeight: 240),
+            child: editor,
+          ),
+          _posBadge(),
+        ],
       ),
     );
   }
@@ -414,10 +502,41 @@ class RichTextToolbar extends StatelessWidget {
             },
           );
         case 'font':
-          return QuillToolbarFontFamilyButton(
-            controller: q,
-            options: const QuillToolbarFontFamilyButtonOptions(
-                items: _fontFamilies),
+          // قائمة خطوط مجمّعة حسب العائلة (نسخ/كوفي/…) مطابِقة للإعدادات، مع
+          // رؤوس غير قابلة للاختيار، وكل خط معروض باسمه العربيّ وبخطّه نفسه.
+          return PopupMenuButton<String>(
+            tooltip: 'الخط',
+            icon: const Icon(Icons.font_download_outlined, size: 22),
+            onSelected: (family) {
+              if (family == '__clear') {
+                q.formatSelection(Attribute.clone(Attribute.font, null));
+              } else {
+                q.formatSelection(
+                    Attribute.fromKeyValue(Attribute.font.key, family));
+              }
+            },
+            itemBuilder: (_) => [
+              for (final g in SettingsProvider.fontGroups) ...[
+                PopupMenuItem<String>(
+                  enabled: false,
+                  height: 28,
+                  child: Text('— ${g.$1} —',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).hintColor)),
+                ),
+                for (final f in g.$2)
+                  PopupMenuItem<String>(
+                    value: f,
+                    child: Text(SettingsProvider.fontLabel(f),
+                        style: TextStyle(fontFamily: f, fontSize: 16)),
+                  ),
+              ],
+              const PopupMenuDivider(),
+              const PopupMenuItem<String>(
+                  value: '__clear', child: Text('مسح الخط')),
+            ],
           );
         case 'size':
           return QuillToolbarFontSizeButton(
@@ -566,46 +685,6 @@ class RichTextToolbar extends StatelessWidget {
       ),
     );
   }
-
-  // خرائط الخطوط والأحجام (تُستخدم في أزرار الصف الأول).
-  static const Map<String, String> _fontFamilies = {
-    'Cairo': 'Cairo',
-    'Tajawal': 'Tajawal',
-    'Almarai': 'Almarai',
-    'IBM Plex': 'IBM Plex Sans Arabic',
-    'Readex': 'Readex Pro',
-    'Mada': 'Mada',
-    'Changa': 'Changa',
-    'Vazirmatn': 'Vazirmatn',
-    'المصري': 'El Messiri',
-    'مرکزی': 'Markazi Text',
-    'ليمونادة': 'Lemonada',
-    'هرمتان': 'Harmattan',
-    'كوفي': 'Reem Kufi',
-    'كُفام': 'Kufam',
-    'مرحى': 'Marhey',
-    'نسخ': 'Noto Naskh Arabic',
-    'أميري': 'Amiri',
-    'شهرزاد': 'Scheherazade New',
-    'رقعة': 'Aref Ruqaa',
-    'لاله‌زار': 'Lalezar',
-    'ركّاس': 'Rakkas',
-    'جمهورية': 'Jomhuria',
-    'كلزار': 'Gulzar',
-    'قاهري': 'Qahiri',
-    'نوتو كوفي': 'Noto Kufi Arabic',
-    'نوتو سانس': 'Noto Sans Arabic',
-    'روبيك': 'Rubik',
-    'بالو': 'Baloo Bhaijaan 2',
-    'لطيف': 'Lateef',
-    'ميرزا': 'Mirza',
-    'كتيبة': 'Katibeh',
-    'القلمي': 'Alkalami',
-    'رقعة حبر': 'Aref Ruqaa Ink',
-    'نسخ قرآني': 'Amiri Quran',
-    'نستعليق': 'Noto Nastaliq Urdu',
-    'مسح': 'Clear',
-  };
 
   static const Map<String, String> _fontSizes = {
     '10': '10',
