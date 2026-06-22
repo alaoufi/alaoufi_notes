@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -238,6 +239,37 @@ class NotificationService {
           : AndroidScheduleMode.exactAllowWhileIdle;
 
   /// جدولة تذكير. يدعم التكرار يومي/أسبوعي/شهري/سنوي/مرة واحدة.
+  /// يجدول إشعارًا مع تحمّل غياب إذن «المنبّهات الدقيقة»: إن رفض النظام الجدولة
+  /// الدقيقة (exact_alarms_not_permitted) نُعيد المحاولة بوضع غير دقيق بدلًا من أن
+  /// يرتفع استثناء يُفشل الحفظ بصمت (الزر «لا يعمل»). فالتذكير يُحفَظ ويُجدول دائمًا.
+  Future<void> _zonedSchedule(
+    int id,
+    String title,
+    String body,
+    tz.TZDateTime when,
+    NotificationDetails details, {
+    required AndroidScheduleMode mode,
+    DateTimeComponents? match,
+    String? payload,
+  }) async {
+    try {
+      await _plugin.zonedSchedule(id, title, body, when, details,
+          androidScheduleMode: mode,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: match,
+          payload: payload);
+    } on PlatformException catch (e) {
+      if (e.code != 'exact_alarms_not_permitted') rethrow;
+      await _plugin.zonedSchedule(id, title, body, when, details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          uiLocalNotificationDateInterpretation:
+              UILocalNotificationDateInterpretation.absoluteTime,
+          matchDateTimeComponents: match,
+          payload: payload);
+    }
+  }
+
   Future<void> schedule(Reminder reminder, String title, String body) async {
     await init();
     final scheduled = tz.TZDateTime.from(reminder.time, tz.local);
@@ -273,16 +305,14 @@ class NotificationService {
         break;
     }
 
-    await _plugin.zonedSchedule(
+    await _zonedSchedule(
       reminder.notificationId,
       safeTitle,
       safeBody,
       scheduled,
       _detailsFor(reminder.importance),
-      androidScheduleMode: _mode(reminder.importance),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: match,
+      mode: _mode(reminder.importance),
+      match: match,
       payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
           '|imp:${reminder.importance.dbValue}|base:${reminder.notificationId}',
     );
@@ -296,15 +326,13 @@ class NotificationService {
         forgetRepeats > 0) {
       for (var k = 1; k <= forgetRepeats; k++) {
         final when = scheduled.add(forgetInterval * k);
-        await _plugin.zonedSchedule(
+        await _zonedSchedule(
           base + k * _forgetStride,
           safeTitle,
           '$safeBody ⏰',
           when,
           _detailsFor(ReminderImportance.critical),
-          androidScheduleMode: AndroidScheduleMode.alarmClock,
-          uiLocalNotificationDateInterpretation:
-              UILocalNotificationDateInterpretation.absoluteTime,
+          mode: AndroidScheduleMode.alarmClock,
           payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
               '|imp:critical|base:$base',
         );
@@ -320,15 +348,13 @@ class NotificationService {
       for (final mins in reminder.preAlerts.take(4)) {
         final when = scheduled.subtract(Duration(minutes: mins));
         if (when.isAfter(now)) {
-          await _plugin.zonedSchedule(
+          await _zonedSchedule(
             base + (10 + i) * _forgetStride,
             '⏳ ${_beforeLabel(mins)} • ${title.trim().isEmpty ? "تذكير" : title.trim()}',
             safeBody,
             when,
             _detailsFor(ReminderImportance.medium),
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-            uiLocalNotificationDateInterpretation:
-                UILocalNotificationDateInterpretation.absoluteTime,
+            mode: AndroidScheduleMode.exactAllowWhileIdle,
             payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
                 '|imp:medium|base:$base',
           );
@@ -365,15 +391,13 @@ class NotificationService {
       final occ = tz.TZDateTime.from(medOccurrenceAt(reminder, i), tz.local);
       i++;
       if (!occ.isAfter(now)) continue; // موعد فات ⇒ تخطٍّ.
-      await _plugin.zonedSchedule(
+      await _zonedSchedule(
         base + scheduled * _forgetStride,
         safeTitle,
         safeBody,
         occ,
         _detailsFor(reminder.importance),
-        androidScheduleMode: _mode(reminder.importance),
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
+        mode: _mode(reminder.importance),
         payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
             '|imp:${reminder.importance.dbValue}|base:$base',
       );
@@ -443,15 +467,13 @@ class NotificationService {
     await _cancelFollowups(base);
     final when =
         tz.TZDateTime.now(tz.local).add(Duration(minutes: minutes));
-    await _plugin.zonedSchedule(
+    await _zonedSchedule(
       base,
       title,
       body,
       when,
       _detailsFor(ReminderImportance.critical),
-      androidScheduleMode: AndroidScheduleMode.alarmClock,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      mode: AndroidScheduleMode.alarmClock,
       payload: 'note:${noteId ?? -1}|title:$title|body:$body'
           '|imp:critical|base:$base',
     );
@@ -464,15 +486,13 @@ class NotificationService {
     final imp = ReminderImportanceX.fromDb(_extractStr(payload, 'imp:'));
     final when = tz.TZDateTime.now(tz.local)
         .add(Duration(minutes: snoozeMinutes > 0 ? snoozeMinutes : 10));
-    await _plugin.zonedSchedule(
+    await _zonedSchedule(
       id, // نفس المعرّف.
       title,
       body,
       when,
       _detailsFor(imp),
-      androidScheduleMode: _mode(imp),
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      mode: _mode(imp),
       payload: payload,
     );
   }

@@ -819,26 +819,40 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               // كورس دواء (فاصل/عدد) يمرّ دومًا عبر setStandalone.
                               final isMedCourse =
                                   isMed && (intervalDays >= 2 || doseCount > 0);
-                              if (repeat == ReminderRepeat.weekly &&
-                                  weekdays.isNotEmpty &&
-                                  !isMedCourse) {
-                                await provider.setStandaloneWeekly(
-                                    finalTitle, time, weekdays,
-                                    existing: existing);
-                              } else {
-                                await provider.setStandalone(
-                                    combined(),
-                                    medInterval ? ReminderRepeat.daily : repeat,
-                                    finalTitle,
-                                    importance: importance,
-                                    preAlerts: preAlerts.toList()..sort(),
-                                    location: mapLinkCtrl.text.trim(),
-                                    attachmentPath: attachmentPath,
-                                    intervalDays: isMed ? intervalDays : 0,
-                                    doseCount: isMed ? doseCount : 0,
-                                    existing: existing);
+                              try {
+                                if (repeat == ReminderRepeat.weekly &&
+                                    weekdays.isNotEmpty &&
+                                    !isMedCourse) {
+                                  await provider.setStandaloneWeekly(
+                                      finalTitle, time, weekdays,
+                                      existing: existing);
+                                } else {
+                                  await provider.setStandalone(
+                                      combined(),
+                                      medInterval
+                                          ? ReminderRepeat.daily
+                                          : repeat,
+                                      finalTitle,
+                                      importance: importance,
+                                      preAlerts: preAlerts.toList()..sort(),
+                                      location: mapLinkCtrl.text.trim(),
+                                      attachmentPath: attachmentPath,
+                                      intervalDays: isMed ? intervalDays : 0,
+                                      doseCount: isMed ? doseCount : 0,
+                                      existing: existing);
+                                }
+                                if (context.mounted) Navigator.pop(context);
+                              } catch (e) {
+                                // لا نترك الزر يبدو «لا يعمل»: نُغلق ونُبلّغ.
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            '${s.t('save')}: ${s.t('error')}')),
+                                  );
+                                }
                               }
-                              if (context.mounted) Navigator.pop(context);
                             },
                             icon: const Icon(Icons.check),
                             label: Text(s.t('save')),
