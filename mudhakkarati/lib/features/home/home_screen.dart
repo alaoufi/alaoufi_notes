@@ -468,6 +468,18 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> _noteSlivers(BuildContext context, S s,
       SettingsProvider settings, NotesProvider provider) {
     final cross = settings.layout == NoteLayout.grid ? 2 : 1;
+    Widget card(Note n) {
+      final c = NoteCard(
+        note: n,
+        category: provider.categoryById(n.categoryId),
+        onTap: () => _openNote(n),
+        onLongPress: () => showNoteActions(context, n),
+      );
+      // السحب (أرشفة/حذف) في وضع القائمة فقط — يبقى وضع الشبكة بالضغط المطوّل.
+      if (cross != 1) return c;
+      return _swipeable(context, s, provider, n, c);
+    }
+
     Widget grid(List<Note> notes) => SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           sliver: SliverMasonryGrid.count(
@@ -475,15 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childCount: notes.length,
-            itemBuilder: (context, i) {
-              final n = notes[i];
-              return NoteCard(
-                note: n,
-                category: provider.categoryById(n.categoryId),
-                onTap: () => _openNote(n),
-                onLongPress: () => showNoteActions(context, n),
-              );
-            },
+            itemBuilder: (context, i) => card(notes[i]),
           ),
         );
     final pinned = provider.pinned;
@@ -496,6 +500,56 @@ class _HomeScreenState extends State<HomeScreen> {
         _sectionHeader(context, Icons.notes_outlined, s.t('others')),
       if (unpinned.isNotEmpty) grid(unpinned),
     ];
+  }
+
+  /// يلفّ بطاقة الملاحظة بإيماءة سحب: يمينًا ⇐ أرشفة (مع «تراجع»)، يسارًا ⇐ حذف
+  /// (مع تأكيد). يعيد false دائمًا فتُزال البطاقة عبر تحديث القائمة لا عبر الإيماءة.
+  Widget _swipeable(BuildContext context, S s, NotesProvider provider, Note n,
+      Widget child) {
+    final scheme = Theme.of(context).colorScheme;
+    Widget bg(AlignmentGeometry align, IconData icon, Color color,
+            String label) =>
+        Container(
+          alignment: align,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+              color: color, borderRadius: BorderRadius.circular(18)),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 8),
+            Text(label,
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
+          ]),
+        );
+    return Dismissible(
+      key: ValueKey('swipe_${n.id}'),
+      background:
+          bg(AlignmentDirectional.centerStart, Icons.archive_outlined,
+              scheme.tertiary, s.t('archive')),
+      secondaryBackground: bg(AlignmentDirectional.centerEnd,
+          Icons.delete_outline, scheme.error, s.t('delete')),
+      confirmDismiss: (dir) async {
+        if (dir == DismissDirection.startToEnd) {
+          await provider.setArchived(n, true);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(s.t('archived')),
+              action: SnackBarAction(
+                label: s.t('undo'),
+                onPressed: () => provider.setArchived(n, false),
+              ),
+            ));
+          }
+        } else {
+          final ok = await confirmDeleteNote(context);
+          if (ok) await provider.moveToTrash(n);
+        }
+        // التحديث يُزيل البطاقة؛ لا نترك Dismissible يحذفها بنفسه.
+        return false;
+      },
+      child: child,
+    );
   }
 
   Widget _sectionHeader(BuildContext context, IconData icon, String text) {
