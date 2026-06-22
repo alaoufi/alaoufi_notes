@@ -125,44 +125,102 @@ class SettingsProvider extends ChangeNotifier {
   bool get ruleOnLine => _ruleOnLine;
   bool get privacyMode => _privacyMode;
 
-  /// الخطوط العربية المتاحة لاختيار الخط الافتراضي للتطبيق.
-  static const fontFamilies = <String>[
-    'Cairo',
-    'Tajawal',
-    'Almarai',
-    'IBM Plex Sans Arabic',
-    'Readex Pro',
-    'Mada',
-    'Changa',
-    'Vazirmatn',
-    'El Messiri',
-    'Markazi Text',
-    'Lemonada',
-    'Harmattan',
-    'Reem Kufi',
-    'Kufam',
-    'Marhey',
-    'Noto Naskh Arabic',
-    'Amiri',
-    'Scheherazade New',
-    'Aref Ruqaa',
-    'Lalezar',
-    'Rakkas',
-    'Jomhuria',
-    'Gulzar',
-    'Qahiri',
-    'Noto Kufi Arabic',
-    'Noto Sans Arabic',
-    'Rubik',
-    'Baloo Bhaijaan 2',
-    'Lateef',
-    'Mirza',
-    'Katibeh',
-    'Alkalami',
-    'Aref Ruqaa Ink',
-    'Amiri Quran',
-    'Noto Nastaliq Urdu',
+  /// الخطوط مرتّبة حسب العائلة (نسخ، كوفي، نستعليق/فارسي، عصري، زخرفي) مع اسم
+  /// عربيّ لكل خط — تُستخدم في قوائم اختيار الخط (الواجهة والمتن).
+  static const List<(String, List<String>)> fontGroups = [
+    ('نسخ', [
+      'Noto Naskh Arabic',
+      'Amiri',
+      'Amiri Quran',
+      'Scheherazade New',
+      'Lateef',
+      'Harmattan',
+      'Markazi Text',
+      'Alkalami',
+    ]),
+    ('كوفي', [
+      'Reem Kufi',
+      'Kufam',
+      'Noto Kufi Arabic',
+      'Qahiri',
+    ]),
+    ('نستعليق وفارسي', [
+      'Noto Nastaliq Urdu',
+      'Gulzar',
+      'Mirza',
+      'Vazirmatn',
+    ]),
+    ('عصري', [
+      'Cairo',
+      'Tajawal',
+      'Almarai',
+      'IBM Plex Sans Arabic',
+      'Readex Pro',
+      'Mada',
+      'Changa',
+      'El Messiri',
+      'Noto Sans Arabic',
+      'Rubik',
+    ]),
+    ('زخرفي وعناوين', [
+      'Aref Ruqaa',
+      'Aref Ruqaa Ink',
+      'Lalezar',
+      'Rakkas',
+      'Jomhuria',
+      'Lemonada',
+      'Marhey',
+      'Baloo Bhaijaan 2',
+      'Katibeh',
+    ]),
   ];
+
+  /// اسم العرض العربيّ لكل خط (نفس الأسماء الظاهرة في شريط تنسيق المحرّر).
+  static const Map<String, String> fontLabels = {
+    'Noto Naskh Arabic': 'نسخ',
+    'Amiri': 'أميري',
+    'Amiri Quran': 'نسخ قرآني',
+    'Scheherazade New': 'شهرزاد',
+    'Lateef': 'لطيف',
+    'Harmattan': 'هرمتان',
+    'Markazi Text': 'مركزي',
+    'Alkalami': 'القلمي',
+    'Reem Kufi': 'كوفي',
+    'Kufam': 'كُفام',
+    'Noto Kufi Arabic': 'نوتو كوفي',
+    'Qahiri': 'قاهري',
+    'Noto Nastaliq Urdu': 'نستعليق',
+    'Gulzar': 'كلزار',
+    'Mirza': 'ميرزا',
+    'Vazirmatn': 'فزيرمتن',
+    'Cairo': 'القاهرة',
+    'Tajawal': 'تجوال',
+    'Almarai': 'المراعي',
+    'IBM Plex Sans Arabic': 'IBM Plex',
+    'Readex Pro': 'ريدكس',
+    'Mada': 'مدى',
+    'Changa': 'شنقا',
+    'El Messiri': 'المصري',
+    'Noto Sans Arabic': 'نوتو سانس',
+    'Rubik': 'روبيك',
+    'Aref Ruqaa': 'رقعة',
+    'Aref Ruqaa Ink': 'رقعة حبر',
+    'Lalezar': 'لاله‌زار',
+    'Rakkas': 'ركّاس',
+    'Jomhuria': 'جمهورية',
+    'Lemonada': 'ليمونادة',
+    'Marhey': 'مرحى',
+    'Baloo Bhaijaan 2': 'بالو',
+    'Katibeh': 'كتيبة',
+  };
+
+  /// قائمة مسطّحة بكل الخطوط (بترتيب العائلات).
+  static final List<String> fontFamilies = [
+    for (final g in fontGroups) ...g.$2,
+  ];
+
+  /// الاسم العربيّ للخط (أو اسمه الأصليّ إن لم يوجد).
+  static String fontLabel(String family) => fontLabels[family] ?? family;
 
   static const _kMode = 'theme_mode';
   static const _kSeed = 'seed_color';

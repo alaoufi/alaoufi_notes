@@ -282,13 +282,7 @@ class SettingsScreen extends StatelessWidget {
             onChanged: (v) {
               if (v != null) st.setFontFamily(v);
             },
-            items: [
-              for (final f in SettingsProvider.fontFamilies)
-                DropdownMenuItem(
-                  value: f,
-                  child: Text(f, style: TextStyle(fontFamily: f)),
-                ),
-            ],
+            items: _fontDropdownItems(context),
           ),
         ),
 
@@ -431,13 +425,7 @@ class SettingsScreen extends StatelessWidget {
           onChanged: (v) {
             if (v != null) st.setNoteFontFamily(v);
           },
-          items: [
-            for (final f in SettingsProvider.fontFamilies)
-              DropdownMenuItem(
-                value: f,
-                child: Text(f, style: TextStyle(fontFamily: f)),
-              ),
-          ],
+          items: _fontDropdownItems(context),
         ),
       ),
 
@@ -771,6 +759,30 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
       ];
+
+  /// عناصر قائمة اختيار الخط: مجمّعة حسب العائلة (نسخ/كوفي/…) برؤوس غير قابلة
+  /// للاختيار، وكل خط باسمه العربيّ ومعروضًا بخطّه نفسه.
+  List<DropdownMenuItem<String>> _fontDropdownItems(BuildContext context) {
+    final hint = Theme.of(context).hintColor;
+    final items = <DropdownMenuItem<String>>[];
+    for (final g in SettingsProvider.fontGroups) {
+      items.add(DropdownMenuItem<String>(
+        enabled: false,
+        value: '__g_${g.$1}',
+        child: Text('— ${g.$1} —',
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.bold, color: hint)),
+      ));
+      for (final f in g.$2) {
+        items.add(DropdownMenuItem<String>(
+          value: f,
+          child: Text(SettingsProvider.fontLabel(f),
+              style: TextStyle(fontFamily: f)),
+        ));
+      }
+    }
+    return items;
+  }
 
   Widget _nav(BuildContext context, IconData icon, String title, Widget page) {
     return ListTile(
