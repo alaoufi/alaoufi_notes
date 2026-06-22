@@ -3,20 +3,15 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../features/backup/backup_screen.dart';
-import '../features/calendar/calendar_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
 import '../features/cleanup/cleanup_screen.dart';
-import '../features/insights/weekly_summary_screen.dart';
-import '../features/favorites/favorites_screen.dart';
 import '../features/help/help_guide_screen.dart';
 import '../features/info/info_list_screen.dart';
 import '../features/security/info_lock.dart';
-import '../features/reminders/reminders_screen.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
 import '../features/security/security_settings_screen.dart';
 import '../features/settings/settings_screen.dart';
-import '../features/tags/tags_screen.dart';
 import '../features/trash/archive_screen.dart';
 import '../features/trash/trash_screen.dart';
 
@@ -122,51 +117,37 @@ class AppDrawer extends StatelessWidget {
               onTap: () => go(const HelpGuideScreen()),
             ),
             const Divider(height: 1),
-            // مجموعات مرتّبة حسب التخصّص والهدف.
-            // 1) التنبيهات والتقويم (كل ما يتعلّق بالوقت والمنبّه).
-            _group(context, Icons.notifications_active_outlined,
-                s.t('group_reminders'),
+            // القائمة الجانبية مخصّصة للإعدادات والتحكّم والإدارة.
+            // (التنبيهات/التقويم/البحث في الهيدر، والخدمات السريعة في قائمة ⋮.)
+            // 1) الإدارة والتنظيم.
+            _group(context, Icons.tune, s.t('group_manage'),
                 initiallyExpanded: true, children: [
-              _tile(context, Icons.alarm, s.t('reminders'),
-                  () => go(const RemindersScreen())),
-              _tile(context, Icons.calendar_month, s.t('calendar'),
-                  () => go(const CalendarScreen())),
-            ]),
-            // 2) التنظيم (المفضّلة/الوسوم/التصنيفات/المعلومات/الملخّص/التنظيف).
-            _group(context, Icons.folder_outlined, s.t('group_organize'),
-                initiallyExpanded: true, children: [
-              _tile(context, Icons.star, s.t('favorites'),
-                  () => go(const FavoritesScreen())),
-              _tile(context, Icons.tag, s.t('tags_page'),
-                  () => go(const TagsScreen())),
               _tile(context, Icons.category_outlined, s.t('manage_categories'),
                   () => go(const ManageCategoriesScreen())),
-              _tile(context, Icons.menu_book_outlined, s.t('info'), goInfo),
-              _tile(context, Icons.insights_outlined, s.t('weekly_summary'),
-                  () => go(const WeeklySummaryScreen())),
-              _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),
-                  () => go(const CleanupScreen())),
+              _tile(context, Icons.settings_outlined, s.t('settings'),
+                  () => go(const SettingsScreen())),
             ]),
-            // 3) الأمان.
+            // 2) الأمان.
             _group(context, Icons.shield_outlined, s.t('security'),
                 children: [
               _tile(context, Icons.lock, s.t('secret_notes'), goSecret),
               _tile(context, Icons.security, s.t('security_lock'),
                   () => go(const SecuritySettingsScreen())),
             ]),
-            // 4) النسخ والأرشيف.
+            // 3) النسخ والصيانة.
             _group(context, Icons.backup_outlined, s.t('group_backup'),
                 children: [
+              _tile(context, Icons.backup_outlined, s.t('backup'),
+                  () => go(const BackupScreen())),
               _tile(context, Icons.archive_outlined, s.t('archived'),
                   () => go(const ArchiveScreen())),
               _tile(context, Icons.delete_outline, s.t('trash'),
                   () => go(const TrashScreen())),
-              _tile(context, Icons.backup_outlined, s.t('backup'),
-                  () => go(const BackupScreen())),
+              _tile(context, Icons.cleaning_services_outlined, s.t('cleanup'),
+                  () => go(const CleanupScreen())),
             ]),
             const Divider(),
-            _tile(context, Icons.auto_stories, s.t('user_guide'),
-                () => go(const HelpGuideScreen())),
+            _tile(context, Icons.menu_book_outlined, s.t('info'), goInfo),
             _tile(context, Icons.settings_outlined, s.t('settings'),
                 () => go(const SettingsScreen())),
           ],

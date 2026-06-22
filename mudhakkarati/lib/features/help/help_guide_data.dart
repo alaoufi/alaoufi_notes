@@ -73,6 +73,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Default reminder settings', 'Tone, snooze, volume, pre-alert'),
       HgItem(Icons.lock, 'Encrypted & safe', 'On-device encrypted data + auto backup'),
       HgItem(Icons.cloud_done, 'Secure sync', 'Authenticated & resilient (never deletes data)'),
+      HgItem(Icons.dashboard_outlined, 'Streamlined navigation', 'Header: quick actions • ⋮: quick services • ☰: settings & management'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'More', [
       HgItem(Icons.format_textdirection_r_to_l, 'Per-line direction', 'Arabic right, English left'),
@@ -130,6 +131,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'إعدادات التنبيه الافتراضية', 'نغمة، غفوة، رفع الصوت، قبل الوقت'),
       HgItem(Icons.lock, 'تخزين مشفّر آمن', 'بياناتك محليّة مشفّرة + نسخ تلقائي'),
       HgItem(Icons.cloud_done, 'مزامنة مؤمّنة', 'مشفّرة ومتينة (لا تحذف بياناتك)'),
+      HgItem(Icons.dashboard_outlined, 'تنظيم الواجهة', 'الهيدر إجراءات سريعة • ⋮ خدمات سريعة • ☰ الإعدادات والإدارة'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'المزيد', [
       HgItem(Icons.format_textdirection_r_to_l, 'اتجاه لكل سطر', 'العربي يمين والإنجليزي يسار'),
@@ -187,6 +189,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Ajustes de recordatorio', 'Tono, posponer, volumen, pre-aviso'),
       HgItem(Icons.lock, 'Cifrado y seguro', 'Datos cifrados en el dispositivo + copia automática'),
       HgItem(Icons.cloud_done, 'Sync segura', 'Autenticada y resistente (nunca borra datos)'),
+      HgItem(Icons.dashboard_outlined, 'Navegación organizada', 'Cabecera: acciones rápidas • ⋮: servicios rápidos • ☰: ajustes y gestión'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Más', [
       HgItem(Icons.format_textdirection_r_to_l, 'Dirección por línea', 'Árabe a la derecha, inglés a la izquierda'),
@@ -244,6 +247,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Standard-Erinnerung', 'Ton, Schlummern, Lautstärke, Vorab-Hinweis'),
       HgItem(Icons.lock, 'Verschlüsselt & sicher', 'Daten verschlüsselt auf dem Gerät + Auto-Backup'),
       HgItem(Icons.cloud_done, 'Sichere Sync', 'Authentifiziert & robust (löscht nie Daten)'),
+      HgItem(Icons.dashboard_outlined, 'Aufgeräumte Navigation', 'Kopf: Schnellaktionen • ⋮: Schnellzugriff • ☰: Einstellungen & Verwaltung'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Mehr', [
       HgItem(Icons.format_textdirection_r_to_l, 'Richtung pro Zeile', 'Arabisch rechts, Englisch links'),
@@ -301,6 +305,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Default na paalala', 'Tono, snooze, volume, pre-alert'),
       HgItem(Icons.lock, 'Naka-encrypt at ligtas', 'Naka-encrypt sa device + auto backup'),
       HgItem(Icons.cloud_done, 'Ligtas na sync', 'May pagpapatunay at matatag (di nagbubura)'),
+      HgItem(Icons.dashboard_outlined, 'Maayos na navigation', 'Header: mabilis na aksyon • ⋮: mabilis na serbisyo • ☰: setting at pamamahala'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Iba pa', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direksyon kada linya', 'Arabe kanan, Ingles kaliwa'),
@@ -358,6 +363,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Réglages de rappel', 'Sonnerie, rappel, volume, pré-alerte'),
       HgItem(Icons.lock, 'Chiffré et sûr', 'Données chiffrées sur l’appareil + sauvegarde auto'),
       HgItem(Icons.cloud_done, 'Sync sécurisée', 'Authentifiée et robuste (ne supprime jamais)'),
+      HgItem(Icons.dashboard_outlined, 'Navigation organisée', 'En-tête : actions rapides • ⋮ : services rapides • ☰ : réglages et gestion'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Plus', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direction par ligne', 'Arabe à droite, anglais à gauche'),
@@ -415,6 +421,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Setelan pengingat', 'Nada, tunda, volume, pra-peringatan'),
       HgItem(Icons.lock, 'Terenkripsi & aman', 'Data terenkripsi di perangkat + cadangan otomatis'),
       HgItem(Icons.cloud_done, 'Sinkron aman', 'Terautentikasi & tangguh (tidak menghapus data)'),
+      HgItem(Icons.dashboard_outlined, 'Navigasi tertata', 'Header: aksi cepat • ⋮: layanan cepat • ☰: pengaturan & pengelolaan'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lainnya', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah per baris', 'Arab kanan, Inggris kiri'),
@@ -472,6 +479,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Impostazioni promemoria', 'Suono, posticipa, volume, pre-avviso'),
       HgItem(Icons.lock, 'Cifrato e sicuro', 'Dati cifrati sul dispositivo + backup automatico'),
       HgItem(Icons.cloud_done, 'Sync sicura', 'Autenticata e robusta (non cancella mai i dati)'),
+      HgItem(Icons.dashboard_outlined, 'Navigazione ordinata', 'Intestazione: azioni rapide • ⋮: servizi rapidi • ☰: impostazioni e gestione'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Altro', [
       HgItem(Icons.format_textdirection_r_to_l, 'Direzione per riga', 'Arabo a destra, inglese a sinistra'),
@@ -529,6 +537,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Tetapan peringatan', 'Nada, tunda, kelantangan, pra-amaran'),
       HgItem(Icons.lock, 'Tersulit & selamat', 'Data tersulit dalam peranti + sandaran auto'),
       HgItem(Icons.cloud_done, 'Segerak selamat', 'Disahkan & teguh (tidak memadam data)'),
+      HgItem(Icons.dashboard_outlined, 'Navigasi tersusun', 'Pengepala: tindakan pantas • ⋮: perkhidmatan pantas • ☰: tetapan & pengurusan'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Lagi', [
       HgItem(Icons.format_textdirection_r_to_l, 'Arah setiap baris', 'Arab kanan, Inggeris kiri'),
@@ -586,6 +595,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'रिमाइंडर डिफ़ॉल्ट', 'टोन, स्नूज़, आवाज़, पूर्व-सूचना'),
       HgItem(Icons.lock, 'एन्क्रिप्टेड व सुरक्षित', 'डिवाइस पर एन्क्रिप्टेड डेटा + ऑटो बैकअप'),
       HgItem(Icons.cloud_done, 'सुरक्षित सिंक', 'प्रमाणित व मज़बूत (डेटा नहीं मिटाता)'),
+      HgItem(Icons.dashboard_outlined, 'व्यवस्थित नेविगेशन', 'हेडर: त्वरित क्रियाएँ • ⋮: त्वरित सेवाएँ • ☰: सेटिंग्स और प्रबंधन'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'अधिक', [
       HgItem(Icons.format_textdirection_r_to_l, 'हर लाइन की दिशा', 'अरबी दाएँ, अंग्रेज़ी बाएँ'),
@@ -643,6 +653,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'রিমাইন্ডার ডিফল্ট', 'টোন, স্নুজ, ভলিউম, প্রি-অ্যালার্ট'),
       HgItem(Icons.lock, 'এনক্রিপ্টেড ও নিরাপদ', 'ডিভাইসে এনক্রিপ্টেড ডেটা + অটো ব্যাকআপ'),
       HgItem(Icons.cloud_done, 'নিরাপদ সিঙ্ক', 'প্রমাণিত ও দৃঢ় (ডেটা মোছে না)'),
+      HgItem(Icons.dashboard_outlined, 'সাজানো নেভিগেশন', 'হেডার: দ্রুত অ্যাকশন • ⋮: দ্রুত সেবা • ☰: সেটিংস ও ব্যবস্থাপনা'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'আরও', [
       HgItem(Icons.format_textdirection_r_to_l, 'প্রতি লাইনে দিক', 'আরবি ডানে, ইংরেজি বামে'),
@@ -700,6 +711,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'تنظیمات یادآور', 'آهنگ، تعویق، صدا، هشدار پیش از موعد'),
       HgItem(Icons.lock, 'رمزنگاری‌شده و امن', 'داده‌های رمزنگاری‌شده روی دستگاه + پشتیبان خودکار'),
       HgItem(Icons.cloud_done, 'همگام‌سازی امن', 'احرازشده و مقاوم (داده‌ها را حذف نمی‌کند)'),
+      HgItem(Icons.dashboard_outlined, 'ناوبری منظم', 'سربرگ: کارهای سریع • ⋮: خدمات سریع • ☰: تنظیمات و مدیریت'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'بیشتر', [
       HgItem(Icons.format_textdirection_r_to_l, 'جهت هر خط', 'عربی راست، انگلیسی چپ'),
@@ -757,6 +769,7 @@ const Map<String, List<HgSection>> _hg = {
       HgItem(Icons.tune, 'Настройки напоминаний', 'Сигнал, отложить, громкость, предупреждение'),
       HgItem(Icons.lock, 'Шифрование и защита', 'Данные зашифрованы на устройстве + авто-резерв'),
       HgItem(Icons.cloud_done, 'Безопасная синхронизация', 'С проверкой и устойчивая (не удаляет данные)'),
+      HgItem(Icons.dashboard_outlined, 'Упорядоченная навигация', 'Шапка: быстрые действия • ⋮: быстрые сервисы • ☰: настройки и управление'),
     ]),
     HgSection(Icons.handyman_outlined, _c8, false, 'Ещё', [
       HgItem(Icons.format_textdirection_r_to_l, 'Направление по строке', 'Арабский справа, английский слева'),
@@ -767,19 +780,19 @@ const Map<String, List<HgSection>> _hg = {
 };
 
 const Map<String, HgChrome> _hgChrome = {
-  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-19'),
-  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-19'),
-  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-19'),
-  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-19'),
-  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-19'),
-  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-19'),
-  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-19'),
-  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-19'),
-  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-19'),
-  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-19'),
-  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-19'),
-  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-19'),
-  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-19'),
+  'en': HgChrome('Every tool — its shape and function', 'items', 'Updated: 2026-06-22'),
+  'ar': HgChrome('كل أداة وشكلها ووظيفتها', 'عنصر', 'آخر تحديث: 2026-06-22'),
+  'es': HgChrome('Cada herramienta: su forma y función', 'elementos', 'Actualizado: 2026-06-22'),
+  'de': HgChrome('Jedes Werkzeug – Form und Funktion', 'Einträge', 'Aktualisiert: 2026-06-22'),
+  'fil': HgChrome('Bawat tool — hugis at gamit', 'item', 'Na-update: 2026-06-22'),
+  'fr': HgChrome('Chaque outil — sa forme et sa fonction', 'éléments', 'Mis à jour : 2026-06-22'),
+  'id': HgChrome('Setiap alat — bentuk dan fungsinya', 'item', 'Diperbarui: 2026-06-22'),
+  'it': HgChrome('Ogni strumento — forma e funzione', 'elementi', 'Aggiornato: 2026-06-22'),
+  'ms': HgChrome('Setiap alat — bentuk dan fungsi', 'item', 'Dikemas kini: 2026-06-22'),
+  'hi': HgChrome('हर टूल — उसका आकार और काम', 'आइटम', 'अपडेट: 2026-06-22'),
+  'bn': HgChrome('প্রতিটি টুল — আকৃতি ও কাজ', 'আইটেম', 'আপডেট: 2026-06-22'),
+  'fa': HgChrome('هر ابزار — شکل و کارکرد آن', 'مورد', 'به‌روزرسانی: 2026-06-22'),
+  'ru': HgChrome('Каждый инструмент — форма и функция', 'элементов', 'Обновлено: 2026-06-22'),
 };
 
 List<HgSection> helpSections(String lang) => _hg[lang] ?? _hg['en']!;

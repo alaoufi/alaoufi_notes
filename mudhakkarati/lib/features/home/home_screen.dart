@@ -15,8 +15,11 @@ import '../../services/backup_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../backup/backup_screen.dart';
 import '../calendar/calendar_screen.dart';
+import '../favorites/favorites_screen.dart';
+import '../insights/weekly_summary_screen.dart';
 import '../reminders/reminders_provider.dart';
 import '../reminders/reminders_screen.dart';
+import '../tags/tags_screen.dart';
 import '../editor/note_editor_screen.dart';
 import '../info/info_list_screen.dart';
 import '../search/advanced_filter.dart';
@@ -318,41 +321,64 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _overflowMenu(BuildContext context, S s, NotesProvider provider) {
     final settings = context.read<SettingsProvider>();
     final showInfo = settings.infoPlacement == InfoPlacement.menu;
+    void open(Widget page) => Navigator.push(
+        context, MaterialPageRoute(builder: (_) => page));
     return PopupMenuButton<String>(
       icon: Icon(Icons.more_vert,
           size: 28, color: Theme.of(context).colorScheme.onSurface),
-      tooltip: 'المزيد',
+      tooltip: s.t('more'),
       onSelected: (v) {
-        if (v == 'info') {
-          _openInfo();
-        } else if (v == 'privacy') {
-          settings.setPrivacyMode(!settings.privacyMode);
-        } else if (v.startsWith('sort_')) {
-          provider.setSort(NoteSort.values.byName(v.substring(5)));
+        switch (v) {
+          case 'info':
+            _openInfo();
+          case 'privacy':
+            settings.setPrivacyMode(!settings.privacyMode);
+          case 'favorites':
+            open(const FavoritesScreen());
+          case 'tags':
+            open(const TagsScreen());
+          case 'weekly':
+            open(const WeeklySummaryScreen());
+          default:
+            if (v.startsWith('sort_')) {
+              provider.setSort(NoteSort.values.byName(v.substring(5)));
+            }
         }
       },
       itemBuilder: (context) => [
+        // خدمات سريعة (تنقّل سريع لما يُستخدم بين الحين والآخر).
+        PopupMenuItem<String>(
+            enabled: false,
+            child: Text(s.t('quick_services'),
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        PopupMenuItem<String>(
+            value: 'favorites', child: _menuRow(Icons.star, s.t('favorites'))),
+        PopupMenuItem<String>(
+            value: 'tags', child: _menuRow(Icons.tag, s.t('tags_page'))),
+        PopupMenuItem<String>(
+            value: 'weekly',
+            child: _menuRow(Icons.insights_outlined, s.t('weekly_summary'))),
+        if (showInfo)
+          PopupMenuItem<String>(
+              value: 'info',
+              child: _menuRow(Icons.menu_book_outlined, s.t('info'))),
         PopupMenuItem<String>(
           value: 'privacy',
           child: _menuRow(
               settings.privacyMode
                   ? Icons.visibility_off
                   : Icons.visibility_outlined,
-              settings.privacyMode ? 'إيقاف وضع الخصوصية' : 'وضع الخصوصية'),
+              settings.privacyMode ? s.t('privacy_off') : s.t('privacy_mode')),
         ),
         const PopupMenuDivider(),
-        if (showInfo) ...[
-          PopupMenuItem<String>(
-              value: 'info',
-              child: _menuRow(Icons.menu_book_outlined, 'معلومات')),
-          const PopupMenuDivider(),
-        ],
-        // أنواع الإضافة جميعها في زرّ (+) — لا نكرّرها هنا.
-        const PopupMenuItem<String>(enabled: false, child: Text('فرز حسب')),
-        _sortItem('sort_updatedDesc', 'الأحدث تعديلًا', provider),
-        _sortItem('sort_createdDesc', 'الأحدث إنشاءً', provider),
-        _sortItem('sort_createdAsc', 'الأقدم إنشاءً', provider),
-        _sortItem('sort_titleAsc', 'العنوان (أ-ي)', provider),
+        PopupMenuItem<String>(
+            enabled: false,
+            child: Text(s.t('sort_by'),
+                style: const TextStyle(fontWeight: FontWeight.bold))),
+        _sortItem('sort_updatedDesc', s.t('sort_updated'), provider),
+        _sortItem('sort_createdDesc', s.t('sort_created_new'), provider),
+        _sortItem('sort_createdAsc', s.t('sort_created_old'), provider),
+        _sortItem('sort_titleAsc', s.t('sort_title'), provider),
       ],
     );
   }
