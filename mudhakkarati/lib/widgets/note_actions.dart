@@ -7,6 +7,7 @@ import '../core/l10n/app_strings.dart';
 import '../data/models/enums.dart';
 import '../data/models/note.dart';
 import '../features/editor/rich_text_field.dart';
+import '../features/editor/share_image_screen.dart';
 import '../features/home/notes_provider.dart';
 import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
@@ -134,6 +135,14 @@ Future<void> showNoteActions(BuildContext context, Note note,
             tile(Icons.share, s.t('share'), () async {
               Navigator.pop(context);
               await SharePlus.instance.share(ShareParams(text: _asText(note)));
+            }),
+            tile(Icons.image_outlined, s.t('share_image'), () async {
+              Navigator.pop(context);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => ShareImageScreen(note: note)),
+              );
             }),
             tile(Icons.picture_as_pdf_outlined, 'تصدير PDF', () async {
               Navigator.pop(context);
