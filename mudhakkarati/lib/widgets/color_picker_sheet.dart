@@ -77,7 +77,7 @@ Future<ColorPickResult?> showColorPicker(
   bool ruleOnLine = currentOnLine;
   double ruleThickness = currentThickness.clamp(0.5, 3.0);
   double ruleOpacity = currentOpacity.clamp(0.03, 0.6);
-  double ruleLineHeight = currentLineHeight.clamp(1.0, 2.6);
+  double ruleLineHeight = currentLineHeight.clamp(0.8, 3.0);
 
   // حالة التدرّج اللوني.
   final parsedGrad = NoteGradient.parse(currentGradient);
@@ -236,9 +236,9 @@ Future<ColorPickResult?> showColorPicker(
                         const SizedBox(width: 96, child: Text('تباعد الأسطر')),
                         Expanded(
                           child: Slider(
-                            min: 1.0,
-                            max: 2.6,
-                            divisions: 16,
+                            min: 0.8,
+                            max: 3.0,
+                            divisions: 22,
                             label: ruleLineHeight.toStringAsFixed(2),
                             value: ruleLineHeight,
                             onChanged: (v) =>

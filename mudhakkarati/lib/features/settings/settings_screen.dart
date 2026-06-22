@@ -372,11 +372,12 @@ class SettingsScreen extends StatelessWidget {
         },
       ),
 
-      // تعميم الخلفية على كل الملاحظات الحالية
+      // تعميم نمط الصفحة (خلفية + تباعد أسطر + تسطير) على كل الملاحظات الحالية
       ListTile(
         leading: const Icon(Icons.format_paint_outlined),
-        title: const Text('تطبيق الخلفية على كل الملاحظات'),
-        subtitle: const Text('يغيّر لون/خلفية كل ملاحظاتك الحالية دفعةً واحدة'),
+        title: const Text('تطبيق نمط الصفحة على كل الملاحظات'),
+        subtitle: const Text(
+            'الخلفية وتباعد الأسطر والتسطير على كل ملاحظاتك دفعةً واحدة'),
         onTap: () async {
           final res = await showColorPicker(context, st.defaultNoteColor,
               currentStyle: st.defaultBgStyle,
@@ -389,22 +390,32 @@ class SettingsScreen extends StatelessWidget {
           if (!await confirmAction(context,
               title: 'تطبيق على كل الملاحظات؟',
               message:
-                  'ستأخذ كل ملاحظاتك الحالية هذه الخلفية. يمكنك تغيير أي ملاحظة لاحقًا.',
+                  'ستأخذ كل ملاحظاتك الحالية هذه الخلفية وتباعد الأسطر والتسطير. '
+                  'خط المتن وحجمه عامّان (يطبَّقان على الكل تلقائيًّا)، والاتجاه يضبط نفسه لكل سطر. '
+                  'يمكنك تغيير أي ملاحظة لاحقًا.',
               confirmLabel: 'تطبيق',
               icon: Icons.format_paint_outlined,
               destructive: false)) {
             return;
           }
           final notesProvider = context.read<NotesProvider>();
+          // تباعد الأسطر يُحفظ أيضًا كافتراضي عامّ (للملاحظات الجديدة).
+          if (res.ruleLineHeight != null) {
+            await st.setNoteLineHeight(res.ruleLineHeight!);
+          }
           final n = await notesProvider.notes.applyBackgroundToAll(
             color: res.value,
             bgStyle: res.bgStyle ?? st.defaultBgStyle,
             gradient: res.gradient,
+            ruleOnLine: res.ruleOnLine,
+            ruleThickness: res.ruleThickness,
+            ruleOpacity: res.ruleOpacity,
+            ruleLineHeight: res.ruleLineHeight,
           );
           await notesProvider.refresh();
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('طُبّقت الخلفية على $n ملاحظة')),
+              SnackBar(content: Text('طُبّق نمط الصفحة على $n ملاحظة')),
             );
           }
         },
@@ -449,11 +460,11 @@ class SettingsScreen extends StatelessWidget {
         leading: const Icon(Icons.format_line_spacing),
         title: const Text('تباعد الأسطر'),
         subtitle: Slider(
-          min: 1.0,
-          max: 2.6,
-          divisions: 16,
-          label: st.noteLineHeight.toStringAsFixed(1),
-          value: st.noteLineHeight.clamp(1.0, 2.6),
+          min: 0.8,
+          max: 3.0,
+          divisions: 22,
+          label: st.noteLineHeight.toStringAsFixed(2),
+          value: st.noteLineHeight.clamp(0.8, 3.0),
           onChanged: st.setNoteLineHeight,
         ),
       ),

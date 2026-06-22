@@ -305,6 +305,16 @@ class RichTextEditorBody extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         customStyles:
             buildNoteDefaultStyles(context, settings, lineHeight: lineHeight),
+        // flutter_quill يطبّق سمة «line-height» للأسطر بقيم منفصلة محدّدة فقط
+        // (1.0/1.15/1.5/2.0) ويُسقط الباقي على الافتراضي — ما يجعل التباعد غير
+        // دقيق (تظهر 1.0 أكبر من 1.5). نتجاوز ذلك بإسناد الارتفاع الفعليّ لأي
+        // قيمة رقميّة مباشرةً، فيصير التباعد دقيقًا ويقبل قيمًا أقل من 1 وأكثر من 2.
+        customStyleBuilder: (attribute) {
+          if (attribute.key == 'line-height' && attribute.value is num) {
+            return TextStyle(height: (attribute.value as num).toDouble());
+          }
+          return const TextStyle();
+        },
         // مكبّر يظهر أثناء سحب مقبض التحديد ⇒ تحديد الكلمات أدقّ بكثير.
         quillMagnifierBuilder: defaultQuillMagnifierBuilder,
         placeholder: 'اكتب ملاحظتك هنا...',
@@ -459,11 +469,16 @@ class RichTextToolbar extends StatelessWidget {
                   'line-height', AttributeScope.block, v == 0 ? null : v),
             ),
             itemBuilder: (_) => const [
+              PopupMenuItem(value: 0.8, child: Text('0.8')),
+              PopupMenuItem(value: 0.9, child: Text('0.9')),
               PopupMenuItem(value: 1.0, child: Text('1.0')),
+              PopupMenuItem(value: 1.15, child: Text('1.15')),
               PopupMenuItem(value: 1.25, child: Text('1.25')),
               PopupMenuItem(value: 1.5, child: Text('1.5')),
               PopupMenuItem(value: 1.75, child: Text('1.75')),
               PopupMenuItem(value: 2.0, child: Text('2.0')),
+              PopupMenuItem(value: 2.5, child: Text('2.5')),
+              PopupMenuItem(value: 3.0, child: Text('3.0')),
               PopupMenuItem(value: 0.0, child: Text('افتراضي')),
             ],
           );

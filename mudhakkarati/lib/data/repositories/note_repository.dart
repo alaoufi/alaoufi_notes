@@ -214,18 +214,30 @@ class NoteRepository {
     return note.id!;
   }
 
-  /// يطبّق الخلفية نفسها (لون + نمط الصفحة + تدرّج) على **كل الملاحظات** غير
-  /// المحذوفة دفعةً واحدة. يعيد عدد الملاحظات المُحدَّثة. لا يغيّر updated_at كي لا
-  /// يُعيد ترتيب القائمة (تغيير شكليّ).
+  /// يطبّق نمط الصفحة نفسه (لون + نمط + تدرّج + تسطير + **تباعد الأسطر**) على
+  /// **كل الملاحظات** غير المحذوفة دفعةً واحدة. يعيد عدد الملاحظات المُحدَّثة. لا
+  /// يغيّر updated_at كي لا يُعيد ترتيب القائمة (تغيير شكليّ).
   Future<int> applyBackgroundToAll({
     int? color,
     required int bgStyle,
     String? gradient,
+    bool? ruleOnLine,
+    double? ruleThickness,
+    double? ruleOpacity,
+    double? ruleLineHeight,
   }) async {
     final db = await _db;
     return db.update(
       'notes',
-      {'color': color, 'bg_style': bgStyle, 'gradient': gradient},
+      {
+        'color': color,
+        'bg_style': bgStyle,
+        'gradient': gradient,
+        'rule_on_line': ruleOnLine == null ? null : (ruleOnLine ? 1 : 0),
+        'rule_thickness': ruleThickness,
+        'rule_opacity': ruleOpacity,
+        'rule_line_height': ruleLineHeight,
+      },
       where: 'is_deleted = 0',
     );
   }
