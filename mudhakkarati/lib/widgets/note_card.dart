@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../core/l10n/app_strings.dart';
 import '../core/text/line_direction.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/note_gradient.dart';
@@ -84,16 +85,12 @@ class NoteCard extends StatelessWidget {
               ),
               if (note.title.trim().isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(
+                _highlight(
+                  context,
                   note.title,
+                  TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16, color: onBg),
                   maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  textDirection: lineDirection(note.title),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: onBg,
-                  ),
                 ),
               ],
               if (note.isLocked && !revealLocked)
@@ -104,7 +101,7 @@ class NoteCard extends StatelessWidget {
                 _body(context, onBg),
                 _tagChips(context, onBg),
               ],
-              _footer(onBg),
+              _footer(context, onBg),
             ],
           ),
         ),
@@ -114,7 +111,7 @@ class NoteCard extends StatelessWidget {
   }
 
   /// تذييل منظّم: شارة التصنيف (نقطة ملوّنة + اسم) والتاريخ.
-  Widget _footer(Color onBg) {
+  Widget _footer(BuildContext context, Color onBg) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
       child: Row(
@@ -150,7 +147,7 @@ class NoteCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            _shortDate(note.updatedAt),
+            _shortDate(context, note.updatedAt),
             style: TextStyle(fontSize: 10.5, color: onBg.withOpacity(0.5)),
           ),
         ],
@@ -158,12 +155,16 @@ class NoteCard extends StatelessWidget {
     );
   }
 
-  String _shortDate(DateTime d) {
+  /// تاريخ ودّي: «HH:mm» لليوم، «أمس» للبارحة، ثمّ dd/MM لنفس السنة، وإلا
+  /// yyyy/MM/dd — أسهل للقراءة من التاريخ الخام.
+  String _shortDate(BuildContext context, DateTime d) {
     final now = DateTime.now();
     String two(int n) => n.toString().padLeft(2, '0');
-    if (d.year == now.year && d.month == now.month && d.day == now.day) {
-      return '${two(d.hour)}:${two(d.minute)}';
-    }
+    final today = DateTime(now.year, now.month, now.day);
+    final that = DateTime(d.year, d.month, d.day);
+    final diff = today.difference(that).inDays;
+    if (diff == 0) return '${two(d.hour)}:${two(d.minute)}';
+    if (diff == 1) return S.of(context).t('yesterday');
     if (d.year == now.year) return '${two(d.day)}/${two(d.month)}';
     return '${d.year}/${two(d.month)}/${two(d.day)}';
   }
@@ -426,17 +427,60 @@ class NoteCard extends StatelessWidget {
     );
   }
 
+  /// نصّ مع تمييز ما يطابق كلمة البحث (خلفية كهرمانية) — يسهّل إيجاد المطلوب
+  /// بنظرة. يضبط اتجاه السطر تلقائيًّا حسب لغته.
+  Widget _highlight(BuildContext context, String text, TextStyle style,
+      {int maxLines = 2}) {
+    final q = context.watch<NotesProvider>().search.trim();
+    final dir = lineDirection(text);
+    if (q.isEmpty || !text.toLowerCase().contains(q.toLowerCase())) {
+      return Directionality(
+        textDirection: dir,
+        child: Text(text,
+            maxLines: maxLines, overflow: TextOverflow.ellipsis, style: style),
+      );
+    }
+    final spans = <TextSpan>[];
+    final lc = text.toLowerCase();
+    final lq = q.toLowerCase();
+    final hl = style.copyWith(
+        backgroundColor: Colors.amber.withOpacity(0.45),
+        fontWeight: FontWeight.bold);
+    var i = 0;
+    while (true) {
+      final idx = lc.indexOf(lq, i);
+      if (idx < 0) {
+        spans.add(TextSpan(text: text.substring(i), style: style));
+        break;
+      }
+      if (idx > i) {
+        spans.add(TextSpan(text: text.substring(i, idx), style: style));
+      }
+      spans.add(
+          TextSpan(text: text.substring(idx, idx + q.length), style: hl));
+      i = idx + q.length;
+    }
+    return Directionality(
+      textDirection: dir,
+      child: RichText(
+        maxLines: maxLines,
+        overflow: TextOverflow.ellipsis,
+        textDirection: dir,
+        text: TextSpan(children: spans),
+      ),
+    );
+  }
+
   Widget _text(BuildContext context, Color onBg) {
     final plain = richToPlainText(note.content);
     if (plain.trim().isEmpty) return const SizedBox.shrink();
     final noteFont = context.watch<SettingsProvider>().noteFontFamily;
     return Padding(
       padding: const EdgeInsets.only(top: 4),
-      child: AutoDirText(
+      child: _highlight(
+        context,
         plain,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
+        TextStyle(
             color: onBg.withOpacity(0.8),
             height: 1.3,
             fontSize: 13,
