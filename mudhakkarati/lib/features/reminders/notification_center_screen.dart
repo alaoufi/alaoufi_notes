@@ -328,8 +328,14 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
   }
 
   Widget _tile(ReminderView v, Color sectionColor) {
+    final s = S.of(context);
     final r = v.reminder;
     final t = r.time;
+    // تنبيه «مرّة واحدة» فات وقته ⇒ منتهٍ (لن يرنّ ثانيةً): نعرضه باهتًا مع زرّ
+    // إعادة تنشيط (إعادة جدولته لوقت جديد).
+    final expired =
+        r.repeat == ReminderRepeat.once && t.isBefore(DateTime.now());
+    final hint = Theme.of(context).hintColor;
     String two(int n) => n.toString().padLeft(2, '0');
     final when = '${t.year}/${two(t.month)}/${two(t.day)}  '
         '${two(t.hour)}:${two(t.minute)}';
@@ -344,15 +350,66 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       child: ListTile(
         leading: CircleAvatar(
           radius: 6,
-          backgroundColor: impColor,
+          backgroundColor: expired ? hint.withOpacity(0.5) : impColor,
         ),
         title: Text(_titleOf(v),
-            maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(when, style: const TextStyle(fontSize: 12)),
-        trailing: r.repeat != ReminderRepeat.once
-            ? const Icon(Icons.repeat, size: 18)
-            : null,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: expired
+                ? TextStyle(color: hint, decoration: TextDecoration.lineThrough)
+                : null),
+        subtitle: Text(
+            expired ? '$when  •  ${s.t('nc_expired')}' : when,
+            style: TextStyle(
+                fontSize: 12, color: expired ? hint : null)),
+        trailing: expired
+            ? TextButton.icon(
+                onPressed: () => _reactivate(v),
+                icon: const Icon(Icons.restart_alt, size: 18),
+                label: Text(s.t('nc_reactivate')),
+              )
+            : (r.repeat != ReminderRepeat.once
+                ? const Icon(Icons.repeat, size: 18)
+                : null),
       ),
     );
+  }
+
+  /// إعادة تنشيط تنبيه منتهٍ: اختيار وقت جديد ثم إعادة جدولته (يبقى كما هو عدا
+  /// الوقت). يعمل للتنبيهات المستقلّة والمرتبطة بملاحظة.
+  Future<void> _reactivate(ReminderView v) async {
+    final s = S.of(context);
+    final r = v.reminder;
+    final now = DateTime.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: now.add(const Duration(hours: 1)),
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365 * 3)),
+    );
+    if (date == null || !mounted) return;
+    final tod = await showTimePicker(
+        context: context, initialTime: TimeOfDay.fromDateTime(now));
+    if (tod == null || !mounted) return;
+    final when =
+        DateTime(date.year, date.month, date.day, tod.hour, tod.minute);
+    final provider = context.read<RemindersProvider>();
+    if (v.note != null) {
+      await provider.setReminder(v.note!, when, r.repeat,
+          importance: r.importance, preAlerts: r.preAlerts.toList());
+    } else {
+      await provider.setStandalone(when, r.repeat, r.title ?? '',
+          importance: r.importance,
+          preAlerts: r.preAlerts.toList(),
+          location: r.location,
+          attachmentPath: r.attachmentPath,
+          intervalDays: r.intervalDays,
+          doseCount: r.doseCount,
+          existing: r);
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(s.t('nc_rescheduled'))));
+    }
   }
 }
