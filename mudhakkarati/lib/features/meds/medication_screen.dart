@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/text/line_direction.dart';
 import '../../data/database/app_database.dart';
+import '../../data/models/enums.dart';
 import '../../data/models/med_dose.dart';
+import '../../data/models/reminder.dart';
 import '../../data/repositories/med_repository.dart';
+import '../../data/repositories/reminder_repository.dart';
 import '../../services/med_dose_logger.dart';
+import '../../services/med_occurrences.dart';
+import '../reminders/reminders_provider.dart';
 import '../../widgets/confirm_dialog.dart';
 
 /// طريقة عرض سجلّ الجرعات: مجمّع حسب الدواء، أو السجل الكامل مسطّحًا.
 enum _MedView { byMed, all }
 
-/// وضع الدواء/العلاج: تسجيل أخذ الجرعات أو فواتها، مع سجلّ كامل ونسبة التزام.
+/// وضع الدواء/العلاج:
+/// - **كورسات الدواء**: لكل دواء عدد جرعات وفاصل وأوّل جرعة — يُحسب المتبقّي
+///   زمنيًّا (ينقص مع مرور الوقت حتى لو لم يرنّ التنبيه)، ويعرض الجرعات السابقة
+///   واللاحقة. دقيق لأنه علاج.
+/// - **سجلّ الجرعات**: تسجيل فعليّ (أُخذت/فاتت) مع نسبة الالتزام.
 class MedicationScreen extends StatefulWidget {
   const MedicationScreen({super.key});
 
@@ -22,8 +33,9 @@ class MedicationScreen extends StatefulWidget {
 class _MedicationScreenState extends State<MedicationScreen> {
   final _repo = MedRepository(AppDatabase.instance);
   List<MedDose> _doses = [];
+  List<Reminder> _courses = [];
   bool _loading = true;
-  _MedView _view = _MedView.byMed; // الافتراضي: مجمّع حسب الدواء.
+  _MedView _view = _MedView.byMed;
 
   @override
   void initState() {
@@ -32,14 +44,187 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _load() async {
-    // سجّل أولًا أي جرعات فائتة لمنبّهات الدواء 💊 منذ آخر فتح، ثم اعرض السجلّ.
+    // سجّل أولًا أي جرعات فائتة لمنبّهات الدواء 💊 منذ آخر فتح، ثم اعرض.
     await MedDoseLogger.instance.run();
     final list = await _repo.getAll();
-    if (mounted) setState(() {
-      _doses = list;
-      _loading = false;
-    });
+    final reminders = await ReminderRepository(AppDatabase.instance).getAll();
+    final courses = reminders
+        .where((r) =>
+            r.isActive && (r.title ?? '').contains('💊') && r.doseCount > 0)
+        .toList()
+      ..sort((a, b) => a.time.compareTo(b.time));
+    if (mounted) {
+      setState(() {
+        _doses = list;
+        _courses = courses;
+        _loading = false;
+      });
+    }
   }
+
+  // ===================== كورسات الدواء =====================
+
+  Future<void> _startCourse() async {
+    final names = await _repo.distinctNames();
+    if (!mounted) return;
+    final draft = await showModalBottomSheet<_CourseDraft>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _NewCourseSheet(suggestions: names),
+    );
+    if (draft == null || !mounted) return;
+    final title = '💊 ${draft.name}'
+        '${(draft.dose != null && draft.dose!.isNotEmpty) ? ' — ${draft.dose}' : ''}';
+    // فاصل ≥2 يوم ⇒ يُجدوَل ككورس بالأيام؛ ويوميّ (=1) عبر التكرار اليوميّ.
+    final intervalDays = draft.every >= 2 ? draft.every : 0;
+    await context.read<RemindersProvider>().setStandalone(
+          draft.first,
+          ReminderRepeat.daily,
+          title,
+          intervalDays: intervalDays,
+          doseCount: draft.total,
+        );
+    await _load();
+  }
+
+  Future<void> _stopCourse(Reminder r, S s) async {
+    if (!await confirmDelete(context,
+        title: s.t('med_stop'),
+        message: s.t('med_stop_confirm'),
+        icon: Icons.medication_outlined)) {
+      return;
+    }
+    await context.read<RemindersProvider>().removeReminder(r);
+    await _load();
+  }
+
+  Widget _courseCard(Reminder r, S s) {
+    final scheme = Theme.of(context).colorScheme;
+    final parsed = MedDoseLogger.parseMedTitle(r.title ?? '');
+    final name = parsed.$1;
+    final dose = parsed.$2;
+    final total = r.doseCount;
+    final now = DateTime.now();
+    final doses = [for (var i = 0; i < total; i++) medOccurrenceAt(r, i)];
+    final duePassed = doses.where((d) => !d.isAfter(now)).length;
+    final remaining = total - duePassed;
+    final complete = remaining <= 0;
+    final progress = total == 0 ? 0.0 : duePassed / total;
+    final dateFmt = DateFormat('yyyy/MM/dd');
+    final dtFmt = DateFormat('yyyy/MM/dd – HH:mm');
+    final accent = complete ? Colors.green : scheme.primary;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          leading: CircleAvatar(
+            backgroundColor: accent.withOpacity(0.15),
+            child: complete
+                ? Icon(Icons.check, color: accent)
+                : Text('$remaining',
+                    style: TextStyle(
+                        color: accent, fontWeight: FontWeight.bold)),
+          ),
+          title: Text(
+            (dose != null && dose.isNotEmpty) ? '$name — $dose' : name,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 4),
+              Text(
+                complete
+                    ? s.t('med_complete')
+                    : '${s.t('med_remaining')}: $remaining / $total',
+                style: TextStyle(
+                    color: accent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13),
+              ),
+              const SizedBox(height: 2),
+              Text('${s.t('med_first')}: ${dateFmt.format(doses.first)}',
+                  style: const TextStyle(fontSize: 11)),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(5),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  color: accent,
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
+          children: [
+            for (var i = 0; i < doses.length; i++)
+              _doseRow(i, doses[i], duePassed, dtFmt, s, scheme),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton.icon(
+                  onPressed: () => _stopCourse(r, s),
+                  icon: Icon(Icons.stop_circle_outlined,
+                      size: 18, color: scheme.error),
+                  label: Text(s.t('med_stop'),
+                      style: TextStyle(color: scheme.error)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// صفّ جرعة واحدة ضمن الكورس: سابقة (مضت) / التالية / قادمة.
+  Widget _doseRow(int i, DateTime when, int duePassed, DateFormat fmt, S s,
+      ColorScheme scheme) {
+    final isPast = i < duePassed;
+    final isNext = i == duePassed;
+    final IconData icon;
+    final Color color;
+    final String label;
+    if (isPast) {
+      icon = Icons.check_circle_outline;
+      color = Colors.green;
+      label = s.t('med_past_label');
+    } else if (isNext) {
+      icon = Icons.notifications_active_outlined;
+      color = scheme.primary;
+      label = s.t('med_next_label');
+    } else {
+      icon = Icons.schedule;
+      color = Theme.of(context).hintColor;
+      label = s.t('med_upcoming_label');
+    }
+    return Container(
+      color: isNext ? scheme.primary.withOpacity(0.07) : null,
+      child: ListTile(
+        dense: true,
+        visualDensity: const VisualDensity(vertical: -2),
+        leading: Icon(icon, color: color, size: 20),
+        title: Text('${s.t('med_dose_word')} ${i + 1}',
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: isNext ? FontWeight.bold : FontWeight.normal)),
+        subtitle: Text(fmt.format(when), style: const TextStyle(fontSize: 12)),
+        trailing: Text(label,
+            style: TextStyle(
+                fontSize: 11, color: color, fontWeight: FontWeight.w600)),
+      ),
+    );
+  }
+
+  // ===================== سجلّ الجرعات (الفعليّ) =====================
 
   Future<void> _logDose() async {
     final names = await _repo.distinctNames();
@@ -65,18 +250,37 @@ class _MedicationScreenState extends State<MedicationScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(s.t('med_mode'))),
+      appBar: AppBar(
+        title: Text(s.t('med_mode')),
+        actions: [
+          IconButton(
+            tooltip: s.t('med_log_dose'),
+            icon: const Icon(Icons.add_task),
+            onPressed: _logDose,
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _logDose,
+        onPressed: _startCourse,
         icon: const Icon(Icons.medication),
-        label: Text(s.t('med_log_dose')),
+        label: Text(s.t('med_new')),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
               children: [
-                // بطاقة الالتزام.
+                // كورسات الدواء الجارية.
+                if (_courses.isNotEmpty) ...[
+                  _sectionTitle(Icons.medication_liquid, s.t('med_courses'),
+                      scheme),
+                  for (final r in _courses) _courseCard(r, s),
+                  const SizedBox(height: 8),
+                ],
+
+                // سجلّ الجرعات الفعليّ + الالتزام.
+                _sectionTitle(Icons.fact_check_outlined, s.t('med_history'),
+                    scheme),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(14),
@@ -110,7 +314,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
                             backgroundColor: scheme.surfaceContainerHighest,
                             color: adherence > 0.7
                                 ? Colors.green
-                                : (adherence > 0.4 ? Colors.orange : Colors.red),
+                                : (adherence > 0.4
+                                    ? Colors.orange
+                                    : Colors.red),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -129,23 +335,22 @@ class _MedicationScreenState extends State<MedicationScreen> {
                 ),
                 if (_doses.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 40),
+                    padding: const EdgeInsets.only(top: 30),
                     child: Center(child: Text(s.t('no_med_log'))),
                   )
                 else ...[
-                  // مبدّل العرض: مجمّع حسب الدواء / السجل الكامل.
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: SegmentedButton<_MedView>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                             value: _MedView.byMed,
-                            icon: Icon(Icons.medication_liquid),
-                            label: Text('حسب الدواء')),
+                            icon: const Icon(Icons.medication_liquid),
+                            label: Text(s.t('med_by_drug'))),
                         ButtonSegment(
                             value: _MedView.all,
-                            icon: Icon(Icons.list_alt),
-                            label: Text('السجل الكامل')),
+                            icon: const Icon(Icons.list_alt),
+                            label: Text(s.t('med_full_log'))),
                       ],
                       selected: {_view},
                       onSelectionChanged: (v) =>
@@ -163,7 +368,20 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
-  /// يجمع الجرعات حسب اسم الدواء (محافظًا على ترتيب الأحدث أولًا داخل كلٍّ).
+  Widget _sectionTitle(IconData icon, String text, ColorScheme scheme) =>
+      Padding(
+        padding: const EdgeInsets.fromLTRB(4, 8, 4, 4),
+        child: Row(children: [
+          Icon(icon, size: 18, color: scheme.primary),
+          const SizedBox(width: 6),
+          Text(text,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: scheme.primary)),
+        ]),
+      );
+
   Map<String, List<MedDose>> _groupedByName() {
     final map = <String, List<MedDose>>{};
     for (final d in _doses) {
@@ -172,7 +390,6 @@ class _MedicationScreenState extends State<MedicationScreen> {
     return map;
   }
 
-  /// بطاقة دواء واحد: الاسم + عدد الجرعات المأخوذة + قائمة التواريخ (قابلة للطيّ).
   Widget _medGroupCard(String name, List<MedDose> list, S s) {
     final taken = list.where((d) => d.taken).length;
     final missed = list.length - taken;
@@ -195,7 +412,8 @@ class _MedicationScreenState extends State<MedicationScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontWeight: FontWeight.bold)),
           subtitle: Text(
-            'أُخذت: $taken جرعة${missed > 0 ? '  •  فاتت: $missed' : ''}',
+            '${s.t('med_taken')}: $taken'
+            '${missed > 0 ? '  •  ${s.t('med_missed')}: $missed' : ''}',
             style: const TextStyle(fontSize: 12),
           ),
           children: [
@@ -221,8 +439,9 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 
   Future<void> _deleteDose(MedDose d) async {
+    final s = S.of(context);
     if (!await confirmDelete(context,
-        title: 'حذف السجلّ؟', message: 'سيُحذف سجلّ هذه الجرعة نهائيًا.')) {
+        title: s.t('med_delete_dose'), message: s.t('med_delete_dose_msg'))) {
       return;
     }
     await _repo.delete(d.id!);
@@ -260,7 +479,211 @@ class _MedicationScreenState extends State<MedicationScreen> {
   }
 }
 
-/// ورقة تسجيل جرعة: اسم + جرعة + الحالة (أُخذت/فاتت).
+/// مسوّدة كورس دواء جديد (تُعاد من ورقة الإنشاء).
+class _CourseDraft {
+  final String name;
+  final String? dose;
+  final int total;
+  final int every; // الفاصل بالأيام (7 = أسبوعيًّا)
+  final DateTime first;
+  const _CourseDraft({
+    required this.name,
+    required this.dose,
+    required this.total,
+    required this.every,
+    required this.first,
+  });
+}
+
+/// ورقة «بدء دواء»: الاسم + الجرعة + عدد الجرعات + الفاصل + أوّل موعد.
+class _NewCourseSheet extends StatefulWidget {
+  final List<String> suggestions;
+  const _NewCourseSheet({required this.suggestions});
+
+  @override
+  State<_NewCourseSheet> createState() => _NewCourseSheetState();
+}
+
+class _NewCourseSheetState extends State<_NewCourseSheet> {
+  final _name = TextEditingController();
+  final _dose = TextEditingController();
+  int _total = 8;
+  int _every = 7; // أسبوعيًّا افتراضيًّا
+  late DateTime _date;
+  late TimeOfDay _time;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _date = DateTime(now.year, now.month, now.day);
+    _time = TimeOfDay(hour: now.hour, minute: now.minute);
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _dose.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate() async {
+    final d = await showDatePicker(
+      context: context,
+      initialDate: _date,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
+    );
+    if (d != null) setState(() => _date = d);
+  }
+
+  Future<void> _pickTime() async {
+    final t = await showTimePicker(context: context, initialTime: _time);
+    if (t != null) setState(() => _time = t);
+  }
+
+  Widget _stepper(String label, int value, String suffix, VoidCallback dec,
+      VoidCallback inc) {
+    return Row(children: [
+      Expanded(
+          child: Text(label,
+              style: const TextStyle(fontWeight: FontWeight.w600))),
+      IconButton(
+          icon: const Icon(Icons.remove_circle_outline), onPressed: dec),
+      Text('$value $suffix',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+      IconButton(icon: const Icon(Icons.add_circle_outline), onPressed: inc),
+    ]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final dateFmt = DateFormat('yyyy/MM/dd');
+    final everyHint = _every == 7
+        ? '  (${s.t('med_weekly')})'
+        : _every == 1
+            ? '  (${s.t('med_daily')})'
+            : '';
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+          16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(s.t('med_new'),
+                style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _name,
+              autofocus: true,
+              onChanged: (_) => setState(() {}),
+              textDirection: lineDirection(_name.text),
+              decoration: InputDecoration(
+                labelText: s.t('med_name'),
+                prefixIcon: const Icon(Icons.medication_outlined),
+              ),
+            ),
+            if (widget.suggestions.isNotEmpty)
+              Wrap(
+                spacing: 6,
+                children: [
+                  for (final n in widget.suggestions.take(8))
+                    ActionChip(
+                        label: Text(n),
+                        onPressed: () => setState(() => _name.text = n)),
+                ],
+              ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _dose,
+              decoration: InputDecoration(
+                labelText: s.t('med_dose'),
+                prefixIcon: const Icon(Icons.science_outlined),
+              ),
+            ),
+            const SizedBox(height: 12),
+            _stepper(
+                s.t('med_total'),
+                _total,
+                s.t('med_dose_unit'),
+                () => setState(() => _total = (_total - 1).clamp(1, 365)),
+                () => setState(() => _total = (_total + 1).clamp(1, 365))),
+            Row(children: [
+              Expanded(
+                  child: Text('${s.t('med_interval')}$everyHint',
+                      style: const TextStyle(fontWeight: FontWeight.w600))),
+              IconButton(
+                  icon: const Icon(Icons.remove_circle_outline),
+                  onPressed: () =>
+                      setState(() => _every = (_every - 1).clamp(1, 90))),
+              Text('$_every',
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 15)),
+              IconButton(
+                  icon: const Icon(Icons.add_circle_outline),
+                  onPressed: () =>
+                      setState(() => _every = (_every + 1).clamp(1, 90))),
+            ]),
+            const SizedBox(height: 8),
+            // أوّل جرعة: تاريخ + وقت.
+            Row(children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickDate,
+                  icon: const Icon(Icons.event, size: 18),
+                  label: Text(dateFmt.format(_date)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: _pickTime,
+                  icon: const Icon(Icons.access_time, size: 18),
+                  label: Text(_time.format(context)),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 6),
+            Text('${s.t('med_first')}: ${dateFmt.format(_date)}',
+                style: TextStyle(
+                    fontSize: 12, color: Theme.of(context).hintColor)),
+            const SizedBox(height: 16),
+            Row(children: [
+              const Spacer(),
+              FilledButton.icon(
+                onPressed: _name.text.trim().isEmpty
+                    ? null
+                    : () {
+                        final first = DateTime(_date.year, _date.month,
+                            _date.day, _time.hour, _time.minute);
+                        Navigator.pop(
+                          context,
+                          _CourseDraft(
+                            name: _name.text.trim(),
+                            dose: _dose.text.trim().isEmpty
+                                ? null
+                                : _dose.text.trim(),
+                            total: _total,
+                            every: _every,
+                            first: first,
+                          ),
+                        );
+                      },
+                icon: const Icon(Icons.check),
+                label: Text(s.t('save')),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// ورقة تسجيل جرعة فعليّة: اسم + جرعة + الحالة (أُخذت/فاتت).
 class _LogSheet extends StatefulWidget {
   final List<String> suggestions;
   const _LogSheet({required this.suggestions});

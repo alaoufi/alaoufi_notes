@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/l10n/app_strings.dart';
 import '../../services/sync/sync_service.dart';
 import '../../widgets/ui_kit.dart';
 import '../home/notes_provider.dart';
@@ -67,11 +68,12 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
           if (email != null) _provider = SyncProvider.googleDrive;
         });
       }
+      final loc = S.of(context);
       _snack(email != null
-          ? 'تم الاتصال: $email'
-          : 'تعذّر تسجيل الدخول — تأكّد من إعداد Google (انظر الملاحظة بالأسفل)');
+          ? '${loc.t('sync_connected')}: $email'
+          : loc.t('sync_login_fail_google'));
     } catch (e) {
-      _snack('فشل تسجيل الدخول: $e');
+      _snack('${S.of(context).t('sync_login_fail')}: $e');
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -99,23 +101,26 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
 
   /// وقت نسبيّ ودّي لآخر مزامنة (الآن/قبل دقائق/ساعات/أيام).
   String _relative(DateTime d) {
+    final loc = S.of(context);
+    String fmt(String key, int n) => loc.t(key).replaceAll('{n}', '$n');
     final diff = DateTime.now().difference(d);
-    if (diff.inMinutes < 1) return 'الآن';
-    if (diff.inMinutes < 60) return 'قبل ${diff.inMinutes} دقيقة';
-    if (diff.inHours < 24) return 'قبل ${diff.inHours} ساعة';
-    if (diff.inDays < 30) return 'قبل ${diff.inDays} يوم';
-    return 'قبل ${diff.inDays ~/ 30} شهر';
+    if (diff.inMinutes < 1) return loc.t('just_now');
+    if (diff.inMinutes < 60) return fmt('mins_ago', diff.inMinutes);
+    if (diff.inHours < 24) return fmt('hours_ago', diff.inHours);
+    if (diff.inDays < 30) return fmt('days_ago', diff.inDays);
+    return fmt('months_ago', diff.inDays ~/ 30);
   }
 
   Future<bool> _saveSettings() async {
     final s = SyncService.instance;
+    final loc = S.of(context);
     if (_phrase.text.trim().isEmpty && !await s.hasPassphrase()) {
-      _snack('أدخل عبارة مرور التشفير (نفسها على كل الأجهزة)');
+      _snack(loc.t('sync_enter_passphrase'));
       return false;
     }
     if (_provider == SyncProvider.webdav) {
       if (_url.text.trim().isEmpty || _user.text.trim().isEmpty) {
-        _snack('أدخل رابط الخادم واسم المستخدم');
+        _snack(loc.t('sync_enter_webdav'));
         return false;
       }
       await s.setProvider(SyncProvider.webdav);
@@ -126,7 +131,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
       );
     } else if (_provider == SyncProvider.googleDrive) {
       if (_googleEmail == null) {
-        _snack('سجّل الدخول بحساب Google أولًا');
+        _snack(loc.t('sync_login_google_first'));
         return false;
       }
       await s.setProvider(SyncProvider.googleDrive);
@@ -169,12 +174,13 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
         : _content(context, scheme);
     if (widget.embedded) return body;
     return Scaffold(
-      appBar: gradientAppBar(context, 'المزامنة السحابية'),
+      appBar: gradientAppBar(context, S.of(context).t('cloud_sync')),
       body: body,
     );
   }
 
   Widget _content(BuildContext context, ColorScheme scheme) {
+    final loc = S.of(context);
     return ListView(
               padding: const EdgeInsets.symmetric(vertical: 8),
               children: [
@@ -187,7 +193,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                       Row(children: [
                         Icon(Icons.cloud_sync, color: scheme.primary),
                         const SizedBox(width: 10),
-                        const Text('مزوّد المزامنة',
+                        Text(loc.t('sync_provider'),
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
                       ]),
@@ -218,27 +224,27 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('بيانات خادم WebDAV',
+                        Text(loc.t('sync_webdav_data'),
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(height: 4),
                         Text(
-                            'مثال Nextcloud: https://cloud.example.com/remote.php/dav/files/USER/Notes',
+                            loc.t('sync_webdav_example'),
                             style: Theme.of(context).textTheme.bodySmall),
                         const SizedBox(height: 12),
                         TextField(
                           controller: _url,
                           keyboardType: TextInputType.url,
-                          decoration: const InputDecoration(
-                            labelText: 'رابط المجلّد',
+                          decoration: InputDecoration(
+                            labelText: loc.t('sync_folder_url'),
                             prefixIcon: Icon(Icons.link),
                           ),
                         ),
                         const SizedBox(height: 10),
                         TextField(
                           controller: _user,
-                          decoration: const InputDecoration(
-                            labelText: 'اسم المستخدم',
+                          decoration: InputDecoration(
+                            labelText: loc.t('username'),
                             prefixIcon: Icon(Icons.person_outline),
                           ),
                         ),
@@ -246,8 +252,8 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                         TextField(
                           controller: _pass,
                           obscureText: true,
-                          decoration: const InputDecoration(
-                            labelText: 'كلمة المرور (أو كلمة مرور التطبيق)',
+                          decoration: InputDecoration(
+                            labelText: loc.t('password_app'),
                             prefixIcon: Icon(Icons.lock_outline),
                           ),
                         ),
@@ -262,12 +268,12 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('حساب Google',
+                        Text(loc.t('google_account'),
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16)),
                         const SizedBox(height: 4),
                         Text(
-                            'تُحفظ النسخة في مجلّد التطبيق المخفي بحسابك (لا تظهر بين ملفاتك).',
+                            loc.t('sync_google_hidden'),
                             style: Theme.of(context).textTheme.bodySmall),
                         const SizedBox(height: 12),
                         if (_googleEmail != null)
@@ -276,18 +282,18 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                             leading: const Icon(Icons.account_circle,
                                 color: Colors.green),
                             title: Text(_googleEmail!),
-                            subtitle: const Text('متّصل'),
+                            subtitle: Text(loc.t('connected')),
                             trailing: TextButton.icon(
                               onPressed: _busy ? null : _googleDisconnect,
                               icon: const Icon(Icons.logout),
-                              label: const Text('خروج'),
+                              label: Text(loc.t('logout')),
                             ),
                           )
                         else
                           FilledButton.tonalIcon(
                             onPressed: _busy ? null : _googleConnect,
                             icon: const Icon(Icons.login),
-                            label: const Text('تسجيل الدخول بحساب Google'),
+                            label: Text(loc.t('sync_login_google')),
                           ),
                       ],
                     ),
@@ -302,22 +308,22 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                       Row(children: [
                         Icon(Icons.shield_outlined, color: scheme.primary),
                         const SizedBox(width: 8),
-                        const Expanded(
-                          child: Text('عبارة مرور التشفير (E2E)',
+                        Expanded(
+                          child: Text(loc.t('e2e_passphrase'),
                               style: TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16)),
                         ),
                       ]),
                       const SizedBox(height: 4),
                       Text(
-                          'تُشفّر بها ملاحظاتك قبل رفعها — الخادم لا يقرؤها. استخدم نفس العبارة على كل أجهزتك.',
+                          loc.t('e2e_desc'),
                           style: Theme.of(context).textTheme.bodySmall),
                       const SizedBox(height: 12),
                       TextField(
                         controller: _phrase,
                         obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'عبارة المرور (اتركها فارغة للإبقاء عليها)',
+                        decoration: InputDecoration(
+                          labelText: loc.t('passphrase_hint'),
                           prefixIcon: Icon(Icons.key),
                         ),
                       ),
@@ -334,7 +340,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                         value: _auto,
                         onChanged: (v) => setState(() => _auto = v),
                         secondary: const Icon(Icons.sync),
-                        title: const Text('مزامنة تلقائية عند فتح التطبيق',
+                        title: Text(loc.t('auto_sync_open'),
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                       ListTile(
@@ -343,9 +349,9 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                             color: _last != null
                                 ? Colors.green
                                 : Theme.of(context).hintColor),
-                        title: const Text('آخر مزامنة'),
+                        title: Text(loc.t('last_sync')),
                         subtitle: Text(_last == null
-                            ? 'لم تتم بعد'
+                            ? loc.t('not_yet')
                             : '${_relative(_last!)} • ${DateFormat('yyyy/MM/dd – HH:mm').format(_last!)}'),
                       ),
                     ],
@@ -360,7 +366,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                         child: OutlinedButton.icon(
                           onPressed: _busy ? null : _test,
                           icon: const Icon(Icons.wifi_tethering),
-                          label: const Text('اختبار الاتصال'),
+                          label: Text(loc.t('test_connection')),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -374,7 +380,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                                   child: CircularProgressIndicator(
                                       strokeWidth: 2))
                               : const Icon(Icons.cloud_sync),
-                          label: const Text('زامن الآن'),
+                          label: Text(loc.t('sync_now')),
                         ),
                       ),
                     ],
@@ -384,9 +390,7 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 18),
                   child: Text(
-                    'ملاحظة: في هذه النسخة تُزامَن الملاحظات النصّية وقوائم المهام '
-                    'والوسوم والتصنيفات. المرفقات (صور/صوت/ملفات) تُحفظ عبر النسخة '
-                    'الاحتياطية الكاملة.',
+                    loc.t('sync_note'),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),

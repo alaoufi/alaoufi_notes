@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/database/app_database.dart';
@@ -81,7 +80,6 @@ class MedDoseLogger {
   }
 
   /// اسم الدواء وجرعته من عنوان المنبّه «💊 الاسم — الجرعة».
-  @visibleForTesting
   static (String, String?) parseMedTitle(String title) {
     var t = title.replaceAll('💊', '').trim();
     String? dose;
