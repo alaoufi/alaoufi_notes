@@ -334,6 +334,9 @@ class _BackupScreenState extends State<BackupScreen> {
     _toast(result.message);
     if (result.success) {
       await context.read<NotesProvider>().init();
+      // جدولة أي تنبيهات مستوردة فورًا.
+      if (mounted) await context.read<RemindersProvider>().refresh();
+      if (mounted) await context.read<RemindersProvider>().ensureScheduled();
     }
   }
 

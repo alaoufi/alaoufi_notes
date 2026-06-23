@@ -15,8 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../data/database/app_database.dart';
 import '../data/database/db_key.dart';
 import '../data/models/note.dart';
+import '../data/models/reminder.dart';
 import '../data/repositories/category_repository.dart';
 import '../data/repositories/note_repository.dart';
+import '../data/repositories/reminder_repository.dart';
 import 'encryption_service.dart';
 import 'file_service.dart';
 
@@ -430,6 +432,11 @@ class BackupService {
       final notes =
           (await repo.getEverything()).where((n) => !n.isDeleted).toList();
       final cats = await catRepo.getAll();
+      // التنبيهات المستقلّة فقط (المرتبطة بملاحظة تُستعاد مع نسختها الكاملة).
+      final reminders =
+          (await ReminderRepository(AppDatabase.instance).getAll())
+              .where((r) => r.isStandalone)
+              .toList();
       final data = <String, dynamic>{
         'app': 'AlaoufiNotes',
         'type': 'notes-json',
@@ -441,6 +448,7 @@ class BackupService {
           m['tags'] = n.tags;
           return m;
         }).toList(),
+        'reminders': reminders.map((r) => r.toMap()).toList(),
       };
       final jsonStr = const JsonEncoder.withIndent('  ').convert(data);
       final bytes = Uint8List.fromList(utf8.encode(jsonStr));
@@ -519,7 +527,36 @@ class BackupService {
         if (uuid != null) existing.add(uuid);
         added++;
       }
-      return BackupResult(true, 'تم استيراد $added ملاحظة');
+
+      // التنبيهات المستقلّة: تُضاف بمعرّف إشعار جديد، مع تخطّي المتطابق.
+      var addedReminders = 0;
+      final remList = decoded['reminders'];
+      if (remList is List) {
+        final remRepo = ReminderRepository(AppDatabase.instance);
+        final existR = await remRepo.getAll();
+        String key(Reminder r) =>
+            '${r.title}|${r.time.millisecondsSinceEpoch}|${r.repeat.index}|${r.intervalDays}';
+        final existKeys =
+            existR.where((r) => r.isStandalone).map(key).toSet();
+        var maxNid = existR.fold<int>(
+            1000, (mx, r) => r.notificationId > mx ? r.notificationId : mx);
+        for (final raw in remList) {
+          if (raw is! Map) continue;
+          final m = Map<String, dynamic>.from(raw);
+          if (m['note_id'] != null) continue; // المستقلّة فقط.
+          m.remove('id');
+          final r0 = Reminder.fromMap(m);
+          if (existKeys.contains(key(r0))) continue;
+          maxNid += 1;
+          await remRepo.insert(r0.copyWith(notificationId: maxNid));
+          existKeys.add(key(r0));
+          addedReminders++;
+        }
+      }
+
+      final extra =
+          addedReminders > 0 ? ' و$addedReminders تنبيه' : '';
+      return BackupResult(true, 'تم استيراد $added ملاحظة$extra');
     } catch (e) {
       return BackupResult(false, 'فشل الاستيراد: $e');
     }
