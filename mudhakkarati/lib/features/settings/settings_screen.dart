@@ -267,6 +267,15 @@ class SettingsScreen extends StatelessWidget {
           onChanged: st.setDynamicColor,
         ),
 
+        // عرض مدمج لبطاقات الملاحظات
+        SwitchListTile(
+          secondary: const Icon(Icons.density_small),
+          title: Text(s.t('compact_view')),
+          subtitle: Text(s.t('compact_view_desc')),
+          value: st.compactCards,
+          onChanged: st.setCompactCards,
+        ),
+
         // حجم الخط (واجهة التطبيق)
         ListTile(
           leading: const Icon(Icons.format_size),

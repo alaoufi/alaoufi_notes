@@ -340,6 +340,16 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
+  Future<void> _verifyBackup() async {
+    final pwd = await _askPassword('التحقّق من نسخة');
+    if (pwd == null || pwd.isEmpty) return;
+    setState(() => _busy = true);
+    final r = await BackupService.instance.verifyBackupFile(pwd);
+    if (!mounted) return;
+    setState(() => _busy = false);
+    _toast(r.message);
+  }
+
   Future<void> _import() async {
     final s = S.of(context);
 
@@ -625,6 +635,16 @@ class _BackupScreenState extends State<BackupScreen> {
                   subtitle: const Text(
                       'استعادة نسخة احتياطية سابقة. سيتم استبدال البيانات الحالية.'),
                   onTap: _busy ? null : _import,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: ListTile(
+                  leading: const Icon(Icons.verified_outlined),
+                  title: const Text('التحقّق من نسخة'),
+                  subtitle: const Text(
+                      'تأكّد أنّ ملف نسخة قابل للاستعادة دون استبدال بياناتك.'),
+                  onTap: _busy ? null : _verifyBackup,
                 ),
               ),
               const SizedBox(height: 8),

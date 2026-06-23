@@ -16,6 +16,7 @@ class SettingsProvider extends ChangeNotifier {
   String _fontFamily = 'Cairo';
   bool _hideSelectionMenu = false;
   bool _dynamicColor = false; // ألوان النظام (Dynamic Color) على أندرويد 12+
+  bool _compactCards = false; // عرض مدمج لبطاقات الملاحظات
   InfoPlacement _infoPlacement = InfoPlacement.tab;
   NoteLayout _layout = NoteLayout.grid;
   Locale _locale = const Locale('ar'); // عربي افتراضيًّا (تطبيق عربيّ ⇒ اتجاه RTL)
@@ -52,6 +53,7 @@ class SettingsProvider extends ChangeNotifier {
   String get fontFamily => _fontFamily;
   bool get hideSelectionMenu => _hideSelectionMenu;
   bool get dynamicColor => _dynamicColor;
+  bool get compactCards => _compactCards;
   InfoPlacement get infoPlacement => _infoPlacement;
   NoteLayout get layout => _layout;
   Locale get locale => _locale;
@@ -230,6 +232,7 @@ class SettingsProvider extends ChangeNotifier {
   static const _kFontFamily = 'font_family';
   static const _kHideSelMenu = 'hide_selection_menu';
   static const _kDynamicColor = 'dynamic_color';
+  static const _kCompactCards = 'compact_cards';
   static const _kInfoPlacement = 'info_placement';
   static const _kLayout = 'note_layout';
   static const _kLocale = 'locale';
@@ -265,6 +268,7 @@ class SettingsProvider extends ChangeNotifier {
     if (fam != null && fontFamilies.contains(fam)) _fontFamily = fam;
     _hideSelectionMenu = prefs.getBool(_kHideSelMenu) ?? false;
     _dynamicColor = prefs.getBool(_kDynamicColor) ?? false;
+    _compactCards = prefs.getBool(_kCompactCards) ?? false;
     final ip = prefs.getString(_kInfoPlacement);
     _infoPlacement = InfoPlacement.values
         .firstWhere((e) => e.name == ip, orElse: () => InfoPlacement.tab);
@@ -509,6 +513,13 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kDynamicColor, on);
+  }
+
+  Future<void> setCompactCards(bool on) async {
+    _compactCards = on;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kCompactCards, on);
   }
 
   Future<void> setInfoPlacement(InfoPlacement placement) async {

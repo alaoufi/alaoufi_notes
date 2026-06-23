@@ -396,6 +396,15 @@ class NoteRepository {
   // الوسوم (Tags)
   // ---------------------------------------------------------------------------
 
+  /// معرّفات الملاحظات التي لها تنبيه نشِط (لإظهار مؤشّر على البطاقة).
+  Future<Set<int>> noteIdsWithReminders() async {
+    final db = await _db;
+    final rows = await db.rawQuery(
+        'SELECT DISTINCT note_id FROM reminders '
+        'WHERE note_id IS NOT NULL AND is_active = 1');
+    return rows.map((r) => r['note_id'] as int).toSet();
+  }
+
   Future<List<String>> getAllTags() async {
     final db = await _db;
     final rows = await db.query('tags', orderBy: 'name ASC');

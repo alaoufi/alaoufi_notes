@@ -86,6 +86,9 @@ class NotesProvider extends ChangeNotifier {
   Map<String, int> _tagColors = {};
   Map<String, int> get tagColors => _tagColors;
 
+  Set<int> _reminderNoteIds = {};
+  bool noteHasReminder(int? id) => id != null && _reminderNoteIds.contains(id);
+
   Future<void> _loadTagColors() async {
     final list = await notes.getAllTagsWithColors();
     _tagColors = {
@@ -167,6 +170,7 @@ class NotesProvider extends ChangeNotifier {
         to: fTo,
       );
       _dbError = false;
+      _reminderNoteIds = await notes.noteIdsWithReminders();
     } catch (_) {
       // **حماية:** تعذّر فتح القاعدة (غالبًا مؤقّت — مفتاح/تخزين). لا نعرضها
       // كـ«فارغة» (يُربك ويخاطر بقرار حذف/استعادة خاطئ)، ولا نمسح القائمة القديمة.

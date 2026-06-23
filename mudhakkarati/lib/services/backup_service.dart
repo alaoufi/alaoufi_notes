@@ -616,6 +616,28 @@ class BackupService {
         .encryptBytes(Uint8List.fromList(zipped), password);
   }
 
+  /// يتيح للمستخدم اختيار ملفّ نسخة والتأكّد من سلامته (فكّ تشفير اختباريّ) دون
+  /// استعادته — للاطمئنان أنّ النسخة قابلة للاستعادة وقت الحاجة.
+  Future<BackupResult> verifyBackupFile(String password) async {
+    try {
+      final picked = await FilePicker.platform.pickFiles(
+        dialogTitle: 'اختر ملف النسخة للتحقّق',
+        type: FileType.any,
+      );
+      final path = picked?.files.single.path;
+      if (path == null) return const BackupResult(false, 'لم يتم اختيار ملف');
+      final bytes = await File(path).readAsBytes();
+      final ok = await _verifyEncrypted(bytes, password);
+      return BackupResult(
+          ok,
+          ok
+              ? 'النسخة سليمة وقابلة للاستعادة ✓'
+              : 'النسخة تالفة أو كلمة المرور خاطئة');
+    } catch (e) {
+      return BackupResult(false, 'تعذّر التحقّق: $e');
+    }
+  }
+
   /// استعادة نسخة احتياطية من ملف يختاره المستخدم.
   Future<BackupResult> importBackup(String password) async {
     try {

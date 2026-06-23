@@ -58,7 +58,8 @@ class NoteCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(
+              context.watch<SettingsProvider>().compactCards ? 7 : 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -67,6 +68,12 @@ class NoteCard extends StatelessWidget {
                 children: [
                   Icon(_typeIcon, size: 18, color: onBg.withOpacity(0.6)),
                   const Spacer(),
+                  if (context.watch<NotesProvider>().noteHasReminder(note.id))
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Icon(Icons.alarm,
+                          size: 15, color: onBg.withOpacity(0.7)),
+                    ),
                   if (note.isFavorite)
                     Padding(
                       padding: const EdgeInsets.only(right: 4),
