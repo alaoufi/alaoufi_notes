@@ -1,4 +1,5 @@
 import 'dart:convert';
+import '../../core/l10n/app_strings.dart';
 
 import 'package:flutter/material.dart';
 
@@ -106,8 +107,8 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                   const SizedBox(height: 10),
                   TextField(
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: 'بحث…',
+                    decoration: InputDecoration(
+                      hintText: S.of(context).t('search'),
                       prefixIcon: Icon(Icons.search),
                       isDense: true,
                     ),
@@ -129,9 +130,9 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                             onTap: () => Navigator.pop(ctx, o),
                           ),
                         if (filtered.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Text('لا توجد عناصر مطابقة'),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Text(S.of(context).t('inf_no_match')),
                           ),
                       ],
                     ),
@@ -158,7 +159,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
   Future<void> _save() async {
     if (_topic.text.trim().isEmpty && _brief.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('أدخل الموضوع أو الملخص على الأقل')));
+          SnackBar(content: Text(S.of(context).t('inf_need_topic'))));
       return;
     }
     setState(() => _saving = true);
@@ -184,13 +185,13 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تم الحفظ ✓')));
+          SnackBar(content: Text(S.of(context).t('inf_saved'))));
       Navigator.pop(context, true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('تعذّر الحفظ: $e')));
+          .showSnackBar(SnackBar(content: Text('${S.of(context).t('inf_save_fail')}: $e')));
     }
   }
 
@@ -212,7 +213,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
           suffixIcon: onPickList == null
               ? null
               : IconButton(
-                  tooltip: 'اختيار من قائمة',
+                  tooltip: S.of(context).t('inf_pick_list'),
                   icon: const Icon(Icons.arrow_drop_down_circle_outlined),
                   onPressed: onPickList,
                 ),
@@ -264,13 +265,13 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
           Row(children: [
             Icon(Icons.notes, size: 18, color: scheme.primary),
             const SizedBox(width: 8),
-            Text('التفصيل',
+            Text(S.of(context).t('inf_detail'),
                 style: Theme.of(context)
                     .textTheme
                     .labelLarge
                     ?.copyWith(color: scheme.primary)),
             const Spacer(),
-            Text('بأدوات تنسيق',
+            Text(S.of(context).t('inf_with_formatting'),
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
@@ -291,7 +292,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
       // مهم: يمنع تضاعف حساب ارتفاع الكيبورد مع شريط التنسيق (سبب التداخل).
       resizeToAvoidBottomInset: false,
       appBar: gradientAppBar(
-          context, editing ? 'تعديل معلومة' : 'إضافة معلومة', actions: [
+          context, editing ? S.of(context).t('inf_edit_title') : S.of(context).t('inf_add_title'), actions: [
         IconButton(
           onPressed: _saving ? null : _save,
           icon: _saving
@@ -300,7 +301,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                   height: 20,
                   child: CircularProgressIndicator(strokeWidth: 2))
               : const Icon(Icons.check),
-          tooltip: 'حفظ',
+          tooltip: S.of(context).t('save'),
         ),
       ]),
       body: AbsorbPointer(
@@ -311,25 +312,25 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(8, 10, 8, 24),
                 children: [
-                  _card('التصنيف', Icons.account_tree_outlined, [
-                    _field(_main, 'التخصص الرئيسي',
+                  _card(S.of(context).t('inf_category'), Icons.account_tree_outlined, [
+                    _field(_main, S.of(context).t('inf_main'),
                         Icons.account_tree_outlined,
                         onPickList: () => _pickFromList(
-                            _main, 'التخصص الرئيسي', _mainOptions)),
-                    _field(_sub, 'التخصص الفرعي',
+                            _main, S.of(context).t('inf_main'), _mainOptions)),
+                    _field(_sub, S.of(context).t('inf_sub'),
                         Icons.subdirectory_arrow_left,
                         onPickList: () =>
-                            _pickFromList(_sub, 'التخصص الفرعي', _subOptions)),
+                            _pickFromList(_sub, S.of(context).t('inf_sub'), _subOptions)),
                   ]),
-                  _card('المحتوى', Icons.article_outlined, [
-                    _field(_topic, 'الموضوع', Icons.title),
-                    _field(_brief, 'الملخص', Icons.short_text, maxLines: 3),
+                  _card(S.of(context).t('inf_content'), Icons.article_outlined, [
+                    _field(_topic, S.of(context).t('inf_topic'), Icons.title),
+                    _field(_brief, S.of(context).t('inf_brief'), Icons.short_text, maxLines: 3),
                     _detailField(),
                   ]),
-                  _card('معلومات إضافية', Icons.more_horiz, [
-                    _field(_notes, 'ملاحظات', Icons.sticky_note_2_outlined,
+                  _card(S.of(context).t('inf_extra'), Icons.more_horiz, [
+                    _field(_notes, S.of(context).t('inf_notes'), Icons.sticky_note_2_outlined,
                         maxLines: 4),
-                    _field(_source, 'المصدر', Icons.link),
+                    _field(_source, S.of(context).t('inf_source'), Icons.link),
                   ]),
                   const SizedBox(height: 6),
                   Padding(
@@ -337,7 +338,7 @@ class _InfoEditScreenState extends State<InfoEditScreen> {
                     child: FilledButton.icon(
                       onPressed: _saving ? null : _save,
                       icon: const Icon(Icons.save),
-                      label: const Text('حفظ'),
+                      label: Text(S.of(context).t('save')),
                       style: FilledButton.styleFrom(
                           minimumSize: const Size.fromHeight(48)),
                     ),

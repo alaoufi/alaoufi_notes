@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_strings.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -38,8 +39,8 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
 
   Future<void> _delete() async {
     final ok = await confirmDelete(context,
-        title: 'حذف المعلومة؟',
-        message: 'سيُحذف هذا العنصر نهائيًا بلا إمكانية استرجاع.',
+        title: S.of(context).t('inf_delete_q'),
+        message: S.of(context).t('inf_delete_msg'),
         icon: Icons.delete_forever);
     if (ok && _e.id != null) {
       await _repo.delete(_e.id!);
@@ -57,20 +58,20 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
       if (v.trim().isNotEmpty) b.writeln('$label: $v');
     }
 
-    add('التخصص الرئيسي', _e.mainSpecialty);
-    add('التخصص الفرعي', _e.subSpecialty);
-    add('الموضوع', _e.topic);
-    add('الملخص', _e.brief);
-    add('التفصيل', richToPlainText(_e.detail));
-    add('ملاحظات', _e.notes);
-    add('المصدر', _e.source);
+    add(S.of(context).t('inf_main'), _e.mainSpecialty);
+    add(S.of(context).t('inf_sub'), _e.subSpecialty);
+    add(S.of(context).t('inf_topic'), _e.topic);
+    add(S.of(context).t('inf_brief'), _e.brief);
+    add(S.of(context).t('inf_detail'), richToPlainText(_e.detail));
+    add(S.of(context).t('inf_notes'), _e.notes);
+    add(S.of(context).t('inf_source'), _e.source);
     return b.toString().trim();
   }
 
   void _copyAll() {
     Clipboard.setData(ClipboardData(text: _entryText()));
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('تم نسخ المعلومة')));
+        .showSnackBar(SnackBar(content: Text(S.of(context).t('inf_copied_all'))));
   }
 
   Future<void> _share() async {
@@ -81,7 +82,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
   void _copySection(String text) {
     Clipboard.setData(ClipboardData(text: text.trim()));
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('تم النسخ')));
+        .showSnackBar(SnackBar(content: Text(S.of(context).t('inf_copied'))));
   }
 
   @override
@@ -101,25 +102,25 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
               IconButton(
                   onPressed: _share,
                   icon: const Icon(Icons.share_outlined),
-                  tooltip: 'مشاركة'),
+                  tooltip: S.of(context).t('share')),
               IconButton(
                   onPressed: _copyAll,
                   icon: const Icon(Icons.copy_all),
-                  tooltip: 'نسخ'),
+                  tooltip: S.of(context).t('copy')),
               IconButton(
                   onPressed: _edit,
                   icon: const Icon(Icons.edit_outlined),
-                  tooltip: 'تعديل'),
+                  tooltip: S.of(context).t('edit')),
               IconButton(
                   onPressed: _delete,
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: 'حذف'),
+                  tooltip: S.of(context).t('delete')),
             ],
             flexibleSpace: FlexibleSpaceBar(
               titlePadding:
                   const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 14),
               title: Text(
-                _e.topic.isNotEmpty ? _e.topic : 'عرض المعلومة',
+                _e.topic.isNotEmpty ? _e.topic : S.of(context).t('inf_view'),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.bold),
@@ -178,24 +179,24 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
               Row(children: [
                 Icon(Icons.event, size: 15, color: theme.hintColor),
                 const SizedBox(width: 4),
-                Text('تاريخ الإضافة: ${_date(_e.createdAt)}',
+                Text('${S.of(context).t('inf_added_date')}: ${_date(_e.createdAt)}',
                     style: theme.textTheme.bodySmall
                         ?.copyWith(color: theme.hintColor)),
               ]),
               // الأقسام كبطاقات ثلاثية الأبعاد (تستوعب التنسيق).
-              _card3d('الملخص', Icons.short_text, dark, scheme,
+              _card3d(S.of(context).t('inf_brief'), Icons.short_text, dark, scheme,
                   highlight: true,
                   copyText: _e.brief,
                   child: SelectableText(_e.brief,
                       style: theme.textTheme.bodyLarge?.copyWith(
                           height: 1.6, fontWeight: FontWeight.w600))),
-              _card3d('التفصيل', Icons.notes, dark, scheme,
+              _card3d(S.of(context).t('inf_detail'), Icons.notes, dark, scheme,
                   rich: _e.detail, copyText: richToPlainText(_e.detail)),
-              _card3d('ملاحظات', Icons.sticky_note_2_outlined, dark, scheme,
+              _card3d(S.of(context).t('inf_notes'), Icons.sticky_note_2_outlined, dark, scheme,
                   copyText: _e.notes,
                   child: SelectableText(_e.notes,
                       style: theme.textTheme.bodyMedium?.copyWith(height: 1.7))),
-              _card3d('المصدر', Icons.link, dark, scheme,
+              _card3d(S.of(context).t('inf_source'), Icons.link, dark, scheme,
                   copyText: _e.source,
                   child: SelectableText(_e.source,
                       style: theme.textTheme.bodyMedium?.copyWith(height: 1.6))),
@@ -258,7 +259,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
             if (copyText != null && copyText.trim().isNotEmpty)
               IconButton(
                 visualDensity: VisualDensity.compact,
-                tooltip: 'نسخ',
+                tooltip: S.of(context).t('copy'),
                 icon: Icon(Icons.copy,
                     size: 18, color: scheme.onSurface.withOpacity(0.5)),
                 onPressed: () => _copySection(copyText),

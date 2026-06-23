@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/l10n/app_strings.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
@@ -89,7 +90,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
   }
 
   String get _title =>
-      widget.filterSub ?? widget.filterMain ?? 'معلومات';
+      widget.filterSub ?? widget.filterMain ?? S.of(context).t('info');
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +109,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
                 _load();
               },
               decoration: InputDecoration(
-                hintText: 'بحث في كل الحقول...',
+                hintText: S.of(context).t('inf_search_hint'),
                 prefixIcon: const Icon(Icons.search),
                 suffixIcon: _query.isEmpty
                     ? null
@@ -129,7 +130,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _add,
         icon: const Icon(Icons.add),
-        label: const Text('إضافة'),
+        label: Text(S.of(context).t('add')),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -192,7 +193,7 @@ class _InfoListScreenState extends State<InfoListScreen> {
       child: Row(children: [
         Icon(Icons.menu_book_outlined, size: 16, color: scheme.primary),
         const SizedBox(width: 6),
-        Text('$mainsCount تخصّص • $total موضوع',
+        Text('$mainsCount ${S.of(context).t('inf_specialty_unit')} • $total ${S.of(context).t('inf_topic_unit')}',
             style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.hintColor, fontWeight: FontWeight.w600)),
       ]),
@@ -227,10 +228,10 @@ class _InfoListScreenState extends State<InfoListScreen> {
             child: Icon(Icons.account_tree_outlined,
                 size: 18, color: scheme.onPrimaryContainer),
           ),
-          title: Text(m.isEmpty ? 'عامّ' : m,
+          title: Text(m.isEmpty ? S.of(context).t('inf_general') : m,
               style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold, color: scheme.primary)),
-          subtitle: Text('$count موضوع',
+          subtitle: Text('$count ${S.of(context).t('inf_topic_unit')}',
               style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
           children: children,
         ),
@@ -301,12 +302,12 @@ class _InfoListScreenState extends State<InfoListScreen> {
             Icon(Icons.menu_book_outlined, size: 64, color: theme.hintColor),
             const SizedBox(height: 12),
             Text(
-              _query.isEmpty ? 'لا توجد معلومات بعد' : 'لا نتائج للبحث',
+              _query.isEmpty ? S.of(context).t('inf_empty') : S.of(context).t('inf_no_results'),
               style: theme.textTheme.titleMedium,
             ),
             if (_query.isEmpty) ...[
               const SizedBox(height: 6),
-              Text('اضغط «إضافة» لإنشاء أول معلومة',
+              Text(S.of(context).t('inf_empty_hint'),
                   style: theme.textTheme.bodySmall
                       ?.copyWith(color: theme.hintColor)),
             ],
