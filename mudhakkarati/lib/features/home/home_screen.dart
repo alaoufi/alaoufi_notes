@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
@@ -148,18 +149,24 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  /// فحص تحديث صامت عند الدخول؛ إن توفّر يعرض **رسالة تحديث** (تحميل + تثبيت).
+  /// فحص تحديث صامت عند الدخول؛ إن توفّر يعرض **رسالة تحديث** (من النسخة الحالية
+  /// إلى الجديدة) مع تحميل + تثبيت.
   Future<void> _maybeOfferUpdate() async {
     final upd = await UpdateService.instance.check();
     if (upd == null || !mounted) return;
+    final info = await PackageInfo.fromPlatform();
+    if (!mounted) return;
     final s = S.of(context);
+    final fromTo = s
+        .t('upd_from_to')
+        .replaceAll('{from}', info.version)
+        .replaceAll('{to}', upd.version);
     final go = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         icon: const Icon(Icons.system_update),
         title: Text(s.t('upd_title')),
-        content: Text(
-            '${s.t('upd_available')} ${upd.version}\n${s.t('upd_tap_install')}'),
+        content: Text('$fromTo\n${s.t('upd_tap_install')}'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
