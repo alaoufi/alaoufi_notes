@@ -169,53 +169,72 @@ class _InfoListScreenState extends State<InfoListScreen> {
           .add(e);
     }
     final mainKeys = mains.keys.toList()..sort();
-    final children = <Widget>[];
-    for (final m in mainKeys) {
-      final subs = mains[m]!;
-      final count = subs.values.fold<int>(0, (a, b) => a + b.length);
-      children.add(_mainHeader(m.isEmpty ? 'عامّ' : m, count, theme, scheme));
-      final subKeys = subs.keys.toList()..sort();
-      for (final sName in subKeys) {
-        if (sName.isNotEmpty) children.add(_subHeader(sName, theme, scheme));
-        for (final e in subs[sName]!) {
-          children.add(_card(e, theme, scheme));
-        }
-      }
-    }
+    // نوسّع تلقائيًّا عندما تكون التخصصات قليلة؛ وإلا نطويها لعرضٍ نظيف.
+    final expandAll = mainKeys.length <= 2;
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 6, 12, 90),
-        children: children,
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 90),
+        children: [
+          _overviewBar(mainKeys.length, _items.length, theme, scheme),
+          for (final m in mainKeys)
+            _mainSection(m, mains[m]!, expandAll, theme, scheme),
+        ],
       ),
     );
   }
 
-  Widget _mainHeader(
-      String name, int count, ThemeData theme, ColorScheme scheme) {
+  /// شريط نظرة عامّة: عدد التخصّصات والمواضيع.
+  Widget _overviewBar(
+      int mainsCount, int total, ThemeData theme, ColorScheme scheme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(2, 16, 2, 8),
+      padding: const EdgeInsets.only(bottom: 8, top: 2),
       child: Row(children: [
-        Icon(Icons.account_tree, size: 20, color: scheme.primary),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(name,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold, color: scheme.primary)),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text('$count',
-              style: TextStyle(
-                  color: scheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12)),
-        ),
+        Icon(Icons.menu_book_outlined, size: 16, color: scheme.primary),
+        const SizedBox(width: 6),
+        Text('$mainsCount تخصّص • $total موضوع',
+            style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.hintColor, fontWeight: FontWeight.w600)),
       ]),
+    );
+  }
+
+  /// قسم تخصّص رئيسيّ قابل للطيّ (بطاقة) مع عدّاد، يضمّ التخصصات الفرعية ومواضيعها.
+  Widget _mainSection(String m, Map<String, List<InfoEntry>> subs, bool expand,
+      ThemeData theme, ColorScheme scheme) {
+    final count = subs.values.fold<int>(0, (a, b) => a + b.length);
+    final subKeys = subs.keys.toList()..sort();
+    final children = <Widget>[];
+    for (final sName in subKeys) {
+      if (sName.isNotEmpty) children.add(_subHeader(sName, theme, scheme));
+      for (final e in subs[sName]!) {
+        children.add(_card(e, theme, scheme));
+      }
+    }
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      clipBehavior: Clip.antiAlias,
+      child: Theme(
+        // نُخفي خطوط ExpansionTile الفاصلة لمظهر أنظف.
+        data: theme.copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: expand,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+          childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+          leading: CircleAvatar(
+            radius: 18,
+            backgroundColor: scheme.primaryContainer,
+            child: Icon(Icons.account_tree_outlined,
+                size: 18, color: scheme.onPrimaryContainer),
+          ),
+          title: Text(m.isEmpty ? 'عامّ' : m,
+              style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold, color: scheme.primary)),
+          subtitle: Text('$count موضوع',
+              style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+          children: children,
+        ),
+      ),
     );
   }
 
