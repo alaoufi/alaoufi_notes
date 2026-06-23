@@ -23,11 +23,12 @@ import 'reminders_provider.dart';
 enum ReminderKind { general, medication, appointment, occasion }
 
 extension ReminderKindX on ReminderKind {
+  /// مفتاح ترجمة (يُحلّ عبر s.t في مكان الاستخدام).
   String get label => switch (this) {
-        ReminderKind.general => 'عام',
-        ReminderKind.medication => 'دواء',
-        ReminderKind.appointment => 'موعد',
-        ReminderKind.occasion => 'مناسبة',
+        ReminderKind.general => 'rk_general',
+        ReminderKind.medication => 'rk_med',
+        ReminderKind.appointment => 'rk_appt',
+        ReminderKind.occasion => 'rk_occasion',
       };
 
   IconData get icon => switch (this) {
@@ -45,23 +46,15 @@ extension ReminderKindX on ReminderKind {
       };
 
   String get titleLabel => switch (this) {
-        ReminderKind.general => 'عنوان التنبيه',
-        ReminderKind.medication => 'اسم الدواء',
-        ReminderKind.appointment => 'عنوان الموعد',
-        ReminderKind.occasion => 'المناسبة',
+        ReminderKind.general => 'rd_title_reminder',
+        ReminderKind.medication => 'med_name',
+        ReminderKind.appointment => 'rd_title_appt',
+        ReminderKind.occasion => 'rd_title_occasion',
       };
 }
 
-/// وصف ودّي لفاصل الجرعات: «كل N يوم» = جرعة ثم (N-1) راحة.
-String _intervalHint(int n) {
-  final rest = n - 1;
-  final r = switch (rest) {
-    1 => 'يوم',
-    2 => 'يومين',
-    _ => '$rest أيام',
-  };
-  return 'يوم بعد $r';
-}
+/// وصف ودّي مختصر لفاصل الجرعات (جرعة ثمّ راحة).
+String _intervalHint(S s) => s.t('rd_interval_hint');
 
 /// رابط بحث خرائط جوجل لنصّ المكان (لاختيار الموقع ونسخ رابطه).
 Uri _mapsSearchUri(String query) {
@@ -85,7 +78,7 @@ Future<String?> _pickInvitation(BuildContext context) async {
       child: Wrap(children: [
         ListTile(
           leading: const Icon(Icons.image_outlined),
-          title: const Text('صورة'),
+          title: Text(S.of(context).t('image')),
           onTap: () => Navigator.pop(context, 'image'),
         ),
         ListTile(
@@ -105,13 +98,13 @@ Future<String?> _pickInvitation(BuildContext context) async {
 
 /// أيام الأسبوع (تبدأ بالسبت) — القيمة بمعيار DateTime.weekday (الإثنين=1..الأحد=7).
 const List<(int, String)> _weekdayDefs = [
-  (6, 'السبت'),
-  (7, 'الأحد'),
-  (1, 'الإثنين'),
-  (2, 'الثلاثاء'),
-  (3, 'الأربعاء'),
-  (4, 'الخميس'),
-  (5, 'الجمعة'),
+  (6, 'wd_sat'),
+  (7, 'wd_sun'),
+  (1, 'wd_mon'),
+  (2, 'wd_tue'),
+  (3, 'wd_wed'),
+  (4, 'wd_thu'),
+  (5, 'wd_fri'),
 ];
 
 /// حوار إنشاء/تعديل **تنبيه مستقلّ** (غير مرتبط بملاحظة): عنوان + وقت + تكرار + نغمة.
@@ -213,7 +206,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
           // يُركّب العنوان النهائي من الاسم + الحقول الخاصّة بالنوع + رمز مميّز.
           String composeTitle() {
             var name = titleCtrl.text.trim();
-            if (name.isEmpty) name = kind.label;
+            if (name.isEmpty) name = s.t(kind.label);
             switch (kind) {
               case ReminderKind.medication:
                 final d = doseCtrl.text.trim();
@@ -307,7 +300,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                     child: Row(children: [
                       Icon(Icons.add_alarm, color: scheme.primary),
                       const SizedBox(width: 10),
-                      Text(existing == null ? 'تنبيه جديد' : 'تعديل التنبيه',
+                      Text(existing == null ? s.t('rd_new') : s.t('rd_edit'),
                           style: Theme.of(context)
                               .textTheme
                               .titleLarge
@@ -322,7 +315,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // نوع المنبّه (فوق العنوان) — يُكيّف الحقول والإعدادات.
-                          label('نوع المنبّه'),
+                          label(s.t('rd_kind')),
                           Wrap(
                             spacing: 8,
                             runSpacing: 6,
@@ -331,7 +324,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                 avatar: Icon(k.icon,
                                     size: 18,
                                     color: kind == k ? scheme.primary : null),
-                                label: Text(k.label),
+                                label: Text(s.t(k.label)),
                                 selected: kind == k,
                                 onSelected: (_) => setState(() {
                                   kind = k;
@@ -345,7 +338,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             controller: titleCtrl,
                             textInputAction: TextInputAction.done,
                             decoration: InputDecoration(
-                              labelText: kind.titleLabel,
+                              labelText: s.t(kind.titleLabel),
                               prefixIcon: Icon(kind.icon),
                             ),
                           ),
@@ -354,8 +347,8 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             const SizedBox(height: 10),
                             TextField(
                               controller: doseCtrl,
-                              decoration: const InputDecoration(
-                                labelText: 'الجرعة (اختياري)',
+                              decoration: InputDecoration(
+                                labelText: s.t('rd_dose_opt'),
                                 prefixIcon: Icon(Icons.science_outlined),
                               ),
                             ),
@@ -365,9 +358,9 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             const SizedBox(height: 10),
                             TextField(
                               controller: placeCtrl,
-                              decoration: const InputDecoration(
-                                labelText: 'وصف المكان (اختياري)',
-                                hintText: 'مثال: مستشفى الملك فهد — بوّابة 3',
+                              decoration: InputDecoration(
+                                labelText: s.t('rd_place_desc'),
+                                hintText: s.t('rd_place_example'),
                                 prefixIcon: Icon(Icons.place_outlined),
                               ),
                             ),
@@ -377,11 +370,11 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               keyboardType: TextInputType.url,
                               onChanged: (_) => setState(() {}),
                               decoration: InputDecoration(
-                                labelText: 'رابط الموقع (خرائط جوجل)',
-                                hintText: 'الصق رابط الموقع هنا',
+                                labelText: s.t('rd_loc_url'),
+                                hintText: s.t('rd_loc_paste_hint'),
                                 prefixIcon: const Icon(Icons.map_outlined),
                                 suffixIcon: IconButton(
-                                  tooltip: 'لصق',
+                                  tooltip: s.t('paste'),
                                   icon: const Icon(Icons.content_paste),
                                   onPressed: () async {
                                     final data = await Clipboard.getData(
@@ -401,13 +394,13 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                   onPressed: () => _openExternal(
                                       _mapsSearchUri(placeCtrl.text)),
                                   icon: const Icon(Icons.map),
-                                  label: const Text('اختيار من الخريطة'),
+                                  label: Text(s.t('rd_pick_map')),
                                 ),
                               ),
                               if (mapLinkCtrl.text.trim().isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 IconButton(
-                                  tooltip: 'فتح الموقع',
+                                  tooltip: s.t('rd_open_loc'),
                                   icon: const Icon(Icons.open_in_new),
                                   onPressed: () {
                                     final u =
@@ -420,7 +413,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             Padding(
                               padding: const EdgeInsets.only(top: 4),
                               child: Text(
-                                'افتح الخريطة، اختر المكان، انسخ رابط المشاركة، ثم الصقه هنا.',
+                                s.t('rd_map_help'),
                                 style: TextStyle(
                                     fontSize: 11.5,
                                     color: scheme.onSurface.withOpacity(0.6)),
@@ -437,7 +430,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                   }
                                 },
                                 icon: const Icon(Icons.attach_file),
-                                label: const Text('إرفاق الدعوة (صورة/PDF)'),
+                                label: Text(s.t('rd_attach_invite')),
                               )
                             else
                               ListTile(
@@ -454,7 +447,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                             height: 42,
                                             fit: BoxFit.cover),
                                       ),
-                                title: const Text('الدعوة مرفقة'),
+                                title: Text(s.t('rd_invite_attached')),
                                 subtitle: Text(attachmentPath.split('/').last,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -463,13 +456,13 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      tooltip: 'فتح',
+                                      tooltip: s.t('open'),
                                       icon: const Icon(Icons.open_in_new),
                                       onPressed: () => EditorAttachments
                                           .openFile(attachmentPath),
                                     ),
                                     IconButton(
-                                      tooltip: 'إزالة',
+                                      tooltip: s.t('remove'),
                                       icon: const Icon(Icons.delete_outline),
                                       onPressed: () =>
                                           setState(() => attachmentPath = ''),
@@ -483,18 +476,18 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             if (showDate) ...[
                               pickerCard(
                                   Icons.calendar_today,
-                                  'التاريخ',
+                                  s.t('rd_date'),
                                   '${date.year}/${two(date.month)}/${two(date.day)}',
                                   pickDate),
                               const SizedBox(width: 10),
                             ],
-                            pickerCard(Icons.access_time, 'الوقت',
+                            pickerCard(Icons.access_time, s.t('rd_time'),
                                 time.format(context), pickTime),
                           ]),
                           const SizedBox(height: 14),
                           // التكرار المخصّص «كل N يوم» يحجب خيارات التكرار العاديّة.
                           if (intervalDays < 2) ...[
-                            label('التكرار'),
+                            label(s.t('rd_repeat')),
                             Wrap(
                               spacing: 8,
                               runSpacing: 6,
@@ -508,14 +501,14 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             ),
                             if (repeat == ReminderRepeat.weekly) ...[
                               const SizedBox(height: 14),
-                              label('أيام الأسبوع'),
+                              label(s.t('rd_weekdays')),
                               Wrap(
                                 spacing: 6,
                                 runSpacing: 6,
                                 children: [
                                   for (final d in _weekdayDefs)
                                     FilterChip(
-                                      label: Text(d.$2),
+                                      label: Text(s.t(d.$2)),
                                       selected: weekdays.contains(d.$1),
                                       onSelected: (sel) => setState(() {
                                         if (sel) {
@@ -576,16 +569,16 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                           // خيارات خاصّة بالدواء: فاصل الجرعات + مدّة العلاج.
                           if (kind == ReminderKind.medication) ...[
                             const SizedBox(height: 14),
-                            label('فاصل الجرعات'),
+                            label(s.t('rd_dose_interval')),
                             Wrap(spacing: 8, runSpacing: 6, children: [
                               ChoiceChip(
-                                label: const Text('حسب التكرار'),
+                                label: Text(s.t('rd_by_repeat')),
                                 selected: intervalDays < 2,
                                 onSelected: (_) =>
                                     setState(() => intervalDays = 0),
                               ),
                               ChoiceChip(
-                                label: const Text('كل عدّة أيام'),
+                                label: Text(s.t('repeat_every_days')),
                                 selected: intervalDays >= 2,
                                 onSelected: (_) => setState(() =>
                                     intervalDays = intervalDays >= 2
@@ -597,7 +590,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               Padding(
                                 padding: const EdgeInsets.only(top: 6),
                                 child: Row(children: [
-                                  const Text('كل'),
+                                  Text(s.t('every')),
                                   IconButton(
                                     icon: const Icon(
                                         Icons.remove_circle_outline),
@@ -606,7 +599,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                             setState(() => intervalDays--)
                                         : null,
                                   ),
-                                  Text('$intervalDays يوم',
+                                  Text('$intervalDays ${s.t('day_unit')}',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15)),
@@ -619,7 +612,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                   ),
                                   const SizedBox(width: 6),
                                   Flexible(
-                                    child: Text('(${_intervalHint(intervalDays)})',
+                                    child: Text('(${_intervalHint(s)})',
                                         style: TextStyle(
                                             fontSize: 12,
                                             color: scheme.onSurface
@@ -628,16 +621,16 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                 ]),
                               ),
                             const SizedBox(height: 14),
-                            label('مدّة العلاج'),
+                            label(s.t('med_course_len')),
                             Wrap(spacing: 8, runSpacing: 6, children: [
                               ChoiceChip(
-                                label: const Text('مستمر'),
+                                label: Text(s.t('med_continuous')),
                                 selected: doseCount == 0,
                                 onSelected: (_) =>
                                     setState(() => doseCount = 0),
                               ),
                               ChoiceChip(
-                                label: const Text('عدد جرعات'),
+                                label: Text(s.t('med_total')),
                                 selected: doseCount > 0,
                                 onSelected: (_) => setState(() =>
                                     doseCount = doseCount > 0 ? doseCount : 10),
@@ -654,7 +647,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                         ? () => setState(() => doseCount--)
                                         : null,
                                   ),
-                                  Text('$doseCount جرعة',
+                                  Text('$doseCount ${s.t('med_dose_unit')}',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15)),
@@ -691,13 +684,13 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               runSpacing: 6,
                               children: [
                                 for (final (mins, lbl) in const [
-                                  (5, '5د'),
-                                  (15, '15د'),
-                                  (60, 'ساعة'),
-                                  (1440, 'يوم'),
+                                  (5, 'rd_pre5'),
+                                  (15, 'rd_pre15'),
+                                  (60, 'rd_pre_hour'),
+                                  (1440, 'day_unit'),
                                 ])
                                   FilterChip(
-                                    label: Text(lbl),
+                                    label: Text(s.t(lbl)),
                                     selected: preAlerts.contains(mins),
                                     onSelected: (sel) => setState(() {
                                       if (sel) {
@@ -711,11 +704,11 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             ),
                           ],
                           const SizedBox(height: 10),
-                          label('النغمة'),
+                          label(s.t('rd_tone')),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: IconButton(
-                              tooltip: 'سماع',
+                              tooltip: s.t('rd_listen'),
                               icon: const Icon(Icons.play_circle_outline),
                               onPressed: () {
                                 if (settings.alarmTone != 'custom') {
@@ -724,7 +717,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                               },
                             ),
                             title: Text(settings.alarmTone == 'custom'
-                                ? (settings.customToneTitle ?? 'نغمة مخصّصة')
+                                ? (settings.customToneTitle ?? s.t('rd_custom_tone'))
                                 : toneName(settings.alarmTone)),
                             trailing: DropdownButton<String>(
                               value: soundCatalog
@@ -741,10 +734,11 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                   DropdownMenuItem(
                                       value: 'custom',
                                       child: Text(
-                                          settings.customToneTitle ?? 'مخصّصة 🎵',
+                                          settings.customToneTitle ?? '${s.t('rd_custom')} 🎵',
                                           overflow: TextOverflow.ellipsis)),
-                                const DropdownMenuItem(
-                                    value: 'pick', child: Text('من الجهاز… 📱')),
+                                DropdownMenuItem(
+                                    value: 'pick',
+                                    child: Text('${s.t('rd_from_device')} 📱')),
                               ],
                               onChanged: (v) async {
                                 if (v == null) return;
@@ -791,31 +785,31 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                                 : null,
                           ),
                           const SizedBox(height: 10),
-                          label('الغفوة'),
+                          label(s.t('rd_snooze')),
                           ListTile(
                             contentPadding: EdgeInsets.zero,
                             leading: const Icon(Icons.snooze),
-                            title: const Text('مدّة الغفوة'),
+                            title: Text(s.t('rd_snooze_dur')),
                             subtitle: Text(settings.snoozeMinutes == 0
-                                ? 'بلا غفوة'
-                                : '${settings.snoozeMinutes} دقيقة'),
+                                ? s.t('rd_no_snooze')
+                                : '${settings.snoozeMinutes} ${s.t('minute')}'),
                             trailing: DropdownButton<int>(
                               value: const [0, 5, 10, 15, 30]
                                       .contains(settings.snoozeMinutes)
                                   ? settings.snoozeMinutes
                                   : 10,
                               underline: const SizedBox.shrink(),
-                              items: const [
+                              items: [
                                 DropdownMenuItem(
-                                    value: 0, child: Text('بلا غفوة')),
+                                    value: 0, child: Text(s.t('rd_no_snooze'))),
                                 DropdownMenuItem(
-                                    value: 5, child: Text('5 دقائق')),
+                                    value: 5, child: Text('5 ${s.t('minute')}')),
                                 DropdownMenuItem(
-                                    value: 10, child: Text('10 دقائق')),
+                                    value: 10, child: Text('10 ${s.t('minute')}')),
                                 DropdownMenuItem(
-                                    value: 15, child: Text('15 دقيقة')),
+                                    value: 15, child: Text('15 ${s.t('minute')}')),
                                 DropdownMenuItem(
-                                    value: 30, child: Text('30 دقيقة')),
+                                    value: 30, child: Text('30 ${s.t('minute')}')),
                               ],
                               onChanged: (v) async {
                                 if (v == null) return;
@@ -840,9 +834,9 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                             TextButton.icon(
                               onPressed: () async {
                                 if (!await confirmDelete(context,
-                                    title: 'حذف التنبيه؟',
+                                    title: s.t('rd_delete_q'),
                                     message:
-                                        'سيُحذف هذا التنبيه ولن يُذكّرك بعد الآن.')) {
+                                        s.t('rd_delete_msg'))) {
                                   return;
                                 }
                                 await provider.removeReminder(existing);
