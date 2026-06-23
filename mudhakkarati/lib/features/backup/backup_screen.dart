@@ -163,7 +163,7 @@ class _BackupScreenState extends State<BackupScreen> {
               children: [
                 const Icon(Icons.history, size: 20),
                 const SizedBox(width: 8),
-                Text('آخر النسخ',
+                Text(S.of(context).t('bk_recent'),
                     style: Theme.of(context).textTheme.titleSmall),
               ],
             ),
@@ -193,10 +193,10 @@ class _BackupScreenState extends State<BackupScreen> {
                   children: [
                     _protectionBanner(context, [d[0], d[1], d[3]]),
                     const SizedBox(height: 8),
-                    row(Icons.save_alt, 'حفظ محلي', d[0]),
-                    row(Icons.ios_share, 'مشاركة سحابية', d[1]),
-                    row(Icons.autorenew, 'نسخة تلقائية', d[3]),
-                    row(Icons.restore, 'آخر استعادة', d[2]),
+                    row(Icons.save_alt, S.of(context).t('bk_local'), d[0]),
+                    row(Icons.ios_share, S.of(context).t('bk_cloud'), d[1]),
+                    row(Icons.autorenew, S.of(context).t('bk_auto'), d[3]),
+                    row(Icons.restore, S.of(context).t('bk_last_restore'), d[2]),
                   ],
                 );
               },
@@ -217,10 +217,12 @@ class _BackupScreenState extends State<BackupScreen> {
           children: [
             SwitchListTile(
               secondary: const Icon(Icons.autorenew),
-              title: const Text('نسخ احتياطي تلقائي'),
+              title: Text(S.of(context).t('bk_auto_title')),
               subtitle: Text(_autoEnabled
-                  ? 'يُنشأ تلقائيًا عند فتح التطبيق ${_autoInterval == 1 ? 'يوميًا' : 'أسبوعيًا'} (محفوظ: $_autoCount).'
-                  : 'إنشاء نسخة مشفّرة تلقائيًا دون تدخّل منك.'),
+                  ? '${S.of(context).t('bk_auto_when')} '
+                      '${_autoInterval == 1 ? S.of(context).t('bk_daily') : S.of(context).t('bk_weekly')}'
+                      ' ($_autoCount)'
+                  : S.of(context).t('bk_auto_desc')),
               value: _autoEnabled,
               onChanged: _busy ? null : _toggleAuto,
             ),
@@ -231,12 +233,12 @@ class _BackupScreenState extends State<BackupScreen> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Row(
                   children: [
-                    const Text('التكرار:'),
+                    Text(S.of(context).t('bk_frequency')),
                     const SizedBox(width: 12),
                     SegmentedButton<int>(
-                      segments: const [
-                        ButtonSegment(value: 1, label: Text('يومي')),
-                        ButtonSegment(value: 7, label: Text('أسبوعي')),
+                      segments: [
+                        ButtonSegment(value: 1, label: Text(S.of(context).t('bk_daily'))),
+                        ButtonSegment(value: 7, label: Text(S.of(context).t('bk_weekly'))),
                       ],
                       selected: {_autoInterval},
                       onSelectionChanged: _busy
@@ -249,30 +251,29 @@ class _BackupScreenState extends State<BackupScreen> {
               ListTile(
                 dense: true,
                 leading: const Icon(Icons.play_circle_outline),
-                title: const Text('إنشاء نسخة تلقائية الآن'),
+                title: Text(S.of(context).t('bk_create_now')),
                 onTap: _busy ? null : _runAutoNow,
               ),
               ListTile(
                 dense: true,
                 leading: const Icon(Icons.settings_backup_restore),
-                title: const Text('استعادة من نسخة تلقائية'),
-                subtitle: Text('عدد النسخ المحفوظة: $_autoCount'),
+                title: Text(S.of(context).t('bk_restore_auto')),
+                subtitle: Text('${S.of(context).t('bk_saved_count')}: $_autoCount'),
                 onTap: _busy ? null : _restoreFromAuto,
               ),
               ListTile(
                 dense: true,
                 leading: const Icon(Icons.password),
                 title: Text(_autoHasPassword
-                    ? 'تغيير كلمة مرور النسخ التلقائي'
-                    : 'ضبط كلمة مرور النسخ التلقائي'),
+                    ? S.of(context).t('bk_change_pwd')
+                    : S.of(context).t('bk_set_pwd')),
                 onTap: _busy ? null : _changeAutoPassword,
               ),
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 0, 16, 10),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Text(
-                  'تُحفظ النسخ التلقائية داخل التطبيق على جهازك (تُحذف عند إزالة '
-                  'التطبيق). للأمان خارج الجهاز، استخدم «مشاركة إلى السحابة» من حين لآخر.',
-                  style: TextStyle(fontSize: 11),
+                  S.of(context).t('bk_auto_note'),
+                  style: const TextStyle(fontSize: 11),
                 ),
               ),
             ],
@@ -341,7 +342,7 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _verifyBackup() async {
-    final pwd = await _askPassword('التحقّق من نسخة');
+    final pwd = await _askPassword(S.of(context).t('bk_verify'));
     if (pwd == null || pwd.isEmpty) return;
     setState(() => _busy = true);
     final r = await BackupService.instance.verifyBackupFile(pwd);
@@ -388,7 +389,7 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _shareToCloud() async {
-    final pwd = await _askPassword('مشاركة إلى السحابة');
+    final pwd = await _askPassword(S.of(context).t('bk_share_cloud'));
     if (pwd == null || pwd.isEmpty) return;
     setState(() => _busy = true);
     final result = await BackupService.instance.shareBackupToCloud(pwd);
@@ -403,24 +404,24 @@ class _BackupScreenState extends State<BackupScreen> {
     final mode = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('استيراد من Easy Notes'),
-        content: const Text(
-            'هل تريد حذف كل الملاحظات الحالية ثم الاستيراد من جديد بالتنسيق المحدَّث؟\n\n'
-            '• «حذف ثم استيراد»: يمسح ملاحظاتك الحالية ويستوردها بتنسيق أدقّ (موصى به إن سبق استيرادها بحجم خط كبير).\n'
-            '• «دمج»: يضيف/يحدّث دون حذف.'),
+        title: Text(S.of(context).t('bk_import_easy')),
+        content: Text(
+            S.of(context).t('bk_easy_q')+'\n\n'
+            '• '+S.of(context).t('bk_easy_replace')+'\n'
+            '• '+S.of(context).t('bk_easy_merge')),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('إلغاء'),
+            child: Text(S.of(context).t('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, 'merge'),
-            child: const Text('دمج'),
+            child: Text(S.of(context).t('bk_merge')),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red.shade700),
             onPressed: () => Navigator.pop(context, 'replace'),
-            child: const Text('حذف ثم استيراد'),
+            child: Text(S.of(context).t('bk_replace_import')),
           ),
         ],
       ),
@@ -439,7 +440,7 @@ class _BackupScreenState extends State<BackupScreen> {
       bytes = await File(path).readAsBytes();
     }
     if (bytes == null) {
-      _toast('تعذّر قراءة الملف.');
+      _toast(S.of(context).t('bk_read_fail'));
       return;
     }
 
@@ -465,13 +466,13 @@ class _BackupScreenState extends State<BackupScreen> {
     if (!value) {
       await bs.setAutoBackupEnabled(false);
       setState(() => _autoEnabled = false);
-      _toast('أُوقف النسخ التلقائي');
+      _toast(S.of(context).t('bk_auto_stopped'));
       return;
     }
 
     // التفعيل يتطلّب كلمة مرور تُحفظ بأمان لتشفير النسخ دون تدخّل.
     if (!await bs.hasAutoBackupPassword()) {
-      final pwd = await _askPassword('كلمة مرور النسخ التلقائي');
+      final pwd = await _askPassword(S.of(context).t('bk_auto_pwd'));
       if (pwd == null || pwd.isEmpty) return;
       await bs.setAutoBackupPassword(pwd);
     }
@@ -504,11 +505,11 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _changeAutoPassword() async {
-    final pwd = await _askPassword('كلمة مرور النسخ التلقائي');
+    final pwd = await _askPassword(S.of(context).t('bk_auto_pwd'));
     if (pwd == null || pwd.isEmpty) return;
     await BackupService.instance.setAutoBackupPassword(pwd);
     setState(() => _autoHasPassword = true);
-    _toast('تم تحديث كلمة المرور');
+    _toast(S.of(context).t('bk_pwd_updated'));
   }
 
   Future<void> _restoreFromAuto() async {
@@ -516,14 +517,14 @@ class _BackupScreenState extends State<BackupScreen> {
     final files = await bs.listAutoBackups();
     if (!mounted) return;
     if (files.isEmpty) {
-      _toast('لا توجد نسخ تلقائية بعد');
+      _toast(S.of(context).t('bk_no_auto'));
       return;
     }
 
     final chosen = await showDialog<File>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('استعادة من نسخة تلقائية'),
+        title: Text(S.of(context).t('bk_restore_auto')),
         children: [
           for (final f in files)
             SimpleDialogOption(
@@ -544,16 +545,16 @@ class _BackupScreenState extends State<BackupScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('تأكيد الاستعادة'),
+        title: Text(S.of(context).t('bk_confirm_restore')),
         content: Text(
-            'سيتم استبدال كل بياناتك الحالية بمحتوى:\n${_autoBackupLabel(chosen)}'),
+            '${S.of(context).t('bk_restore_replace')}:\n${_autoBackupLabel(chosen)}'),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('إلغاء')),
+              child: Text(S.of(context).t('cancel'))),
           FilledButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('استعادة')),
+              child: Text(S.of(context).t('bk_restore'))),
         ],
       ),
     );
@@ -573,14 +574,10 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  /// عنوان مقروء لملف نسخة تلقائية (اسم اليوم + وقت آخر تعديل).
+  /// عنوان مقروء لملف نسخة تلقائية (يوم الأسبوع المترجم + وقت آخر تعديل).
   String _autoBackupLabel(File f) {
-    const days = ['', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة',
-      'السبت', 'الأحد'];
-    String two(int n) => n.toString().padLeft(2, '0');
     final m = f.statSync().modified;
-    return '${days[m.weekday]}  ${m.year}/${two(m.month)}/${two(m.day)}  '
-        '${two(m.hour)}:${two(m.minute)}';
+    return DateFormat('EEEE  yyyy/MM/dd  HH:mm').format(m);
   }
 
   @override
@@ -592,9 +589,13 @@ class _BackupScreenState extends State<BackupScreen> {
         appBar: gradientAppBar(
           context,
           s.t('backup'),
-          bottom: const TabBar(tabs: [
-            Tab(icon: Icon(Icons.save_outlined), text: 'نسخ احتياطي'),
-            Tab(icon: Icon(Icons.cloud_sync), text: 'مزامنة سحابية'),
+          bottom: TabBar(tabs: [
+            Tab(
+                icon: const Icon(Icons.save_outlined),
+                text: S.of(context).t('bk_tab_backup')),
+            Tab(
+                icon: const Icon(Icons.cloud_sync),
+                text: S.of(context).t('cloud_sync')),
           ]),
         ),
         body: TabBarView(children: [
@@ -609,8 +610,8 @@ class _BackupScreenState extends State<BackupScreen> {
                 child: ListTile(
                   leading: const Icon(Icons.upload_file),
                   title: Text(s.t('export_backup')),
-                  subtitle: const Text(
-                      'حفظ نسخة مشفّرة من كل ملاحظاتك ومرفقاتك في ملفات الجهاز.'),
+                  subtitle: Text(
+                      S.of(context).t('bk_export_desc')),
                   onTap: _busy ? null : _export,
                 ),
               ),
@@ -619,9 +620,9 @@ class _BackupScreenState extends State<BackupScreen> {
                 color: Theme.of(context).colorScheme.primaryContainer,
                 child: ListTile(
                   leading: const Icon(Icons.cloud_upload_outlined),
-                  title: const Text('مشاركة إلى السحابة'),
-                  subtitle: const Text(
-                      'إرسال نسخة مشفّرة مباشرة إلى Google Drive أو سحابة هواوي أو أي تطبيق.'),
+                  title: Text(S.of(context).t('bk_share_cloud')),
+                  subtitle: Text(
+                      S.of(context).t('bk_share_desc')),
                   onTap: _busy ? null : _shareToCloud,
                 ),
               ),
@@ -632,8 +633,8 @@ class _BackupScreenState extends State<BackupScreen> {
                 child: ListTile(
                   leading: const Icon(Icons.download),
                   title: Text(s.t('import_backup')),
-                  subtitle: const Text(
-                      'استعادة نسخة احتياطية سابقة. سيتم استبدال البيانات الحالية.'),
+                  subtitle: Text(
+                      S.of(context).t('bk_import_desc')),
                   onTap: _busy ? null : _import,
                 ),
               ),
@@ -641,9 +642,9 @@ class _BackupScreenState extends State<BackupScreen> {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.verified_outlined),
-                  title: const Text('التحقّق من نسخة'),
-                  subtitle: const Text(
-                      'تأكّد أنّ ملف نسخة قابل للاستعادة دون استبدال بياناتك.'),
+                  title: Text(S.of(context).t('bk_verify')),
+                  subtitle: Text(
+                      S.of(context).t('bk_verify_desc')),
                   onTap: _busy ? null : _verifyBackup,
                 ),
               ),
@@ -652,9 +653,9 @@ class _BackupScreenState extends State<BackupScreen> {
                 color: Theme.of(context).colorScheme.secondaryContainer,
                 child: ListTile(
                   leading: const Icon(Icons.move_to_inbox),
-                  title: const Text('استيراد من Easy Notes'),
-                  subtitle: const Text(
-                      'اختر ملف النسخة الاحتياطية (.backup) من تطبيق Easy Notes لنقل ملاحظاتك.'),
+                  title: Text(S.of(context).t('bk_import_easy')),
+                  subtitle: Text(
+                      S.of(context).t('bk_import_easy_desc')),
                   onTap: _busy ? null : _importEasyNotes,
                 ),
               ),
@@ -687,9 +688,7 @@ class _BackupScreenState extends State<BackupScreen> {
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: Text(
-                  'النسخة الاحتياطية مشفّرة بالكامل (AES-256) وتُحفظ محليًا في جهازك. '
-                  'لا يتم رفع أي شيء إلى الإنترنت. احتفظ بكلمة المرور؛ بدونها لا يمكن استعادة النسخة. '
-                  'يمكنك نسخ الملف يدويًا إلى Google Drive أو أي مكان لاحقًا إن رغبت.',
+                  S.of(context).t('bk_footer'),
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
