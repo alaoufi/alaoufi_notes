@@ -97,6 +97,16 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
         .showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  /// وقت نسبيّ ودّي لآخر مزامنة (الآن/قبل دقائق/ساعات/أيام).
+  String _relative(DateTime d) {
+    final diff = DateTime.now().difference(d);
+    if (diff.inMinutes < 1) return 'الآن';
+    if (diff.inMinutes < 60) return 'قبل ${diff.inMinutes} دقيقة';
+    if (diff.inHours < 24) return 'قبل ${diff.inHours} ساعة';
+    if (diff.inDays < 30) return 'قبل ${diff.inDays} يوم';
+    return 'قبل ${diff.inDays ~/ 30} شهر';
+  }
+
   Future<bool> _saveSettings() async {
     final s = SyncService.instance;
     if (_phrase.text.trim().isEmpty && !await s.hasPassphrase()) {
@@ -327,13 +337,17 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                         title: const Text('مزامنة تلقائية عند فتح التطبيق',
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
-                      if (_last != null)
-                        ListTile(
-                          leading: const Icon(Icons.schedule),
-                          title: const Text('آخر مزامنة'),
-                          subtitle: Text(DateFormat('yyyy/MM/dd – HH:mm')
-                              .format(_last!)),
-                        ),
+                      ListTile(
+                        leading: Icon(
+                            _last != null ? Icons.cloud_done : Icons.cloud_off,
+                            color: _last != null
+                                ? Colors.green
+                                : Theme.of(context).hintColor),
+                        title: const Text('آخر مزامنة'),
+                        subtitle: Text(_last == null
+                            ? 'لم تتم بعد'
+                            : '${_relative(_last!)} • ${DateFormat('yyyy/MM/dd – HH:mm').format(_last!)}'),
+                      ),
                     ],
                   ),
                 ),
