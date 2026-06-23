@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../data/models/info_entry.dart';
 import '../../data/repositories/info_repository.dart';
@@ -49,7 +50,8 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
   String _date(DateTime d) =>
       '${d.year}/${d.month.toString().padLeft(2, '0')}/${d.day.toString().padLeft(2, '0')}';
 
-  void _copyAll() {
+  /// نصّ المعلومة كاملًا (للنسخ والمشاركة).
+  String _entryText() {
     final b = StringBuffer();
     void add(String label, String v) {
       if (v.trim().isNotEmpty) b.writeln('$label: $v');
@@ -62,9 +64,24 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
     add('التفصيل', richToPlainText(_e.detail));
     add('ملاحظات', _e.notes);
     add('المصدر', _e.source);
-    Clipboard.setData(ClipboardData(text: b.toString().trim()));
+    return b.toString().trim();
+  }
+
+  void _copyAll() {
+    Clipboard.setData(ClipboardData(text: _entryText()));
     ScaffoldMessenger.of(context)
         .showSnackBar(const SnackBar(content: Text('تم نسخ المعلومة')));
+  }
+
+  Future<void> _share() async {
+    await SharePlus.instance.share(ShareParams(text: _entryText()));
+  }
+
+  /// نسخ قسم واحد بضغطة (لمحة/تفصيل/مصدر…) مع إشعار.
+  void _copySection(String text) {
+    Clipboard.setData(ClipboardData(text: text.trim()));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('تم النسخ')));
   }
 
   @override
@@ -81,6 +98,10 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
             backgroundColor: scheme.primary,
             foregroundColor: scheme.onPrimary,
             actions: [
+              IconButton(
+                  onPressed: _share,
+                  icon: const Icon(Icons.share_outlined),
+                  tooltip: 'مشاركة'),
               IconButton(
                   onPressed: _copyAll,
                   icon: const Icon(Icons.copy_all),
@@ -164,15 +185,18 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
               // الأقسام كبطاقات ثلاثية الأبعاد (تستوعب التنسيق).
               _card3d('الملخص', Icons.short_text, dark, scheme,
                   highlight: true,
+                  copyText: _e.brief,
                   child: SelectableText(_e.brief,
                       style: theme.textTheme.bodyLarge?.copyWith(
                           height: 1.6, fontWeight: FontWeight.w600))),
               _card3d('التفصيل', Icons.notes, dark, scheme,
-                  rich: _e.detail),
+                  rich: _e.detail, copyText: richToPlainText(_e.detail)),
               _card3d('ملاحظات', Icons.sticky_note_2_outlined, dark, scheme,
+                  copyText: _e.notes,
                   child: SelectableText(_e.notes,
                       style: theme.textTheme.bodyMedium?.copyWith(height: 1.7))),
               _card3d('المصدر', Icons.link, dark, scheme,
+                  copyText: _e.source,
                   child: SelectableText(_e.source,
                       style: theme.textTheme.bodyMedium?.copyWith(height: 1.6))),
             ]),
@@ -185,7 +209,7 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
   /// بطاقة قسم ثلاثية الأبعاد (تدرّج + حدّ + ظلّ + شارة أيقونة). تُخفى إن فرغت.
   /// [rich] لعرض نصّ غنيّ بتنسيقه؛ وإلا [child] لنصّ عادي.
   Widget _card3d(String label, IconData icon, bool dark, ColorScheme scheme,
-      {Widget? child, String? rich, bool highlight = false}) {
+      {Widget? child, String? rich, bool highlight = false, String? copyText}) {
     if (rich != null) {
       if (richToPlainText(rich).trim().isEmpty) return const SizedBox.shrink();
     } else if (child is SelectableText) {
@@ -230,6 +254,15 @@ class _InfoDetailScreenState extends State<InfoDetailScreen> {
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                     color: scheme.onSurface)),
+            const Spacer(),
+            if (copyText != null && copyText.trim().isNotEmpty)
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                tooltip: 'نسخ',
+                icon: Icon(Icons.copy,
+                    size: 18, color: scheme.onSurface.withOpacity(0.5)),
+                onPressed: () => _copySection(copyText),
+              ),
           ]),
           const SizedBox(height: 12),
           if (rich != null) RichTextViewer(content: rich) else child!,
