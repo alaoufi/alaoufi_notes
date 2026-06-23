@@ -89,6 +89,11 @@ class NotesProvider extends ChangeNotifier {
   Set<int> _reminderNoteIds = {};
   bool noteHasReminder(int? id) => id != null && _reminderNoteIds.contains(id);
 
+  Map<int, int> _categoryCounts = {};
+  int _allCount = 0;
+  int get allCount => _allCount;
+  int categoryCount(int? id) => id == null ? 0 : (_categoryCounts[id] ?? 0);
+
   Future<void> _loadTagColors() async {
     final list = await notes.getAllTagsWithColors();
     _tagColors = {
@@ -171,6 +176,9 @@ class NotesProvider extends ChangeNotifier {
       );
       _dbError = false;
       _reminderNoteIds = await notes.noteIdsWithReminders();
+      final hc = await notes.homeCounts();
+      _categoryCounts = hc.byCategory;
+      _allCount = hc.total;
     } catch (_) {
       // **حماية:** تعذّر فتح القاعدة (غالبًا مؤقّت — مفتاح/تخزين). لا نعرضها
       // كـ«فارغة» (يُربك ويخاطر بقرار حذف/استعادة خاطئ)، ولا نمسح القائمة القديمة.

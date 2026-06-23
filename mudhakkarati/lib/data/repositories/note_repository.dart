@@ -396,6 +396,24 @@ class NoteRepository {
   // الوسوم (Tags)
   // ---------------------------------------------------------------------------
 
+  /// عدد الملاحظات الظاهرة (غير محذوفة/مؤرشفة) لكل تصنيف + الإجماليّ — لشارات
+  /// شرائح التصنيفات في الرئيسية.
+  Future<({Map<int, int> byCategory, int total})> homeCounts() async {
+    final db = await _db;
+    final rows = await db.rawQuery(
+        'SELECT category_id, COUNT(*) AS c FROM notes '
+        'WHERE is_deleted = 0 AND is_archived = 0 GROUP BY category_id');
+    final map = <int, int>{};
+    var total = 0;
+    for (final r in rows) {
+      final cnt = (r['c'] as int?) ?? 0;
+      total += cnt;
+      final cid = r['category_id'] as int?;
+      if (cid != null) map[cid] = cnt;
+    }
+    return (byCategory: map, total: total);
+  }
+
   /// معرّفات الملاحظات التي لها تنبيه نشِط (لإظهار مؤشّر على البطاقة).
   Future<Set<int>> noteIdsWithReminders() async {
     final db = await _db;

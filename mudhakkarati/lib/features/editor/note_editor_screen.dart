@@ -378,6 +378,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       appBar: AppBar(
           backgroundColor: grad != null ? Colors.transparent : bg,
           actions: [
+            if (_note.type == NoteType.text ||
+                _note.type == NoteType.checklist)
+              IconButton(
+                tooltip: s.t('stats'),
+                icon: const Icon(Icons.bar_chart),
+                onPressed: () => _showStats(s),
+              ),
             IconButton(
               tooltip: _note.isPinned ? s.t('unpin') : s.t('pin'),
               icon: Icon(_note.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
@@ -715,6 +722,64 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 ),
         ),
       ],
+    );
+  }
+
+  /// النصّ الخام للإحصاء (من المحرّر الحيّ إن توفّر، وإلا من المحتوى المحفوظ).
+  String _statsText() {
+    if (_note.type == NoteType.checklist) {
+      return _itemCtrls.map((c) => c.text).join('\n');
+    }
+    if (_richCtrl != null) {
+      return _richCtrl!.quill.document.toPlainText();
+    }
+    return richToPlainText(_note.content);
+  }
+
+  /// ورقة إحصائيات الملاحظة: كلمات/أحرف/أسطر + زمن قراءة تقريبيّ.
+  void _showStats(S s) {
+    final text = _statsText();
+    final words =
+        text.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+    final chars = text.replaceAll('\n', '').length;
+    final lines = text.split('\n').where((l) => l.trim().isNotEmpty).length;
+    final minutes = (words / 200).ceil();
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        Widget row(IconData i, String label, String v) => ListTile(
+              leading: Icon(i, color: Theme.of(ctx).colorScheme.primary),
+              title: Text(label),
+              trailing: Text(v,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 16)),
+            );
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Row(children: [
+                  Icon(Icons.bar_chart,
+                      color: Theme.of(ctx).colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(s.t('stats'),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 17)),
+                ]),
+              ),
+              row(Icons.text_fields, s.t('words'), '$words'),
+              row(Icons.abc, s.t('characters'), '$chars'),
+              row(Icons.notes, s.t('lines'), '$lines'),
+              row(Icons.schedule, s.t('reading_time'),
+                  '$minutes ${s.t('minute')}'),
+              const SizedBox(height: 12),
+            ],
+          ),
+        );
+      },
     );
   }
 

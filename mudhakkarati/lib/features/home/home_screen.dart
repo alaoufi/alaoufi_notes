@@ -816,12 +816,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           _chip(
             label: s.t('all'),
+            count: provider.allCount,
             selected: provider.filterCategoryId == null && provider.filterTag == null,
             onTap: () => provider.setCategoryFilter(null),
           ),
           ...provider.categories.map((c) => _chip(
                 label: c.name,
                 color: Color(c.color),
+                count: provider.categoryCount(c.id),
                 selected: provider.filterCategoryId == c.id,
                 onTap: () => provider.setCategoryFilter(c.id),
               )),
@@ -835,11 +837,12 @@ class _HomeScreenState extends State<HomeScreen> {
     required bool selected,
     required VoidCallback onTap,
     Color? color,
+    int count = 0,
   }) {
     return Padding(
       padding: const EdgeInsets.only(left: 8),
       child: ChoiceChip(
-        label: Text(label),
+        label: Text(count > 0 ? '$label  $count' : label),
         selected: selected,
         onSelected: (_) => onTap(),
         avatar: color == null
