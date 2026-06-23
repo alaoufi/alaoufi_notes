@@ -13,6 +13,7 @@ import '../../widgets/ui_kit.dart';
 import '../../widgets/note_card.dart';
 import '../../services/backup_service.dart';
 import '../../services/sync/sync_service.dart';
+import '../../services/update_service.dart';
 import '../backup/backup_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../favorites/favorites_screen.dart';
@@ -47,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final Set<int> _selected = {}; // معرّفات الملاحظات المحدّدة
   bool _restoreChecked = false; // بحث تلقائي عن نسخة احتياطية مرّة واحدة
   bool _backupReminderChecked = false; // فحص تذكير النسخة الخارجية مرّة واحدة
+  bool _updateChecked = false; // فحص تحديث التطبيق مرّة واحدة لكل دخول
   bool _showBackupReminder = false; // إظهار شريط «صدّر نسخة قبل التحديث»
 
   @override
@@ -144,6 +146,31 @@ class _HomeScreenState extends State<HomeScreen> {
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
     super.dispose();
+  }
+
+  /// فحص تحديث صامت؛ إن توفّر يظهر إشعار بزرّ «تحديث» (تحميل + تشغيل المثبّت).
+  Future<void> _maybeOfferUpdate() async {
+    final upd = await UpdateService.instance.check();
+    if (upd == null || !mounted) return;
+    final s = S.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: const Duration(seconds: 10),
+      content: Text('${s.t('upd_available')} ${upd.version}'),
+      action: SnackBarAction(
+        label: s.t('upd_update'),
+        onPressed: () => _doUpdate(upd),
+      ),
+    ));
+  }
+
+  Future<void> _doUpdate(UpdateInfo upd) async {
+    final s = S.of(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.t('upd_downloading'))));
+    final err = await UpdateService.instance.downloadAndInstall(upd.url);
+    if (!mounted || err == null) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(err)));
   }
 
   Future<void> _openNote(Note note) async {
@@ -451,6 +478,12 @@ class _HomeScreenState extends State<HomeScreen> {
       _backupReminderChecked = true;
       WidgetsBinding.instance
           .addPostFrameCallback((_) => _maybeShowBackupReminder());
+    }
+
+    // فحص تلقائيّ (مرّة لكل دخول) لتوفّر تحديث للتطبيق.
+    if (!_updateChecked && !provider.loading) {
+      _updateChecked = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeOfferUpdate());
     }
 
     return Scaffold(

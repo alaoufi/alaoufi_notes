@@ -17,6 +17,7 @@ import '../backup/daily_backup_switch.dart';
 import '../categories/manage_categories_screen.dart';
 import '../reminders/reminders_screen.dart';
 import '../security/security_settings_screen.dart';
+import '../../services/update_service.dart';
 import '../trash/archive_screen.dart';
 import '../trash/trash_screen.dart';
 import 'settings_provider.dart';
@@ -776,6 +777,7 @@ class SettingsScreen extends StatelessWidget {
             );
           },
         ),
+        const _UpdateTile(),
       ];
 
   /// عناصر قائمة اختيار الخط: مجمّعة حسب العائلة (نسخ/كوفي/…) برؤوس غير قابلة
@@ -877,6 +879,107 @@ class _NotePreview extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// عنصر «تحديث التطبيق»: يتحقّق من أحدث نسخة، وإن توفّرت يحمّلها ويشغّل المثبّت.
+class _UpdateTile extends StatefulWidget {
+  const _UpdateTile();
+
+  @override
+  State<_UpdateTile> createState() => _UpdateTileState();
+}
+
+class _UpdateTileState extends State<_UpdateTile> {
+  bool _checking = false;
+  bool _downloading = false;
+  double _progress = 0;
+  UpdateInfo? _available;
+  String? _status;
+
+  Future<void> _check() async {
+    setState(() {
+      _checking = true;
+      _status = null;
+    });
+    final upd = await UpdateService.instance.check();
+    if (!mounted) return;
+    setState(() {
+      _checking = false;
+      _available = upd;
+      _status = upd == null ? S.of(context).t('upd_latest') : null;
+    });
+  }
+
+  Future<void> _update() async {
+    final upd = _available;
+    if (upd == null) return;
+    setState(() {
+      _downloading = true;
+      _progress = 0;
+    });
+    final err = await UpdateService.instance.downloadAndInstall(
+      upd.url,
+      onProgress: (p) {
+        if (mounted) setState(() => _progress = p);
+      },
+    );
+    if (!mounted) return;
+    setState(() => _downloading = false);
+    if (err != null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(err)));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = S.of(context);
+    final scheme = Theme.of(context).colorScheme;
+
+    if (_downloading) {
+      return ListTile(
+        leading: SizedBox(
+          width: 22,
+          height: 22,
+          child: CircularProgressIndicator(
+              strokeWidth: 2, value: _progress > 0 ? _progress : null),
+        ),
+        title: Text(s.t('upd_downloading')),
+        subtitle: Text('${(_progress * 100).round()}%'),
+      );
+    }
+
+    if (_available != null) {
+      return Card(
+        color: scheme.primaryContainer,
+        child: ListTile(
+          leading: Icon(Icons.system_update, color: scheme.onPrimaryContainer),
+          title: Text('${s.t('upd_available')} ${_available!.version}',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: scheme.onPrimaryContainer)),
+          subtitle: Text(s.t('upd_tap_install'),
+              style: TextStyle(color: scheme.onPrimaryContainer)),
+          trailing: FilledButton(
+              onPressed: _update, child: Text(s.t('upd_update'))),
+          onTap: _update,
+        ),
+      );
+    }
+
+    return ListTile(
+      leading: const Icon(Icons.system_update_outlined),
+      title: Text(s.t('upd_check')),
+      subtitle: _status != null ? Text(_status!) : null,
+      trailing: _checking
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2))
+          : const Icon(Icons.chevron_left),
+      onTap: _checking ? null : _check,
     );
   }
 }

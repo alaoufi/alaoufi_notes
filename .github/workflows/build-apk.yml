@@ -80,12 +80,18 @@ jobs:
           mkdir -p /tmp/apkout
           APKDIR=mudhakkarati/build/app/outputs/flutter-apk
           cp "$APKDIR/app-arm64-v8a-release.apk" /tmp/apkout/AlaoufiNotes.apk
+          # ملف نسخة للتحديث داخل التطبيق (يقارنه UpdateService برقم بناء التطبيق).
+          VER=$(grep '^version:' mudhakkarati/pubspec.yaml | sed 's/version: //; s/+.*//' | tr -d '[:space:]')
+          printf '{"version":"%s","build":%s,"url":"%s"}\n' \
+            "$VER" "${{ github.run_number }}" \
+            "https://raw.githubusercontent.com/${{ github.repository }}/apk-dist/AlaoufiNotes.apk" \
+            > /tmp/apkout/version.json
           cd /tmp/apkout
           git init -q
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
           git checkout -q -b apk-dist
-          git add AlaoufiNotes.apk
+          git add AlaoufiNotes.apk version.json
           git commit -q -m "Alaoufi Notes APK (arm64) #${{ github.run_number }}"
           git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" apk-dist
 
