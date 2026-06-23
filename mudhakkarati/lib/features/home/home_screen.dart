@@ -148,19 +148,30 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  /// فحص تحديث صامت؛ إن توفّر يظهر إشعار بزرّ «تحديث» (تحميل + تشغيل المثبّت).
+  /// فحص تحديث صامت عند الدخول؛ إن توفّر يعرض **رسالة تحديث** (تحميل + تثبيت).
   Future<void> _maybeOfferUpdate() async {
     final upd = await UpdateService.instance.check();
     if (upd == null || !mounted) return;
     final s = S.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      duration: const Duration(seconds: 10),
-      content: Text('${s.t('upd_available')} ${upd.version}'),
-      action: SnackBarAction(
-        label: s.t('upd_update'),
-        onPressed: () => _doUpdate(upd),
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        icon: const Icon(Icons.system_update),
+        title: Text(s.t('upd_title')),
+        content: Text(
+            '${s.t('upd_available')} ${upd.version}\n${s.t('upd_tap_install')}'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(s.t('later'))),
+          FilledButton.icon(
+              onPressed: () => Navigator.pop(ctx, true),
+              icon: const Icon(Icons.system_update, size: 18),
+              label: Text(s.t('upd_update'))),
+        ],
       ),
-    ));
+    );
+    if (go == true && mounted) _doUpdate(upd);
   }
 
   Future<void> _doUpdate(UpdateInfo upd) async {
