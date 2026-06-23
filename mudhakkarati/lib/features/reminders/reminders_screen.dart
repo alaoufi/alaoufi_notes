@@ -166,6 +166,10 @@ class RemindersScreen extends StatelessWidget {
     final r = v.reminder;
     final note = v.note;
     final on = r.isActive;
+    // تنبيه «مرّة واحدة» فات وقته ⇒ منتهٍ: نعرضه باهتًا (كأنه غير نشِط).
+    final expired =
+        r.repeat == ReminderRepeat.once && r.time.isBefore(DateTime.now());
+    final dim = !on || expired;
     final scheme = Theme.of(context).colorScheme;
     final timeStr = DateFormat('h:mm a', 'ar').format(r.time);
     final label = r.isStandalone
@@ -205,19 +209,23 @@ class RemindersScreen extends StatelessWidget {
                     timeStr,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: on ? null : scheme.outline,
+                          color: dim ? scheme.outline : null,
+                          decoration:
+                              expired ? TextDecoration.lineThrough : null,
                         ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$label  •  $repeatInfo',
+                    expired
+                        ? '$label  •  $repeatInfo  •  ${s.t('nc_expired')}'
+                        : '$label  •  $repeatInfo',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 12,
-                        color: on
-                            ? Theme.of(context).hintColor
-                            : scheme.outline),
+                        color: dim
+                            ? scheme.outline
+                            : Theme.of(context).hintColor),
                   ),
                 ],
               ),

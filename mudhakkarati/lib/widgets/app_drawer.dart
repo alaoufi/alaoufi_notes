@@ -6,8 +6,6 @@ import '../features/backup/backup_screen.dart';
 import '../features/categories/manage_categories_screen.dart';
 import '../features/cleanup/cleanup_screen.dart';
 import '../features/help/help_guide_screen.dart';
-import '../features/info/info_list_screen.dart';
-import '../features/security/info_lock.dart';
 import '../features/security/note_unlock.dart';
 import '../features/security/secret_notes_screen.dart';
 import '../features/security/security_settings_screen.dart';
@@ -35,16 +33,6 @@ class AppDrawer extends StatelessWidget {
       if (ok && context.mounted) {
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const SecretNotesScreen()));
-      }
-    }
-
-    Future<void> goInfo() async {
-      Navigator.pop(context);
-      if (!context.mounted) return;
-      if (!await ensureInfoUnlocked(context)) return;
-      if (context.mounted) {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const InfoListScreen()));
       }
     }
 
@@ -124,8 +112,6 @@ class AppDrawer extends StatelessWidget {
                 initiallyExpanded: true, children: [
               _tile(context, Icons.category_outlined, s.t('manage_categories'),
                   () => go(const ManageCategoriesScreen())),
-              _tile(context, Icons.settings_outlined, s.t('settings'),
-                  () => go(const SettingsScreen())),
             ]),
             // 2) الأمان.
             _group(context, Icons.shield_outlined, s.t('security'),
@@ -147,7 +133,6 @@ class AppDrawer extends StatelessWidget {
                   () => go(const CleanupScreen())),
             ]),
             const Divider(),
-            _tile(context, Icons.menu_book_outlined, s.t('info'), goInfo),
             _tile(context, Icons.settings_outlined, s.t('settings'),
                 () => go(const SettingsScreen())),
           ],
