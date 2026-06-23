@@ -275,6 +275,35 @@ class NotesProvider extends ChangeNotifier {
     await refresh();
   }
 
+  // ===== عمليات جماعية (التحديد المتعدّد) — تحديث واحد في النهاية =====
+  Future<void> bulkArchive(Iterable<int> ids) async {
+    for (final id in ids) {
+      await notes.setArchived(id, true);
+    }
+    await refresh();
+  }
+
+  Future<void> bulkTrash(Iterable<int> ids) async {
+    for (final id in ids) {
+      await notes.moveToTrash(id);
+    }
+    await refresh();
+  }
+
+  Future<void> bulkPin(Iterable<int> ids, bool pinned) async {
+    for (final id in ids) {
+      await notes.setPinned(id, pinned);
+    }
+    await refresh();
+  }
+
+  Future<void> bulkSetCategory(Iterable<int> ids, int? categoryId) async {
+    for (final id in ids) {
+      await notes.setCategory(id, categoryId);
+    }
+    await refresh();
+  }
+
   Future<void> moveToTrash(Note note) async {
     await notes.moveToTrash(note.id!);
     await refresh();

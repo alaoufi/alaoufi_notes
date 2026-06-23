@@ -25,6 +25,10 @@ class NoteCard extends StatelessWidget {
   /// عند true تُعرض محتويات الملاحظة المقفلة (داخل القسم السري بعد فتح القفل).
   final bool revealLocked;
 
+  /// وضع التحديد المتعدّد: يُظهر علامة اختيار وحدّ بارز عند [selected].
+  final bool selectable;
+  final bool selected;
+
   const NoteCard({
     super.key,
     required this.note,
@@ -32,6 +36,8 @@ class NoteCard extends StatelessWidget {
     required this.onTap,
     required this.onLongPress,
     this.revealLocked = false,
+    this.selectable = false,
+    this.selected = false,
   });
 
   @override
@@ -45,11 +51,17 @@ class NoteCard extends StatelessWidget {
             ? Colors.white
             : Colors.black87);
 
+    final scheme = Theme.of(context).colorScheme;
     return Card(
       // الشبكة تتكفّل بالتباعد؛ نُلغي هامش الثيم العام كي لا تتباعد البطاقات.
       margin: EdgeInsets.zero,
       color: grad != null ? Colors.transparent : bg,
       clipBehavior: Clip.antiAlias,
+      shape: selected
+          ? RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: scheme.primary, width: 2.5))
+          : null,
       child: Ink(
         decoration: grad != null
             ? BoxDecoration(gradient: grad.toGradient())
@@ -66,6 +78,15 @@ class NoteCard extends StatelessWidget {
             children: [
               Row(
                 children: [
+                  if (selectable) ...[
+                    Icon(
+                        selected
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        size: 18,
+                        color: selected ? scheme.primary : onBg.withOpacity(0.5)),
+                    const SizedBox(width: 6),
+                  ],
                   Icon(_typeIcon, size: 18, color: onBg.withOpacity(0.6)),
                   const Spacer(),
                   if (context.watch<NotesProvider>().noteHasReminder(note.id))

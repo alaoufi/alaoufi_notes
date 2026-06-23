@@ -40,10 +40,40 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _searchCtrl = TextEditingController();
+  final _scrollCtrl = ScrollController();
+  bool _showToTop = false; // إظهار زرّ «العودة للأعلى» عند التمرير
   bool _searching = false; // حقل البحث مخفيّ حتى يُفتح بأيقونة العدسة
+  bool _selecting = false; // وضع التحديد المتعدّد
+  final Set<int> _selected = {}; // معرّفات الملاحظات المحدّدة
   bool _restoreChecked = false; // بحث تلقائي عن نسخة احتياطية مرّة واحدة
   bool _backupReminderChecked = false; // فحص تذكير النسخة الخارجية مرّة واحدة
   bool _showBackupReminder = false; // إظهار شريط «صدّر نسخة قبل التحديث»
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollCtrl.addListener(() {
+      final show = _scrollCtrl.hasClients && _scrollCtrl.offset > 400;
+      if (show != _showToTop) setState(() => _showToTop = show);
+    });
+  }
+
+  void _exitSelection() => setState(() {
+        _selecting = false;
+        _selected.clear();
+      });
+
+  void _toggleSelect(int? id) {
+    if (id == null) return;
+    setState(() {
+      if (_selected.contains(id)) {
+        _selected.remove(id);
+        if (_selected.isEmpty) _selecting = false;
+      } else {
+        _selected.add(id);
+      }
+    });
+  }
 
   /// يفحص (مرّة واحدة لكل دخول) إن كان يجب تذكير المستخدم بنسخة خارجية.
   Future<void> _maybeShowBackupReminder() async {
@@ -112,6 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _searchCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -423,18 +454,41 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     return Scaffold(
-      drawer: const AppDrawer(),
-      // زر + يفتح قائمة الخيارات (ملاحظة/قائمة مهام/صوت/صورة...).
-      floatingActionButton: FloatingActionButton(
-        onPressed: _quickAdd,
-        child: const Icon(Icons.add),
-      ),
+      drawer: _selecting ? null : const AppDrawer(),
+      floatingActionButton: _selecting
+          ? null
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_showToTop)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: FloatingActionButton.small(
+                      heroTag: 'toTop',
+                      tooltip: s.t('to_top'),
+                      onPressed: () => _scrollCtrl.animateTo(0,
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeOutCubic),
+                      child: const Icon(Icons.arrow_upward),
+                    ),
+                  ),
+                FloatingActionButton(
+                  heroTag: 'add',
+                  onPressed: _quickAdd,
+                  child: const Icon(Icons.add),
+                ),
+              ],
+            ),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: provider.refresh,
           child: CustomScrollView(
+            controller: _scrollCtrl,
             slivers: [
-              SliverToBoxAdapter(child: _header(context, s, settings, provider)),
+              SliverToBoxAdapter(
+                  child: _selecting
+                      ? _selectionBar(context, s, provider)
+                      : _header(context, s, settings, provider)),
               SliverToBoxAdapter(child: _syncBanner(context)),
               if (_showBackupReminder)
                 SliverToBoxAdapter(child: _backupReminderBanner(context)),
@@ -472,11 +526,22 @@ class _HomeScreenState extends State<HomeScreen> {
       final c = NoteCard(
         note: n,
         category: provider.categoryById(n.categoryId),
-        onTap: () => _openNote(n),
-        onLongPress: () => showNoteActions(context, n),
+        selectable: _selecting,
+        selected: _selected.contains(n.id),
+        onTap: _selecting
+            ? () => _toggleSelect(n.id)
+            : () => _openNote(n),
+        onLongPress: _selecting
+            ? () => _toggleSelect(n.id)
+            : () => showNoteActions(context, n, onSelect: () {
+                  setState(() {
+                    _selecting = true;
+                    if (n.id != null) _selected.add(n.id!);
+                  });
+                }),
       );
-      // السحب (أرشفة/حذف) في وضع القائمة فقط — يبقى وضع الشبكة بالضغط المطوّل.
-      if (cross != 1) return c;
+      // السحب (أرشفة/حذف) في وضع القائمة فقط، وخارج وضع التحديد.
+      if (cross != 1 || _selecting) return c;
       return _swipeable(context, s, provider, n, c);
     }
 
@@ -550,6 +615,104 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: child,
     );
+  }
+
+  /// شريط أدوات وضع التحديد المتعدّد (يحلّ محلّ الهيدر مؤقّتًا).
+  Widget _selectionBar(BuildContext context, S s, NotesProvider provider) {
+    final scheme = Theme.of(context).colorScheme;
+    final has = _selected.isNotEmpty;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 10, 6, 0),
+      child: Row(
+        children: [
+          IconButton(
+              icon: const Icon(Icons.close),
+              tooltip: s.t('cancel'),
+              onPressed: _exitSelection),
+          Text('${_selected.length}',
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 18)),
+          const Spacer(),
+          IconButton(
+              icon: const Icon(Icons.push_pin_outlined),
+              tooltip: s.t('pin'),
+              onPressed: has ? _bulkPin : null),
+          IconButton(
+              icon: const Icon(Icons.drive_file_move_outline),
+              tooltip: s.t('move'),
+              onPressed: has ? () => _bulkMove(provider) : null),
+          IconButton(
+              icon: const Icon(Icons.archive_outlined),
+              tooltip: s.t('archive'),
+              onPressed: has ? _bulkArchive : null),
+          IconButton(
+              icon: Icon(Icons.delete_outline, color: scheme.error),
+              tooltip: s.t('delete'),
+              onPressed: has ? _bulkTrash : null),
+          IconButton(
+              icon: const Icon(Icons.select_all),
+              tooltip: s.t('select_all'),
+              onPressed: () => setState(() => _selected
+                ..clear()
+                ..addAll(provider.items
+                    .map((n) => n.id)
+                    .whereType<int>()))),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _bulkArchive() async {
+    final ids = _selected.toList();
+    await context.read<NotesProvider>().bulkArchive(ids);
+    if (!mounted) return;
+    _exitSelection();
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${S.of(context).t('archived')} (${ids.length})')));
+  }
+
+  Future<void> _bulkPin() async {
+    final ids = _selected.toList();
+    await context.read<NotesProvider>().bulkPin(ids, true);
+    if (mounted) _exitSelection();
+  }
+
+  Future<void> _bulkTrash() async {
+    if (!await confirmDeleteNote(context)) return;
+    final ids = _selected.toList();
+    await context.read<NotesProvider>().bulkTrash(ids);
+    if (mounted) _exitSelection();
+  }
+
+  Future<void> _bulkMove(NotesProvider provider) async {
+    final s = S.of(context);
+    final chosen = await showModalBottomSheet<int?>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.inbox_outlined),
+              title: Text(s.t('no_category')),
+              onTap: () => Navigator.pop(ctx, -1), // -1 = إزالة التصنيف
+            ),
+            for (final c in provider.categories)
+              ListTile(
+                leading: CircleAvatar(
+                    radius: 8, backgroundColor: Color(c.color)),
+                title: Text(c.name),
+                onTap: () => Navigator.pop(ctx, c.id),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (chosen == null) return; // أُلغي
+    final ids = _selected.toList();
+    await provider.bulkSetCategory(ids, chosen == -1 ? null : chosen);
+    if (mounted) _exitSelection();
   }
 
   Widget _sectionHeader(BuildContext context, IconData icon, String text) {

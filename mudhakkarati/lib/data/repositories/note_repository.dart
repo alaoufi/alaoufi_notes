@@ -252,6 +252,28 @@ class NoteRepository {
     );
   }
 
+  /// تثبيت/إلغاء تثبيت بالمعرّف (للعمليات الجماعية).
+  Future<void> setPinned(int id, bool pinned) async {
+    final db = await _db;
+    await db.update(
+      'notes',
+      {'is_pinned': pinned ? 1 : 0, 'updated_at': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  /// نقل ملاحظة إلى تصنيف (أو إزالته) بالمعرّف (للعمليات الجماعية).
+  Future<void> setCategory(int id, int? categoryId) async {
+    final db = await _db;
+    await db.update(
+      'notes',
+      {'category_id': categoryId, 'updated_at': DateTime.now().millisecondsSinceEpoch},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   Future<void> toggleFavorite(Note note) async {
     final db = await _db;
     await db.update(
