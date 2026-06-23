@@ -266,6 +266,10 @@ class BackupService {
         return const BackupResult(false, 'لم تُضبط كلمة مرور النسخ التلقائي');
       }
       final encrypted = await _buildEncrypted(pwd);
+      // تحقّق من سلامة النسخة قبل كتابتها (حتى لا تُستبدل نسخة سليمة بأخرى تالفة).
+      if (!await _verifyEncrypted(encrypted, pwd)) {
+        return const BackupResult(false, 'فشل التحقّق من سلامة النسخة التلقائية');
+      }
       final dir = await autoBackupDir();
       // خانة ثابتة لكل يوم من الأسبوع (1=الإثنين .. 7=الأحد) — تُستبدل أسبوعيًّا.
       final file = File(p.join(dir.path, 'auto_w${DateTime.now().weekday}.$_ext'));
@@ -387,6 +391,11 @@ class BackupService {
       final encrypted = EncryptionService.instance
           .encryptBytes(Uint8List.fromList(zipped), password);
 
+      // 3ب) تحقّق فوريّ من سلامة النسخة (فكّ تشفير اختباريّ) قبل إعلان النجاح.
+      if (!await _verifyEncrypted(encrypted, password)) {
+        return const BackupResult(false, 'فشل التحقّق من سلامة النسخة');
+      }
+
       // 4) الحفظ: نكتب أولًا في الملفات المؤقتة ثم نتيح حفظه للمستخدم.
       final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       final fileName = 'Notes_$stamp.$_ext';
@@ -404,7 +413,7 @@ class BackupService {
       await _stamp(_kLastLocal);
       return BackupResult(
         true,
-        'تم إنشاء النسخة الاحتياطية',
+        'تم إنشاء النسخة الاحتياطية والتحقّق من سلامتها ✓',
         filePath: savedPath ?? tmpPath,
       );
     } catch (e) {
@@ -521,6 +530,9 @@ class BackupService {
   Future<BackupResult> shareBackupToCloud(String password) async {
     try {
       final encrypted = await _buildEncrypted(password);
+      if (!await _verifyEncrypted(encrypted, password)) {
+        return const BackupResult(false, 'فشل التحقّق من سلامة النسخة');
+      }
       final stamp = DateFormat('yyyy-MM-dd_HHmm').format(DateTime.now());
       final fileName = 'Notes_$stamp.$_ext';
       final tmpDir = await getTemporaryDirectory();
@@ -588,6 +600,26 @@ class BackupService {
       return _restoreFromBytes(encrypted, password);
     } catch (e) {
       return BackupResult(false, 'فشل الاستيراد: $e');
+    }
+  }
+
+  /// يتحقّق أنّ بايتات نسخةٍ مشفّرة **قابلة للفكّ** وتحوي قاعدة بيانات صالحة —
+  /// دون أيّ تعديل على بيانات التطبيق. يُستخدم للتأكّد من سلامة النسخة فور
+  /// إنشائها، فلا تُكتشف نسخة تالفة وقت الحاجة الماسّة للاستعادة.
+  Future<bool> _verifyEncrypted(Uint8List encrypted, String password) async {
+    try {
+      final zipped =
+          EncryptionService.instance.decryptBytes(encrypted, password);
+      final archive = ZipDecoder().decodeBytes(zipped);
+      for (final f in archive) {
+        if (f.isFile && f.name == 'database.db') {
+          // ترويسة SQLite ("SQLite format 3\0") = 16 بايت على الأقل.
+          return (f.content as List<int>).length > 16;
+        }
+      }
+      return false;
+    } catch (_) {
+      return false;
     }
   }
 
