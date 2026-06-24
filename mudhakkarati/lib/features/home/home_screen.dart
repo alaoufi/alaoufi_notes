@@ -608,19 +608,19 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
             childCount: notes.length,
-            itemBuilder: (context, i) => card(notes[i]),
+            // مفتاح ثابت لكل بطاقة كي يحافظ التخطيط على موضعه عند إعادة البناء
+            // أثناء التمرير (إظهار زرّ «للأعلى») فلا تقفز القائمة.
+            itemBuilder: (context, i) => KeyedSubtree(
+              key: ValueKey(notes[i].id ?? notes[i].hashCode),
+              child: card(notes[i]),
+            ),
           ),
         );
-    final pinned = provider.pinned;
-    final unpinned = provider.unpinned;
-    if (pinned.isEmpty) return [grid(provider.items)];
-    return [
-      _sectionHeader(context, Icons.push_pin, s.t('pinned')),
-      grid(pinned),
-      if (unpinned.isNotEmpty)
-        _sectionHeader(context, Icons.notes_outlined, s.t('others')),
-      if (unpinned.isNotEmpty) grid(unpinned),
-    ];
+    // شبكة واحدة: المثبّتة أولًا ثم البقيّة — بلا عنواني «مثبّت/أخرى» (المثبّتة
+    // تظهر بالأعلى تلقائيًّا فلا تحتاج عنوانًا). شبكة واحدة أكثر استقرارًا عند
+    // التمرير من شبكتين منفصلتين.
+    final ordered = [...provider.pinned, ...provider.unpinned];
+    return [grid(ordered)];
   }
 
   /// يلفّ بطاقة الملاحظة بإيماءة سحب: يمينًا ⇐ أرشفة (مع «تراجع»)، يسارًا ⇐ حذف
@@ -769,24 +769,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final ids = _selected.toList();
     await provider.bulkSetCategory(ids, chosen == -1 ? null : chosen);
     if (mounted) _exitSelection();
-  }
-
-  Widget _sectionHeader(BuildContext context, IconData icon, String text) {
-    final c = Theme.of(context).colorScheme.primary;
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-        child: Row(
-          children: [
-            Icon(icon, size: 16, color: c),
-            const SizedBox(width: 6),
-            Text(text,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: c, fontSize: 13)),
-          ],
-        ),
-      ),
-    );
   }
 
   /// شريط مزامنة خفيف في الأعلى (يظهر فقط أثناء/بعد المزامنة ثم يختفي).
