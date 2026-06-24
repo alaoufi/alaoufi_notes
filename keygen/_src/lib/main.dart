@@ -11,6 +11,22 @@ const _storage = FlutterSecureStorage(
 );
 const _kSeed = 'owner_seed_hex';
 
+/// ملفّ تطبيق: (المعرّف، الاسم، بادئة الصيغة، البذرة 32 بايت).
+/// كلّ تطبيق له زوج مفاتيح وبادئة مستقلّة، ويُولّد بنفس [LicenseCodec] المعتمد
+/// (66 بايت → 106 حرف Base32).
+class AppProfile {
+  final String id;
+  final String name;
+  final String prefix;
+  final List<int> seed;
+  const AppProfile(this.id, this.name, this.prefix, this.seed);
+}
+
+// «مراح» — بذرة المالك مدمجة في أداة المولّد الخاصّة بالمالك فقط (ليست في
+// التطبيق المنشور). المفتاح العامّ المقابل: q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=
+const _marahSeedHex =
+    '38beeb3667847dc80f248da1960f0bd7ac6484afa048ff641978119991a4d470';
+
 class KeygenApp extends StatelessWidget {
   const KeygenApp({super.key});
 
@@ -42,6 +58,7 @@ class _Home extends StatefulWidget {
 
 class _HomeState extends State<_Home> {
   bool _loading = true;
+  bool _skip = false; // تخطّي إدخال بذرة «مذكراتي» (لتطبيقات مدمجة كـ«مراح»).
   List<int>? _seed; // 32 بايت.
 
   @override
@@ -71,18 +88,30 @@ class _HomeState extends State<_Home> {
     if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    if (_seed == null) return _SetupScreen(onSaved: _saveSeed);
-    return _GeneratorScreen(seed: _seed!, onResetSeed: () async {
-      await _storage.delete(key: _kSeed);
-      setState(() => _seed = null);
-    });
+    if (_seed == null && !_skip) {
+      return _SetupScreen(
+        onSaved: _saveSeed,
+        onSkip: () => setState(() => _skip = true),
+      );
+    }
+    return _GeneratorScreen(
+      ownerSeed: _seed, // بذرة «مذكراتي» (قد تكون null ⇒ تتاح «مراح» فقط).
+      onResetSeed: () async {
+        await _storage.delete(key: _kSeed);
+        setState(() {
+          _seed = null;
+          _skip = false;
+        });
+      },
+    );
   }
 }
 
 /// شاشة الإعداد لأوّل مرّة: إدخال المفتاح الخاصّ أو توليد زوج جديد.
 class _SetupScreen extends StatefulWidget {
   final Future<void> Function(String hex) onSaved;
-  const _SetupScreen({required this.onSaved});
+  final VoidCallback? onSkip; // المتابعة لتطبيقات ببذور مدمجة (مراح) دون إدخال بذرة.
+  const _SetupScreen({required this.onSaved, this.onSkip});
 
   @override
   State<_SetupScreen> createState() => _SetupScreenState();
@@ -169,6 +198,16 @@ class _SetupScreenState extends State<_SetupScreen> {
                   'عدم القدرة على توليد أكواد بعد ذلك.',
                   style: TextStyle(color: Colors.red, fontSize: 12)),
             ],
+            if (widget.onSkip != null) ...[
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: widget.onSkip,
+                icon: const Icon(Icons.arrow_forward),
+                label: const Text('المتابعة لتطبيقات مدمجة فقط (مراح)'),
+              ),
+            ],
           ],
         ),
       ),
@@ -178,9 +217,9 @@ class _SetupScreenState extends State<_SetupScreen> {
 
 /// شاشة توليد الأكواد.
 class _GeneratorScreen extends StatefulWidget {
-  final List<int> seed;
+  final List<int>? ownerSeed; // بذرة «مذكراتي» (قد تكون null).
   final Future<void> Function() onResetSeed;
-  const _GeneratorScreen({required this.seed, required this.onResetSeed});
+  const _GeneratorScreen({required this.ownerSeed, required this.onResetSeed});
 
   @override
   State<_GeneratorScreen> createState() => _GeneratorScreenState();
@@ -193,12 +232,29 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
   String? _key;
   String _pub = '...';
 
+  late final List<AppProfile> _apps;
+  late AppProfile _app;
+
   static const _presets = [7, 30, 90, 180, 365];
 
   @override
   void initState() {
     super.initState();
-    LicenseCodec.publicKeyB64(widget.seed)
+    _apps = [
+      // «مذكراتي» يظهر فقط عند توفّر بذرة المالك المُدخَلة.
+      if (widget.ownerSeed != null)
+        AppProfile('mudhakkarati', 'مذكراتي', LicenseCodec.msgPrefix,
+            widget.ownerSeed!),
+      // «مراح» ببذرة مدمجة وبادئة MRHL1.
+      AppProfile('marah', 'مراح', 'MRHL1', _hexToBytes(_marahSeedHex)),
+    ];
+    _app = _apps.first;
+    _refreshPub();
+  }
+
+  void _refreshPub() {
+    setState(() => _pub = '...');
+    LicenseCodec.publicKeyB64(_app.seed)
         .then((v) => mounted ? setState(() => _pub = v) : null);
   }
 
@@ -228,7 +284,8 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
     final key = await LicenseCodec.generate(
       deviceId: device,
       durationDays: _permanent ? 0 : days,
-      seed: widget.seed,
+      seed: _app.seed,
+      prefix: _app.prefix,
     );
     if (!mounted) return;
     setState(() => _key = key);
@@ -253,6 +310,31 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // منتقي التطبيق (يحدّد البادئة والبذرة المستخدمة في التوليد).
+            DropdownButtonFormField<AppProfile>(
+              initialValue: _app,
+              decoration: const InputDecoration(
+                labelText: 'التطبيق',
+                prefixIcon: Icon(Icons.apps),
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                for (final a in _apps)
+                  DropdownMenuItem(
+                    value: a,
+                    child: Text('${a.name}  (${a.prefix})'),
+                  ),
+              ],
+              onChanged: (v) {
+                if (v == null) return;
+                setState(() {
+                  _app = v;
+                  _key = null; // ألغِ رمزًا سابقًا لتطبيق آخر.
+                });
+                _refreshPub();
+              },
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _deviceCtrl,
               decoration: const InputDecoration(

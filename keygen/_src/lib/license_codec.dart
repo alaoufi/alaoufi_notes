@@ -15,15 +15,18 @@ class LicenseCodec {
   /// [deviceId]: معرّف الجهاز كما يعرضه التطبيق (تُزال الشرطات والمسافات).
   /// [durationDays]: عدد الأيام، أو 0 لترخيص **دائم**.
   /// [seed]: 32 بايت (المفتاح الخاصّ للمالك).
+  /// [prefix]: بادئة صيغة الرسالة الخاصّة بكلّ تطبيق (يجب أن تطابق `_msgPrefix`
+  /// في ذلك التطبيق). الافتراضي [msgPrefix] لتطبيق «مذكراتي».
   static Future<String> generate({
     required String deviceId,
     required int durationDays,
     required List<int> seed,
+    String prefix = msgPrefix,
   }) async {
     final id = _normalizeId(deviceId);
     final dur = durationDays.clamp(0, 65535);
     final kp = await _ed.newKeyPairFromSeed(seed);
-    final msg = utf8.encode('$msgPrefix|$id|$dur');
+    final msg = utf8.encode('$prefix|$id|$dur');
     final sig = await _ed.sign(msg, keyPair: kp);
     final bytes = <int>[(dur >> 8) & 0xff, dur & 0xff, ...sig.bytes];
     return _group(base32(bytes));

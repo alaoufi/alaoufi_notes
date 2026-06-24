@@ -39,6 +39,10 @@ jobs:
       - name: تهيئة مشروع أندرويد وبناء APK
         run: |
           set -o pipefail
+          # versionCode تصاعديّ كبير (الدقائق منذ 1970) — يتجاوز أرقام run_number
+          # القديمة فيُثبَّت المولّد الجديد فوق القديم بلا خطأ «إصدار أحدث موجود».
+          VCODE=$(( $(date -u +%s) / 60 ))
+          echo "versionCode = $VCODE"
           {
             echo "===== flutter create (سقالة أندرويد بمعرّف مستقلّ) ====="
             flutter create --platforms=android \
@@ -52,7 +56,7 @@ jobs:
             flutter pub get
             echo "===== flutter build apk (split per abi — ملفات أصغر) ====="
             flutter build apk --release --split-per-abi \
-              --build-number=${{ github.run_number }}
+              --build-number=$VCODE
             echo "===== size ====="
             ls -lh build/app/outputs/flutter-apk/
           } 2>&1 | tee /tmp/keygen-build.log
