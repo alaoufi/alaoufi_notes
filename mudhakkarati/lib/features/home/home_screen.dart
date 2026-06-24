@@ -43,7 +43,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _searchCtrl = TextEditingController();
   final _scrollCtrl = ScrollController();
-  bool _showToTop = false; // إظهار زرّ «العودة للأعلى» عند التمرير
+  // إظهار زرّ «العودة للأعلى» عند التمرير — ValueNotifier كي لا يُعاد بناء قائمة
+  // الملاحظات أثناء التمرير (إعادة بنائها كانت تسبّب قفزها للأعلى).
+  final ValueNotifier<bool> _showToTop = ValueNotifier(false);
   bool _searching = false; // حقل البحث مخفيّ حتى يُفتح بأيقونة العدسة
   bool _selecting = false; // وضع التحديد المتعدّد
   final Set<int> _selected = {}; // معرّفات الملاحظات المحدّدة
@@ -57,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _scrollCtrl.addListener(() {
       final show = _scrollCtrl.hasClients && _scrollCtrl.offset > 400;
-      if (show != _showToTop) setState(() => _showToTop = show);
+      // تحديث الزرّ فقط (بلا setState) كي لا تُعاد بناء القائمة أثناء التمرير.
+      _showToTop.value = show;
     });
   }
 
@@ -146,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchCtrl.dispose();
     _scrollCtrl.dispose();
+    _showToTop.dispose();
     super.dispose();
   }
 
@@ -516,18 +520,23 @@ class _HomeScreenState extends State<HomeScreen> {
           : Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (_showToTop)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: FloatingActionButton.small(
-                      heroTag: 'toTop',
-                      tooltip: s.t('to_top'),
-                      onPressed: () => _scrollCtrl.animateTo(0,
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutCubic),
-                      child: const Icon(Icons.arrow_upward),
-                    ),
-                  ),
+                // يستمع لمؤشّر الزرّ فقط — لا يُعاد بناء القائمة عند التمرير.
+                ValueListenableBuilder<bool>(
+                  valueListenable: _showToTop,
+                  builder: (context, show, _) => show
+                      ? Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: FloatingActionButton.small(
+                            heroTag: 'toTop',
+                            tooltip: s.t('to_top'),
+                            onPressed: () => _scrollCtrl.animateTo(0,
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeOutCubic),
+                            child: const Icon(Icons.arrow_upward),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
                 FloatingActionButton(
                   heroTag: 'add',
                   onPressed: _quickAdd,
