@@ -543,16 +543,29 @@ class SettingsScreen extends StatelessWidget {
         ),
 
         // محاذاة الكتابة: على السطر / بين السطرين
+        // نضع الأزرار في سطر مستقلّ تحت العنوان (subtitle) لا في trailing، وإلا
+        // انضغط العنوان في عمود ضيّق فظهر حرفًا تحت حرف.
         ListTile(
           leading: const Icon(Icons.vertical_align_center),
           title: const Text('محاذاة الكتابة'),
-          trailing: SegmentedButton<bool>(
-            segments: const [
-              ButtonSegment(value: true, label: Text('على السطر')),
-              ButtonSegment(value: false, label: Text('بين السطرين')),
-            ],
-            selected: {st.ruleOnLine},
-            onSelectionChanged: (v) => st.setRuleOnLine(v.first),
+          subtitle: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: SegmentedButton<bool>(
+                showSelectedIcon: false,
+                style: SegmentedButton.styleFrom(
+                  textStyle: const TextStyle(fontSize: 12),
+                  visualDensity: VisualDensity.compact,
+                ),
+                segments: const [
+                  ButtonSegment(value: true, label: Text('على السطر')),
+                  ButtonSegment(value: false, label: Text('بين السطرين')),
+                ],
+                selected: {st.ruleOnLine},
+                onSelectionChanged: (v) => st.setRuleOnLine(v.first),
+              ),
+            ),
           ),
         ),
 
