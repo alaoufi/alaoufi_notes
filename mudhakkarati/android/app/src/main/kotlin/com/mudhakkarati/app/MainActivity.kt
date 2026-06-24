@@ -11,15 +11,18 @@ import android.os.Handler
 import android.os.Looper
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.io.File
 
 // نرث من FlutterFragmentActivity لأن حزمة local_auth (البصمة) تتطلب ذلك.
 class MainActivity : FlutterFragmentActivity() {
     private val channelName = "com.mudhakkarati.app/ringtone"
     private val dictationChannel = "com.mudhakkarati.app/dictation"
     private val volumeChannel = "com.mudhakkarati.app/alarm_volume"
+    private val installerChannel = "com.mudhakkarati.app/installer"
     private val pickRequest = 4201
     private val speechRequest = 4711
     private var pendingResult: MethodChannel.Result? = null
@@ -74,6 +77,77 @@ class MainActivity : FlutterFragmentActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        // قناة تثبيت تحديث APK مباشرةً (نيّة تثبيت بلا فتح ملف/منتقي).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, installerChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "canInstall" -> result.success(canInstallPackages())
+                    "openInstallSettings" -> {
+                        openInstallSettings(); result.success(true)
+                    }
+                    "install" -> {
+                        val path = call.argument<String>("path")
+                        if (path.isNullOrEmpty()) {
+                            result.error("no_path", "مسار غير صالح", null)
+                        } else {
+                            result.success(installApk(path))
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+    }
+
+    /// هل يُسمح للتطبيق بتثبيت حزم (صلاحية «تثبيت تطبيقات غير معروفة»)؟
+    private fun canInstallPackages(): Boolean {
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                packageManager.canRequestPackageInstalls()
+            } else {
+                true
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /// يفتح شاشة منح «تثبيت تطبيقات غير معروفة» لهذا التطبيق (مرّة واحدة).
+    private fun openInstallSettings() {
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val intent = Intent(
+                    android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+                ).apply {
+                    data = Uri.parse("package:$packageName")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+            } else {
+                openAppSettings()
+            }
+        } catch (e: Exception) {
+            openAppSettings()
+        }
+    }
+
+    /// يطلق مثبّت النظام مباشرةً على ملفّ APK عبر FileProvider (لا يفتح ملفًّا).
+    private fun installApk(path: String): Boolean {
+        return try {
+            val file = File(path)
+            if (!file.exists()) return false
+            val uri = FileProvider.getUriForFile(
+                this, "$packageName.updateprovider", file)
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/vnd.android.package-archive")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     /// يرفع صوت تيّار المنبّه إلى [targetPercent]٪ — فورًا أو بالتدرّج خلال

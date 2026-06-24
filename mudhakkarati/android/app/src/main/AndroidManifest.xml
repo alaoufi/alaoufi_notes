@@ -89,6 +89,17 @@
         </receiver>
         <receiver android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false"/>
+
+        <!-- مزوّد ملفّات لتثبيت تحديث APK مباشرة (نيّة تثبيت بلا فتح ملف). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.updateprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
     </application>
 
     <!-- Needed to open external files (PDF viewer) on Android 11+ -->

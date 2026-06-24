@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -102,6 +103,24 @@ class UpdateService {
       }
     }
     if (file == null) return lastErr;
+
+    // الأفضل (أندرويد): نطلق مثبّت النظام مباشرةً عبر قناة أصليّة (بلا فتح ملف
+    // ولا منتقي تطبيقات). إن لم تُمنح صلاحية «تثبيت تطبيقات غير معروفة» نفتحها مرّة.
+    if (Platform.isAndroid) {
+      try {
+        final can = await _installer.invokeMethod<bool>('canInstall') ?? false;
+        if (!can) {
+          await _installer.invokeMethod('openInstallSettings');
+          return 'فعّل «السماح بتثبيت تطبيقات غير معروفة» لمذكراتي ثم اضغط تحديث مرّة أخرى.';
+        }
+        final ok =
+            await _installer.invokeMethod<bool>('install', {'path': file.path}) ??
+                false;
+        if (ok) return null;
+      } catch (_) {/* ارجع لبديل OpenFilex */}
+    }
+
+    // بديل: OpenFilex (يفتح المثبّت عبر مزوّد الحزمة نفسه).
     try {
       final result = await OpenFilex.open(
         file.path,
@@ -113,6 +132,9 @@ class UpdateService {
       return 'تعذّر فتح المثبّت: $e';
     }
   }
+
+  static const MethodChannel _installer =
+      MethodChannel('com.mudhakkarati.app/installer');
 
   Future<File> _downloadApk(
       String url, void Function(double progress)? onProgress) async {
