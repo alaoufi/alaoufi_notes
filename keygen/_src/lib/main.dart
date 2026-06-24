@@ -30,8 +30,15 @@ class AppDef {
 const _marahSeedHex =
     '38beeb3667847dc80f248da1960f0bd7ac6484afa048ff641978119991a4d470';
 
+// بذرة المفتاح العالميّ (master) — لأيّ تطبيق يضع مفتاحه العامّ وبادئة UNIV1.
+const _universalSeedHex =
+    '21200553e66913ea203a7b6f9a8d52a3e09fda7e76cd58353e66b750f79b2de9';
+
 // قائمة التطبيقات المتاحة في المولّد. أضِف تطبيقًا جديدًا بإضافة سطر هنا.
+// «عام» أوّلًا (الافتراضي): مفتاح واحد يصلح لأيّ تطبيق يتبع القاعدة (UNIV1).
 const List<AppDef> _appDefs = [
+  AppDef('universal', 'عام — أيّ تطبيق', 'UNIV1',
+      '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
   AppDef('mudhakkarati', 'مذكراتي', 'MDKL1',
       'Wu3tven4KhEEuNqUNLatFTLljCgjFnJXtFc3QHYlhk8='),
   AppDef('marah', 'مراح', 'MRHL1',
