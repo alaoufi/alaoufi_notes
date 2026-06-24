@@ -49,9 +49,35 @@ class RichTextController {
   /// آخر تحديد فعّال (غير منهار) رأيناه — لتطبيق التنسيق عليه عند انهيار التحديد.
   TextSelection _lastSelection = const TextSelection.collapsed(offset: 0);
 
+  /// نصّ المستند الصريح مُخزَّن مؤقتًا — يُحسب مرّة ويُعاد استخدامه حتى التعديل
+  /// التالي. كان حسابه (تسلسل المستند كاملًا، O(n)) يتكرّر في كل حركة مؤشّر/سحب
+  /// تحديد ⇒ تقطّع التحديد على الملاحظات الكبيرة.
+  String? _cachedPlain;
+  String get plainText => _cachedPlain ??= quill.document.toPlainText();
+
+  /// سمات التحديد الحاليّة (غامق/مائل/…) — تُحسب **مرّة** لكل تغيّر تحديد وتُشارَك
+  /// بين كل أزرار التنسيق، بدل أن يستدعي كل زرّ getSelectionStyle مستقلًّا في كل
+  /// لمسة سحب (كان ×عدد الأزرار ⇒ تقطّع).
+  final ValueNotifier<Map<String, Attribute>> selectionStyle =
+      ValueNotifier<Map<String, Attribute>>(const {});
+  Timer? _styleDebounce;
+
   void _trackSelection() {
     final s = quill.selection;
     if (s.isValid && !s.isCollapsed) _lastSelection = s;
+    // نؤجّل حساب سمات التحديد قليلًا: أثناء سحب المقابض السريع لا نستدعي
+    // getSelectionStyle (وهو O(طول التحديد)) في كل لمسة، بل مرّة بعد توقّف السحب
+    // بلحظة ⇒ سحب ناعم، والأزرار تنعكس فورًا عمليًّا.
+    _styleDebounce?.cancel();
+    _styleDebounce = Timer(const Duration(milliseconds: 80), () {
+      Map<String, Attribute> attrs;
+      try {
+        attrs = quill.getSelectionStyle().attributes;
+      } catch (_) {
+        attrs = const {};
+      }
+      selectionStyle.value = attrs;
+    });
   }
 
   /// يبدّل سمة تنسيق مضمّنة (غامق/مائل/تسطير/شطب) بأثرٍ فوريّ مرئيّ، بمرونة:
@@ -134,6 +160,8 @@ class RichTextController {
       }
     }
     if (directionOnly && sawDirection) return; // ضبطنا الداخليّ للاتجاه فقط
+    // تغيّر النصّ ⇒ أبطِل ذاكرة النصّ الصريح كي يُعاد حسابها عند الحاجة.
+    if (textChanged) _cachedPlain = null;
     // تغيّر فعليّ في المحتوى/التنسيق ⇒ أخطِر مُعيدي بناء التسطير وحدهم (لا يتأثّر
     // بتحريك المؤشّر/التحديد).
     docRevision.value++;
@@ -172,12 +200,14 @@ class RichTextController {
 
   void dispose() {
     _debounce?.cancel();
+    _styleDebounce?.cancel();
     _docSub?.cancel();
     quill.removeListener(_trackSelection);
     quill.dispose();
     focus.dispose();
     scroll.dispose();
     docRevision.dispose();
+    selectionStyle.dispose();
   }
 }
 
@@ -419,10 +449,13 @@ class _CursorPositionBadgeState extends State<_CursorPositionBadge> {
     if (!widget.controller.focus.hasFocus) return;
     final sel = widget.controller.quill.selection;
     if (!sel.isValid) return;
+    // أثناء **تحديد مدى** (سحب المقابض) لا نحسب شيئًا — الشارة لموضع المؤشّر فقط،
+    // وهذا يُبقي السحب ناعمًا (لا عمل O(n) في كل لمسة).
+    if (!sel.isCollapsed) return;
     final offset = sel.baseOffset;
     if (offset == _lastOffset) return; // لم يتحرّك المؤشّر فعليًّا
     _lastOffset = offset;
-    final text = widget.controller.quill.document.toPlainText();
+    final text = widget.controller.plainText; // مُخزَّن مؤقتًا (لا تسلسل في كل مرة)
     final o = offset.clamp(0, text.length);
     final before = text.substring(0, o);
     final line = '\n'.allMatches(before).length + 1;
@@ -761,18 +794,12 @@ class _InlineFormatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final q = controller.quill;
     final scheme = Theme.of(context).colorScheme;
-    // نُعيد البناء مع كل تغيّر في المحرّر (تحديد/تنسيق) كي تنعكس الحالة فورًا.
-    return AnimatedBuilder(
-      animation: q,
-      builder: (context, _) {
-        bool active;
-        try {
-          active = q.getSelectionStyle().attributes.containsKey(attribute.key);
-        } catch (_) {
-          active = false;
-        }
+    // نقرأ سمات التحديد المحسوبة مرّة (مشتركة)، لا getSelectionStyle لكل زرّ.
+    return ValueListenableBuilder<Map<String, Attribute>>(
+      valueListenable: controller.selectionStyle,
+      builder: (context, styles, _) {
+        final active = styles.containsKey(attribute.key);
         // حالة مفعّلة: خلفية ممتلئة بلون بارز + أيقونة معاكسة + إطار ⇒ واضحة جدًّا.
         return AnimatedContainer(
           duration: const Duration(milliseconds: 120),
