@@ -916,13 +916,28 @@ class _UpdateTileState extends State<_UpdateTile> {
       _checking = true;
       _status = null;
     });
-    final upd = await UpdateService.instance.check();
-    if (!mounted) return;
-    setState(() {
-      _checking = false;
-      _available = upd;
-      _status = upd == null ? S.of(context).t('upd_latest') : null;
-    });
+    try {
+      final upd = await UpdateService.instance.check();
+      if (!mounted) return;
+      setState(() {
+        _checking = false;
+        _available = upd;
+        // null هنا = «أنت على الأحدث» فعلًا (لا فشل اتصال — فالفشل يرمي استثناءً).
+        _status = upd == null ? S.of(context).t('upd_latest') : null;
+      });
+    } on UpdateException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _checking = false;
+        _status = e.message; // سبب الفشل الحقيقيّ بدل «أنت على الأحدث».
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _checking = false;
+        _status = 'تعذّر التحقّق من التحديث.';
+      });
+    }
   }
 
   Future<void> _update() async {

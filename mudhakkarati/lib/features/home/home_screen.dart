@@ -152,7 +152,12 @@ class _HomeScreenState extends State<HomeScreen> {
   /// فحص تحديث صامت عند الدخول؛ إن توفّر يعرض **رسالة تحديث** (من النسخة الحالية
   /// إلى الجديدة) مع تحميل + تثبيت.
   Future<void> _maybeOfferUpdate() async {
-    final upd = await UpdateService.instance.check();
+    UpdateInfo? upd;
+    try {
+      upd = await UpdateService.instance.check();
+    } catch (_) {
+      return; // فحص تلقائيّ صامت — لا نزعج المستخدم عند فشل الوصول.
+    }
     if (upd == null || !mounted) return;
     final info = await PackageInfo.fromPlatform();
     if (!mounted) return;

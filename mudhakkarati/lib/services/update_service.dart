@@ -13,6 +13,14 @@ class UpdateInfo {
   const UpdateInfo(this.version, this.build, this.url);
 }
 
+/// خطأ وصول أثناء فحص التحديث (تمييزًا عن «أنت على أحدث نسخة»).
+class UpdateException implements Exception {
+  final String message;
+  const UpdateException(this.message);
+  @override
+  String toString() => message;
+}
+
 /// تحديث التطبيق داخليًّا (لتطبيق مُثبَّت يدويًّا خارج المتجر):
 /// - يقرأ `version.json` المنشور مع كل بناء على فرع apk-dist.
 /// - يقارن رقم البناء البعيد برقم بناء التطبيق الحالي.
@@ -22,48 +30,98 @@ class UpdateService {
   UpdateService._();
   static final instance = UpdateService._();
 
-  static const _versionUrl =
-      'https://raw.githubusercontent.com/alaoufi/alaoufi_notes/apk-dist/version.json';
+  // مصادر ملفّ النسخة (نُجرّبها بالترتيب): raw قد يُحجب على بعض شبكات الجوال، و
+  // jsDelivr (CDN عالميّ يعكس GitHub) يعمل غالبًا حيث يُحجب raw.
+  static const List<String> _versionUrls = [
+    'https://raw.githubusercontent.com/alaoufi/alaoufi_notes/apk-dist/version.json',
+    'https://cdn.jsdelivr.net/gh/alaoufi/alaoufi_notes@apk-dist/version.json',
+  ];
+  // تنزيل الـAPK من Releases عبر github.com (أوثق من raw، ويتبع التحويلات).
   static const _fallbackApk =
-      'https://raw.githubusercontent.com/alaoufi/alaoufi_notes/apk-dist/AlaoufiNotes.apk';
+      'https://github.com/alaoufi/alaoufi_notes/releases/download/latest/app-arm64-v8a-release.apk';
 
-  /// يعيد معلومات التحديث إن توفّرت نسخة أحدث، وإلا null (بلا أخطاء ظاهرة).
+  /// يعيد معلومات التحديث إن توفّرت نسخة أحدث، أو null إن كنت على الأحدث.
+  /// يرمي [UpdateException] عند فشل الوصول (تمييزًا عن «أنت محدّث»).
   Future<UpdateInfo?> check() async {
-    try {
-      final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 12);
-      final req = await client.getUrl(Uri.parse(_versionUrl));
-      final res = await req.close();
-      if (res.statusCode != 200) return null;
-      final body = await res.transform(utf8.decoder).join();
-      final j = jsonDecode(body) as Map<String, dynamic>;
-      final remoteBuild = (j['build'] as num?)?.toInt() ?? 0;
-      final remoteVer = (j['version'] as String?) ?? '';
-      final url = (j['url'] as String?) ?? _fallbackApk;
+    Map<String, dynamic>? j;
+    for (final u in _versionUrls) {
+      try {
+        final body = await _fetch(u, const Duration(seconds: 12));
+        final decoded = jsonDecode(body);
+        if (decoded is Map<String, dynamic>) {
+          j = decoded;
+          break;
+        }
+      } catch (_) {/* جرّب المصدر التالي */}
+    }
+    if (j == null) {
+      throw const UpdateException('تعذّر التحقّق من التحديث. تأكّد من اتصال الإنترنت ثم أعد المحاولة.');
+    }
+    final remoteBuild = (j['build'] as num?)?.toInt() ?? 0;
+    final remoteVer = (j['version'] as String?) ?? '';
+    final url = (j['url'] as String?) ?? _fallbackApk;
 
-      final info = await PackageInfo.fromPlatform();
-      final localBuild = int.tryParse(info.buildNumber) ?? 0;
-      if (remoteBuild > localBuild) {
-        return UpdateInfo(remoteVer, remoteBuild, url);
+    final info = await PackageInfo.fromPlatform();
+    final localBuild = int.tryParse(info.buildNumber) ?? 0;
+    if (remoteBuild > localBuild) {
+      return UpdateInfo(remoteVer, remoteBuild, url);
+    }
+    return null;
+  }
+
+  /// تنزيل نصّ من [url] مع مهلة؛ يرمي عند غير 200.
+  Future<String> _fetch(String url, Duration timeout) async {
+    final client = HttpClient()..connectionTimeout = timeout;
+    try {
+      final req = await client.getUrl(Uri.parse(url));
+      final res = await req.close().timeout(timeout * 2);
+      if (res.statusCode != 200) {
+        throw HttpException('HTTP ${res.statusCode}');
       }
-      return null;
-    } catch (_) {
-      return null;
+      // انتظر قراءة الجسم كاملًا **قبل** إغلاق العميل في finally.
+      final body = await res.transform(utf8.decoder).join();
+      return body;
+    } finally {
+      client.close(force: true);
     }
   }
 
-  /// يحمّل الـ APK من [url] (مع تقدّم اختياريّ) ثم يفتحه بمثبّت النظام.
-  /// يعيد رسالة خطأ عند الفشل، أو null عند النجاح.
+  /// يحمّل الـ APK ثم يفتحه بمثبّت النظام. يجرّب [url] ثم المصدر البديل
+  /// (github.com) عند فشله. يعيد رسالة خطأ عند الفشل، أو null عند النجاح.
   Future<String?> downloadAndInstall(String url,
       {void Function(double progress)? onProgress}) async {
+    final urls = <String>{url, _fallbackApk}.toList();
+    File? file;
+    var lastErr = 'تعذّر التحميل';
+    for (final u in urls) {
+      try {
+        file = await _downloadApk(u, onProgress);
+        break;
+      } catch (e) {
+        lastErr = 'تعذّر التحميل من المصدر: $e';
+      }
+    }
+    if (file == null) return lastErr;
     try {
-      final client = HttpClient()
-        ..connectionTimeout = const Duration(seconds: 20);
+      final result = await OpenFilex.open(
+        file.path,
+        type: 'application/vnd.android.package-archive',
+      );
+      if (result.type != ResultType.done) return result.message;
+      return null;
+    } catch (e) {
+      return 'تعذّر فتح المثبّت: $e';
+    }
+  }
+
+  Future<File> _downloadApk(
+      String url, void Function(double progress)? onProgress) async {
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 20);
+    try {
       final req = await client.getUrl(Uri.parse(url));
       final res = await req.close();
-      if (res.statusCode != 200) {
-        return 'تعذّر التحميل (HTTP ${res.statusCode})';
-      }
+      if (res.statusCode != 200) throw HttpException('HTTP ${res.statusCode}');
       final total = res.contentLength;
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/AlaoufiNotes_update.apk');
@@ -72,23 +130,13 @@ class UpdateService {
       await for (final chunk in res) {
         sink.add(chunk);
         received += chunk.length;
-        if (total > 0 && onProgress != null) {
-          onProgress(received / total);
-        }
+        if (total > 0 && onProgress != null) onProgress(received / total);
       }
       await sink.flush();
       await sink.close();
-
-      final result = await OpenFilex.open(
-        file.path,
-        type: 'application/vnd.android.package-archive',
-      );
-      if (result.type != ResultType.done) {
-        return result.message;
-      }
-      return null;
-    } catch (e) {
-      return 'فشل التحديث: $e';
+      return file;
+    } finally {
+      client.close(force: true);
     }
   }
 }

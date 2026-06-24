@@ -91,7 +91,7 @@ jobs:
           VER=$(grep '^version:' mudhakkarati/pubspec.yaml | sed 's/version: //; s/+.*//' | tr -d '[:space:]')
           printf '{"version":"%s","build":%s,"url":"%s"}\n' \
             "$VER" "${VCODE}" \
-            "https://raw.githubusercontent.com/${{ github.repository }}/apk-dist/AlaoufiNotes.apk" \
+            "https://github.com/${{ github.repository }}/releases/download/latest/app-arm64-v8a-release.apk" \
             > /tmp/apkout/version.json
           cd /tmp/apkout
           git init -q
