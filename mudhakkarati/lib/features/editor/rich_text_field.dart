@@ -37,6 +37,11 @@ class RichTextController {
   final FocusNode focus = FocusNode();
   /// وحدة تمرير المحرّر — نشاركها مع خلفية الورق كي تتحرّك الأسطر مع الكتابة.
   final ScrollController scroll = ScrollController();
+
+  /// يُخطر **فقط** عند تغيّر محتوى/تنسيق المستند (لا عند تحريك المؤشّر أو سحب
+  /// التحديد). نُعيد بناء التسطير عليه بدل الاستماع لكامل [quill] — فلا يتقطّع
+  /// التحديد بإعادة حساب التسطير في كل لمسة سحب على الملاحظات الكبيرة.
+  final ValueNotifier<int> docRevision = ValueNotifier<int>(0);
   final ValueChanged<String> _onChanged;
   Timer? _debounce; // تأجيل الحفظ
   bool _pending = false; // ضبط اتجاه مؤجَّل لما بعد الإطار (مجدوَل بالفعل)
@@ -129,6 +134,9 @@ class RichTextController {
       }
     }
     if (directionOnly && sawDirection) return; // ضبطنا الداخليّ للاتجاه فقط
+    // تغيّر فعليّ في المحتوى/التنسيق ⇒ أخطِر مُعيدي بناء التسطير وحدهم (لا يتأثّر
+    // بتحريك المؤشّر/التحديد).
+    docRevision.value++;
     // أعِد حساب الاتجاه فقط عند تغيّر النصّ، بعد إطار الإدخال، وبشرط ألّا يُمحى
     // «نمط معلَّق» (غامق مضبوط قبل الكتابة بلا تحديد).
     if (textChanged && !_pending) {
@@ -169,6 +177,7 @@ class RichTextController {
     quill.dispose();
     focus.dispose();
     scroll.dispose();
+    docRevision.dispose();
   }
 }
 
@@ -295,75 +304,6 @@ class RichTextEditorBody extends StatefulWidget {
 }
 
 class _RichTextEditorBodyState extends State<RichTextEditorBody> {
-  String? _posLabel; // «سطر N · حرف C»
-  bool _showPos = false;
-  Timer? _hideTimer;
-  int _lastOffset = -1;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.quill.addListener(_onCursorChange);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.quill.removeListener(_onCursorChange);
-    _hideTimer?.cancel();
-    super.dispose();
-  }
-
-  /// يحسب موقع المؤشّر (سطر/حرف) عند تحرّكه ويُظهر شارة تختفي تلقائيًّا — تفيد في
-  /// ضبط التنسيق والمحاذاة دون أن تشغل الشاشة.
-  void _onCursorChange() {
-    if (!widget.controller.focus.hasFocus) return;
-    final sel = widget.controller.quill.selection;
-    if (!sel.isValid) return;
-    final offset = sel.baseOffset;
-    if (offset == _lastOffset) return; // لم يتحرّك المؤشّر فعليًّا
-    _lastOffset = offset;
-    final text = widget.controller.quill.document.toPlainText();
-    final o = offset.clamp(0, text.length);
-    final before = text.substring(0, o);
-    final line = '\n'.allMatches(before).length + 1;
-    final col = o - (before.lastIndexOf('\n') + 1) + 1;
-    if (!mounted) return;
-    setState(() {
-      _posLabel = 'سطر $line · حرف $col';
-      _showPos = true;
-    });
-    _hideTimer?.cancel();
-    _hideTimer = Timer(const Duration(milliseconds: 1400), () {
-      if (mounted) setState(() => _showPos = false);
-    });
-  }
-
-  Widget _posBadge() {
-    final scheme = Theme.of(context).colorScheme;
-    return Positioned(
-      top: 6,
-      left: 8,
-      child: IgnorePointer(
-        child: AnimatedOpacity(
-          opacity: _showPos ? 1 : 0,
-          duration: const Duration(milliseconds: 200),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: scheme.inverseSurface.withOpacity(0.85),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(_posLabel ?? '',
-                style: TextStyle(
-                    color: scheme.onInverseSurface,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600)),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
@@ -417,11 +357,15 @@ class _RichTextEditorBodyState extends State<RichTextEditorBody> {
     // اتجاه محيط LTR: العربي معلّم `rtl` ⇒ يمين؛ والإنجليزي بلا سمة ⇒ يسار
     // (فالشرطة/الترقيم أوّل السطر الإنجليزي يظهران يسارًا بشكل صحيح). نضع شارة
     // موقع المؤشّر فوق المحرّر في Stack.
+    // نعزل المحرّر في RepaintBoundary كي لا يُعاد رسمه عند إعادة رسم الشارة/الخلفية.
     if (expand) {
       return Directionality(
         textDirection: TextDirection.ltr,
         child: Stack(
-          children: [Positioned.fill(child: editor), _posBadge()],
+          children: [
+            Positioned.fill(child: RepaintBoundary(child: editor)),
+            _CursorPositionBadge(controller: controller),
+          ],
         ),
       );
     }
@@ -431,10 +375,92 @@ class _RichTextEditorBodyState extends State<RichTextEditorBody> {
         children: [
           Container(
             constraints: const BoxConstraints(minHeight: 240),
-            child: editor,
+            child: RepaintBoundary(child: editor),
           ),
-          _posBadge(),
+          _CursorPositionBadge(controller: controller),
         ],
+      ),
+    );
+  }
+}
+
+/// شارة موقع المؤشّر (سطر/حرف) — widget مستقلّة تستمع لوحدة التحكّم وتُعيد بناء
+/// **نفسها فقط**، فلا يُعاد بناء المحرّر عند كل حركة مؤشّر/تحديد ⇒ تحرير ناعم.
+class _CursorPositionBadge extends StatefulWidget {
+  final RichTextController controller;
+  const _CursorPositionBadge({required this.controller});
+
+  @override
+  State<_CursorPositionBadge> createState() => _CursorPositionBadgeState();
+}
+
+class _CursorPositionBadgeState extends State<_CursorPositionBadge> {
+  String? _posLabel; // «سطر N · حرف C»
+  bool _showPos = false;
+  Timer? _hideTimer;
+  int _lastOffset = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.quill.addListener(_onCursorChange);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.quill.removeListener(_onCursorChange);
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  /// يحسب موقع المؤشّر (سطر/حرف) عند تحرّكه ويُظهر شارة تختفي تلقائيًّا — تفيد في
+  /// ضبط التنسيق والمحاذاة دون أن تشغل الشاشة.
+  void _onCursorChange() {
+    if (!widget.controller.focus.hasFocus) return;
+    final sel = widget.controller.quill.selection;
+    if (!sel.isValid) return;
+    final offset = sel.baseOffset;
+    if (offset == _lastOffset) return; // لم يتحرّك المؤشّر فعليًّا
+    _lastOffset = offset;
+    final text = widget.controller.quill.document.toPlainText();
+    final o = offset.clamp(0, text.length);
+    final before = text.substring(0, o);
+    final line = '\n'.allMatches(before).length + 1;
+    final col = o - (before.lastIndexOf('\n') + 1) + 1;
+    if (!mounted) return;
+    setState(() {
+      _posLabel = 'سطر $line · حرف $col';
+      _showPos = true;
+    });
+    _hideTimer?.cancel();
+    _hideTimer = Timer(const Duration(milliseconds: 1400), () {
+      if (mounted) setState(() => _showPos = false);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Positioned(
+      top: 6,
+      left: 8,
+      child: IgnorePointer(
+        child: AnimatedOpacity(
+          opacity: _showPos ? 1 : 0,
+          duration: const Duration(milliseconds: 200),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: scheme.inverseSurface.withOpacity(0.85),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(_posLabel ?? '',
+                style: TextStyle(
+                    color: scheme.onInverseSurface,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600)),
+          ),
+        ),
       ),
     );
   }

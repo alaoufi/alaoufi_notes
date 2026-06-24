@@ -684,10 +684,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         Expanded(
           child: _richCtrl == null
               ? const SizedBox.shrink()
-              // يُعاد بناء التسطير فقط (لا المحرّر) عند تغيّر المحتوى/الحجم،
-              // ليتبع تباعدُ الخطوط حجمَ الخط الأغلب فعليًا في الملاحظة.
-              : ListenableBuilder(
-                  listenable: _richCtrl!.quill,
+              // يُعاد بناء التسطير فقط (لا المحرّر) عند تغيّر المحتوى/الحجم.
+              // نستمع لـ docRevision (تغيّر المستند) لا لكامل وحدة التحكّم، كي لا
+              // يُعاد حساب التسطير في كل تحريك مؤشّر/سحب تحديد ⇒ تحديد ناعم.
+              : ValueListenableBuilder<int>(
+                  valueListenable: _richCtrl!.docRevision,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: RichTextEditorBody(
@@ -695,7 +696,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         expand: true,
                         lineHeight: _note.ruleLineHeight),
                   ),
-                  builder: (context, child) {
+                  builder: (context, _, child) {
                     final lh = _note.ruleLineHeight ?? settings.noteLineHeight;
                     // حجم موحّد ⇒ تسطير منضبط معه؛ أحجام مختلطة (null) ⇒ نُلغي
                     // التسطير (نمط سادة) لأنه لا ينضبط مع أسطر متفاوتة الارتفاع.
