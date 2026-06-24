@@ -67,6 +67,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   bool _drawingPrompted = false;
   bool _secured = false;
   bool _deleted = false; // نُقلت للمهملات ⇒ لا تُحفظ ثانيةً عند الإغلاق
+  // هل حملت الملاحظة محتوًى حقيقيًّا (عند التحميل أو أثناء الجلسة)؟ نميّز به بين
+  // ملاحظة أُفرِغت بعد محتوى (⇒ للسلّة، قابلة للاسترجاع) وأخرى لم تحوِ شيئًا قطّ
+  // (⇒ حذف نهائيّ، مثل ملاحظة أُنشئت مؤقّتًا لفتح قائمة).
+  bool _hadRealContent = false;
 
   @override
   void initState() {
@@ -125,6 +129,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
 
     setState(() => _loaded = true);
+    // ملاحظة مُحمّلة بمحتوى ⇒ احفظ أنها حملت محتوًى حقيقيًّا (لتذهب للسلّة لو أُفرِغت).
+    _hadRealContent = !_isCurrentlyEmpty();
 
     _titleCtrl.addListener(_onChanged);
     _contentCtrl.addListener(_onChanged);
@@ -234,6 +240,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       isEmpty = candidate.isEmpty;
     }
     if (isEmpty && !force) return;
+    if (!isEmpty) _hadRealContent = true; // حملت محتوًى حقيقيًّا في هذه الجلسة.
 
     // أثناء التحرير لا نُعيد تحميل كامل القائمة (مئات الملاحظات) مع كل حفظ
     // مؤجَّل — هذا كان سبب البطء عند كتابة سطر جديد. التحديث يحدث مرّة واحدة
@@ -256,7 +263,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       // لا نُبقي ملاحظة فارغة (كُتب فيها ثم مُحي، أو أُنشئت مؤقّتًا لفتح قائمة):
       // إن كانت محفوظة سابقًا نحذفها نهائيًّا، وإن كانت جديدة لا نُنشئها.
       if (_isCurrentlyEmpty()) {
-        if (_note.id != null) await provider.deleteForever(_note);
+        if (_note.id != null) {
+          // كانت تحوي محتوًى ثم أُفرِغت ⇒ للسلّة (قابلة للاسترجاع تفاديًا لفقد
+          // بالخطأ). لم تحوِ محتوًى قطّ (أُنشئت مؤقّتًا) ⇒ حذف نهائيّ بلا أثر.
+          if (_hadRealContent) {
+            await provider.moveToTrash(_note);
+          } else {
+            await provider.deleteForever(_note);
+          }
+        }
         _deleted = true;
       } else if (_dirty || _note.id == null) {
         await _save();
