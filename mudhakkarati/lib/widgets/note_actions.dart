@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../data/models/enums.dart';
@@ -15,7 +13,6 @@ import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
 import '../features/settings/settings_provider.dart';
-import '../services/notification_service.dart';
 import '../services/pdf_export_service.dart';
 import 'color_picker_sheet.dart';
 import 'confirm_dialog.dart';
@@ -153,9 +150,6 @@ Future<void> showNoteActions(BuildContext context, Note note,
               Navigator.pop(context);
               await SharePlus.instance.share(ShareParams(text: _asText(note)));
             }),
-            tile(Icons.chat, 'إرسال عبر واتساب', () async {
-              await _sendWhatsApp(context, note);
-            }, color: const Color(0xFF25D366)),
             tile(Icons.image_outlined, s.t('share_image'), () async {
               Navigator.pop(context);
               await Navigator.push(
@@ -201,115 +195,6 @@ Future<void> showNoteActions(BuildContext context, Note note,
       );
     },
   );
-}
-
-/// إرسال محتوى الملاحظة عبر واتساب لمستلمٍ يختاره المستخدم — فورًا أو مجدولًا.
-/// ميزة مستقلّة عن المنبّه/التذكير. لا تُرسِل تلقائيًّا (واتساب يمنع ذلك): تُفتح
-/// المحادثة والرسالة جاهزة وتضغط أنت «إرسال». المجدول: في وقته تظهر بطاقة، تضغطها
-/// فيفتح واتساب جاهزًا.
-Future<void> _sendWhatsApp(BuildContext context, Note note) async {
-  final messenger = ScaffoldMessenger.of(context); // ثابت (مستوى التطبيق)
-  final prefs = await SharedPreferences.getInstance();
-  final last = prefs.getString('wa_last_number') ?? '';
-  final ctrl = TextEditingController(text: last);
-  if (!context.mounted) return;
-  // النتيجة: ('now'|'schedule', الرقم) أو null عند الإلغاء.
-  final res = await showDialog<(String, String)>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('إرسال عبر واتساب'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-              'أدخل رقم المستلم مع رمز الدولة (مثال: 9665XXXXXXXX). تُفتح المحادثة '
-              'والرسالة جاهزة، وتضغط أنت «إرسال».',
-              style: TextStyle(fontSize: 13)),
-          const SizedBox(height: 12),
-          TextField(
-            controller: ctrl,
-            keyboardType: TextInputType.phone,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: '9665XXXXXXXX',
-              prefixIcon: Icon(Icons.phone),
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-            onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
-        TextButton.icon(
-          onPressed: () => Navigator.pop(ctx, ('schedule', ctrl.text)),
-          icon: const Icon(Icons.schedule),
-          label: const Text('جدولة'),
-        ),
-        FilledButton.icon(
-          onPressed: () => Navigator.pop(ctx, ('now', ctrl.text)),
-          icon: const Icon(Icons.chat),
-          label: const Text('الآن'),
-        ),
-      ],
-    ),
-  );
-  if (res == null) return;
-  final (action, raw) = res;
-  final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
-  if (digits.isEmpty) {
-    messenger.showSnackBar(const SnackBar(content: Text('أدخل رقمًا صحيحًا')));
-    return;
-  }
-  await prefs.setString('wa_last_number', digits);
-  final text = _asText(note);
-
-  if (action == 'now') {
-    if (context.mounted) Navigator.pop(context); // أغلق الشيت
-    final uri =
-        Uri.parse('https://wa.me/$digits?text=${Uri.encodeComponent(text)}');
-    try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (_) {}
-    return;
-  }
-
-  // جدولة: اختر التاريخ والوقت (الشيت ما زال مفتوحًا لتوفير سياق صالح).
-  if (!context.mounted) return;
-  final when = await _pickFutureDateTime(context);
-  if (context.mounted) Navigator.pop(context); // أغلق الشيت بعد الاختيار
-  if (when == null) {
-    messenger.showSnackBar(
-        const SnackBar(content: Text('أُلغيت الجدولة (اختر وقتًا في المستقبل)')));
-    return;
-  }
-  final id = DateTime.now().microsecondsSinceEpoch.remainder(0x7fffffff);
-  await NotificationService.instance
-      .scheduleWhatsApp(id: id, when: when, digits: digits, text: text);
-  final hh = when.hour.toString().padLeft(2, '0');
-  final mm = when.minute.toString().padLeft(2, '0');
-  messenger.showSnackBar(SnackBar(
-      content: Text(
-          'مُجدوَل ${when.year}/${when.month}/${when.day} $hh:$mm — في وقته تفتح واتساب بالرسالة جاهزة')));
-}
-
-/// منتقي تاريخ + وقت في المستقبل (يعيد null عند الإلغاء أو وقت ماضٍ).
-Future<DateTime?> _pickFutureDateTime(BuildContext context) async {
-  final now = DateTime.now();
-  final date = await showDatePicker(
-    context: context,
-    initialDate: now,
-    firstDate: now,
-    lastDate: now.add(const Duration(days: 365)),
-  );
-  if (date == null || !context.mounted) return null;
-  final t = await showTimePicker(
-    context: context,
-    initialTime: TimeOfDay.fromDateTime(now.add(const Duration(minutes: 5))),
-  );
-  if (t == null) return null;
-  final when = DateTime(date.year, date.month, date.day, t.hour, t.minute);
-  return when.isAfter(DateTime.now()) ? when : null;
 }
 
 /// رسالة تحذير قبل الحذف. تعيد true إن أكّد المستخدم.
