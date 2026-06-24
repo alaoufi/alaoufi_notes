@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/l10n/app_strings.dart';
 import '../data/models/enums.dart';
@@ -150,6 +152,9 @@ Future<void> showNoteActions(BuildContext context, Note note,
               Navigator.pop(context);
               await SharePlus.instance.share(ShareParams(text: _asText(note)));
             }),
+            tile(Icons.chat, 'إرسال عبر واتساب', () async {
+              await _sendWhatsApp(context, note);
+            }, color: const Color(0xFF25D366)),
             tile(Icons.image_outlined, s.t('share_image'), () async {
               Navigator.pop(context);
               await Navigator.push(
@@ -195,6 +200,67 @@ Future<void> showNoteActions(BuildContext context, Note note,
       );
     },
   );
+}
+
+/// يفتح واتساب لمستلمٍ يختاره المستخدم، والرسالة (محتوى الملاحظة) جاهزة للإرسال.
+/// لا يُرسِل تلقائيًّا (واتساب يمنع ذلك) — يبقى زرّ الإرسال على المستخدم.
+Future<void> _sendWhatsApp(BuildContext context, Note note) async {
+  final prefs = await SharedPreferences.getInstance();
+  final last = prefs.getString('wa_last_number') ?? '';
+  final ctrl = TextEditingController(text: last);
+  if (!context.mounted) return;
+  final number = await showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('إرسال عبر واتساب'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+              'أدخل رقم المستلم مع رمز الدولة (مثال: 9665XXXXXXXX). تُفتح المحادثة '
+              'والرسالة جاهزة، وتضغط أنت «إرسال».',
+              style: TextStyle(fontSize: 13)),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ctrl,
+            keyboardType: TextInputType.phone,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: '9665XXXXXXXX',
+              prefixIcon: Icon(Icons.phone),
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+        FilledButton.icon(
+          onPressed: () => Navigator.pop(ctx, ctrl.text),
+          icon: const Icon(Icons.chat),
+          label: const Text('فتح واتساب'),
+        ),
+      ],
+    ),
+  );
+  if (number == null) return;
+  final digits = number.replaceAll(RegExp(r'[^0-9]'), '');
+  if (digits.isEmpty) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('أدخل رقمًا صحيحًا')));
+    }
+    return;
+  }
+  await prefs.setString('wa_last_number', digits);
+  final uri = Uri.parse(
+      'https://wa.me/$digits?text=${Uri.encodeComponent(_asText(note))}');
+  // أغلق شيت الإجراءات ثم افتح واتساب.
+  if (context.mounted) Navigator.pop(context);
+  try {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (_) {/* تعذّر الفتح — يتجاهل بأمان */}
 }
 
 /// رسالة تحذير قبل الحذف. تعيد true إن أكّد المستخدم.
