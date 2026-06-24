@@ -9,23 +9,34 @@ void main() => runApp(const KeygenApp());
 const _storage = FlutterSecureStorage(
   aOptions: AndroidOptions(encryptedSharedPreferences: true),
 );
-const _kSeed = 'owner_seed_hex';
+// مفتاح تخزين قديم (مذكراتي) — نهاجر منه إن وُجد.
+const _kLegacySeed = 'owner_seed_hex';
 
-/// ملفّ تطبيق: (المعرّف، الاسم، بادئة الصيغة، البذرة 32 بايت).
-/// كلّ تطبيق له زوج مفاتيح وبادئة مستقلّة، ويُولّد بنفس [LicenseCodec] المعتمد
-/// (66 بايت → 106 حرف Base32).
-class AppProfile {
+/// تعريف تطبيق في المولّد.
+/// - [prefix]: بادئة الصيغة الموقَّعة (يجب أن تطابق التطبيق).
+/// - [pubB64]: المفتاح العامّ — للتحقّق أنّ البذرة المُدخَلة صحيحة وللعرض.
+/// - [embeddedSeedHex]: بذرة مدمجة (مراح)؛ null ⇒ بذرة المالك تُدخَل وتُخزَّن.
+class AppDef {
   final String id;
   final String name;
   final String prefix;
-  final List<int> seed;
-  const AppProfile(this.id, this.name, this.prefix, this.seed);
+  final String pubB64;
+  final String? embeddedSeedHex;
+  const AppDef(this.id, this.name, this.prefix, this.pubB64,
+      [this.embeddedSeedHex]);
 }
 
-// «مراح» — بذرة المالك مدمجة في أداة المولّد الخاصّة بالمالك فقط (ليست في
-// التطبيق المنشور). المفتاح العامّ المقابل: q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=
+// بذرة «مراح» مدمجة في أداة المالك فقط (ليست في التطبيق المنشور).
 const _marahSeedHex =
     '38beeb3667847dc80f248da1960f0bd7ac6484afa048ff641978119991a4d470';
+
+// قائمة التطبيقات المتاحة في المولّد. أضِف تطبيقًا جديدًا بإضافة سطر هنا.
+const List<AppDef> _appDefs = [
+  AppDef('mudhakkarati', 'مذكراتي', 'MDKL1',
+      'Wu3tven4KhEEuNqUNLatFTLljCgjFnJXtFc3QHYlhk8='),
+  AppDef('marah', 'مراح', 'MRHL1',
+      'q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=', _marahSeedHex),
+];
 
 class KeygenApp extends StatelessWidget {
   const KeygenApp({super.key});
@@ -33,7 +44,7 @@ class KeygenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'مولّد أكواد مذكراتي',
+      title: 'مولّد أكواد التفعيل',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorSchemeSeed: const Color(0xFF3949AB),
@@ -44,182 +55,13 @@ class KeygenApp extends StatelessWidget {
         textDirection: TextDirection.rtl,
         child: child!,
       ),
-      home: const _Home(),
+      home: const _GeneratorScreen(),
     );
   }
 }
 
-class _Home extends StatefulWidget {
-  const _Home();
-
-  @override
-  State<_Home> createState() => _HomeState();
-}
-
-class _HomeState extends State<_Home> {
-  bool _loading = true;
-  bool _skip = false; // تخطّي إدخال بذرة «مذكراتي» (لتطبيقات مدمجة كـ«مراح»).
-  List<int>? _seed; // 32 بايت.
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    String? hex;
-    try {
-      hex = await _storage.read(key: _kSeed);
-    } catch (_) {}
-    setState(() {
-      _seed = (hex != null && hex.length == 64) ? _hexToBytes(hex) : null;
-      _loading = false;
-    });
-  }
-
-  Future<void> _saveSeed(String hex) async {
-    await _storage.write(key: _kSeed, value: hex);
-    setState(() => _seed = _hexToBytes(hex));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_seed == null && !_skip) {
-      return _SetupScreen(
-        onSaved: _saveSeed,
-        onSkip: () => setState(() => _skip = true),
-      );
-    }
-    return _GeneratorScreen(
-      ownerSeed: _seed, // بذرة «مذكراتي» (قد تكون null ⇒ تتاح «مراح» فقط).
-      onResetSeed: () async {
-        await _storage.delete(key: _kSeed);
-        setState(() {
-          _seed = null;
-          _skip = false;
-        });
-      },
-    );
-  }
-}
-
-/// شاشة الإعداد لأوّل مرّة: إدخال المفتاح الخاصّ أو توليد زوج جديد.
-class _SetupScreen extends StatefulWidget {
-  final Future<void> Function(String hex) onSaved;
-  final VoidCallback? onSkip; // المتابعة لتطبيقات ببذور مدمجة (مراح) دون إدخال بذرة.
-  const _SetupScreen({required this.onSaved, this.onSkip});
-
-  @override
-  State<_SetupScreen> createState() => _SetupScreenState();
-}
-
-class _SetupScreenState extends State<_SetupScreen> {
-  final _ctrl = TextEditingController();
-  String? _error;
-  String? _generatedPub;
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _useEntered() async {
-    final hex =
-        _ctrl.text.trim().toLowerCase().replaceAll(RegExp(r'[^0-9a-f]'), '');
-    if (hex.length != 64) {
-      setState(() => _error = 'المفتاح يجب أن يكون 64 خانة (hex)');
-      return;
-    }
-    await widget.onSaved(hex);
-  }
-
-  Future<void> _generateNew() async {
-    final kp = await LicenseCodec.newKeyPair();
-    setState(() {
-      _ctrl.text = kp.seedHex;
-      _generatedPub = kp.publicKeyB64;
-      _error = null;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('إعداد المولّد')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Text(
-              'هذا المولّد يحمل مفتاحك الخاصّ ويبقى لديك أنت فقط. أدخل المفتاح '
-              'الخاصّ الذي بحوزتك، أو ولّد زوجًا جديدًا (وحينها ضع المفتاح العامّ '
-              'في التطبيق وأعد بناءه).',
-              style: TextStyle(fontSize: 13),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _ctrl,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: 'المفتاح الخاصّ (Seed — 64 خانة hex)',
-                border: const OutlineInputBorder(),
-                errorText: _error,
-              ),
-            ),
-            const SizedBox(height: 12),
-            FilledButton.icon(
-              onPressed: _useEntered,
-              icon: const Icon(Icons.check),
-              label: const Text('استخدام هذا المفتاح'),
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: _generateNew,
-              icon: const Icon(Icons.auto_awesome),
-              label: const Text('توليد زوج مفاتيح جديد'),
-            ),
-            if (_generatedPub != null) ...[
-              const SizedBox(height: 16),
-              const Text('المفتاح العامّ (ضعه في التطبيق):',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              _CopyBox(label: 'Public Key (Base64)', value: _generatedPub!),
-              const SizedBox(height: 8),
-              const Text(
-                  '⚠️ احفظ المفتاح الخاصّ أعلاه في مكان آمن جدًّا — فقدانه يعني '
-                  'عدم القدرة على توليد أكواد بعد ذلك.',
-                  style: TextStyle(color: Colors.red, fontSize: 12)),
-            ],
-            if (widget.onSkip != null) ...[
-              const SizedBox(height: 24),
-              const Divider(),
-              const SizedBox(height: 8),
-              TextButton.icon(
-                onPressed: widget.onSkip,
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('المتابعة لتطبيقات مدمجة فقط (مراح)'),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// شاشة توليد الأكواد.
 class _GeneratorScreen extends StatefulWidget {
-  final List<int>? ownerSeed; // بذرة «مذكراتي» (قد تكون null).
-  final Future<void> Function() onResetSeed;
-  const _GeneratorScreen({required this.ownerSeed, required this.onResetSeed});
+  const _GeneratorScreen();
 
   @override
   State<_GeneratorScreen> createState() => _GeneratorScreenState();
@@ -230,33 +72,9 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
   final _daysCtrl = TextEditingController(text: '30');
   bool _permanent = false;
   String? _key;
-  String _pub = '...';
-
-  late final List<AppProfile> _apps;
-  late AppProfile _app;
+  AppDef _app = _appDefs.first;
 
   static const _presets = [7, 30, 90, 180, 365];
-
-  @override
-  void initState() {
-    super.initState();
-    _apps = [
-      // «مذكراتي» يظهر فقط عند توفّر بذرة المالك المُدخَلة.
-      if (widget.ownerSeed != null)
-        AppProfile('mudhakkarati', 'مذكراتي', LicenseCodec.msgPrefix,
-            widget.ownerSeed!),
-      // «مراح» ببذرة مدمجة وبادئة MRHL1.
-      AppProfile('marah', 'مراح', 'MRHL1', _hexToBytes(_marahSeedHex)),
-    ];
-    _app = _apps.first;
-    _refreshPub();
-  }
-
-  void _refreshPub() {
-    setState(() => _pub = '...');
-    LicenseCodec.publicKeyB64(_app.seed)
-        .then((v) => mounted ? setState(() => _pub = v) : null);
-  }
 
   @override
   void dispose() {
@@ -265,31 +83,130 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
     super.dispose();
   }
 
+  // ---- حلّ البذرة للتطبيق المختار ----
+
+  /// يعيد بذرة التطبيق: مدمجة (مراح)، أو مخزّنة، أو يطلبها من المالك (ويتحقّق
+  /// أنّها تطابق المفتاح العامّ ثم يحفظها). يعيد null عند الإلغاء.
+  Future<List<int>?> _seedFor(AppDef app) async {
+    if (app.embeddedSeedHex != null) return _hexToBytes(app.embeddedSeedHex!);
+
+    // مخزّنة لهذا التطبيق؟
+    String? stored = await _storage.read(key: 'seed_${app.id}');
+    // هجرة من المفتاح القديم (مذكراتي فقط).
+    if ((stored == null || stored.length != 64) && app.id == 'mudhakkarati') {
+      final legacy = await _storage.read(key: _kLegacySeed);
+      if (legacy != null && legacy.length == 64) {
+        await _storage.write(key: 'seed_${app.id}', value: legacy);
+        stored = legacy;
+      }
+    }
+    if (stored != null && stored.length == 64) return _hexToBytes(stored);
+
+    if (!mounted) return null;
+    final hex = await _promptSeed(app);
+    if (hex == null) return null;
+    await _storage.write(key: 'seed_${app.id}', value: hex);
+    return _hexToBytes(hex);
+  }
+
+  /// حوار إدخال المفتاح الخاصّ لتطبيق ما، مع التحقّق أنّه يطابق مفتاحه العامّ.
+  Future<String?> _promptSeed(AppDef app) async {
+    final ctrl = TextEditingController();
+    String? err;
+    var busy = false;
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocal) => AlertDialog(
+          title: Text('مفتاح «${app.name}» الخاصّ'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                  'ألصق المفتاح الخاصّ (Seed — 64 خانة hex) الخاصّ بـ«${app.name}». '
+                  'يُحفظ على هذا الجهاز ويُتحقّق أنّه يطابق التطبيق.',
+                  style: const TextStyle(fontSize: 13)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: ctrl,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  hintText: 'المفتاح الخاصّ (64 خانة)',
+                  border: const OutlineInputBorder(),
+                  errorText: err,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+                onPressed: busy ? null : () => Navigator.pop(ctx),
+                child: const Text('إلغاء')),
+            FilledButton(
+              onPressed: busy
+                  ? null
+                  : () async {
+                      final hex = ctrl.text
+                          .trim()
+                          .toLowerCase()
+                          .replaceAll(RegExp(r'[^0-9a-f]'), '');
+                      if (hex.length != 64) {
+                        setLocal(() => err = 'المفتاح يجب أن يكون 64 خانة hex');
+                        return;
+                      }
+                      setLocal(() {
+                        busy = true;
+                        err = null;
+                      });
+                      final pub =
+                          await LicenseCodec.publicKeyB64(_hexToBytes(hex));
+                      if (pub != app.pubB64) {
+                        setLocal(() {
+                          busy = false;
+                          err = 'لا يطابق «${app.name}» (مفتاح خاطئ)';
+                        });
+                        return;
+                      }
+                      if (ctx.mounted) Navigator.pop(ctx, hex);
+                    },
+              child: const Text('حفظ'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---- التوليد ----
+
   Future<void> _generate() async {
     final device = _deviceCtrl.text.trim();
     if (device.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('أدخل رقم الجهاز أولًا')));
+      _snack('أدخل رقم الجهاز أولًا');
       return;
     }
-    int days = 0;
+    var days = 0;
     if (!_permanent) {
       days = int.tryParse(_daysCtrl.text.trim()) ?? 0;
       if (days <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('أدخل عدد أيام صحيح')));
+        _snack('أدخل عدد أيام صحيح');
         return;
       }
     }
+    final seed = await _seedFor(_app);
+    if (seed == null) return; // أُلغي إدخال البذرة.
     final key = await LicenseCodec.generate(
       deviceId: device,
       durationDays: _permanent ? 0 : days,
-      seed: _app.seed,
+      seed: seed,
       prefix: _app.prefix,
     );
     if (!mounted) return;
     setState(() => _key = key);
   }
+
+  void _snack(String m) => ScaffoldMessenger.of(context)
+      .showSnackBar(SnackBar(content: Text(m)));
 
   @override
   Widget build(BuildContext context) {
@@ -299,7 +216,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
         title: const Text('مولّد أكواد التفعيل'),
         actions: [
           IconButton(
-            tooltip: 'المفتاح العامّ / إعادة الضبط',
+            tooltip: 'معلومات المفتاح',
             icon: const Icon(Icons.info_outline),
             onPressed: _showInfo,
           ),
@@ -310,8 +227,8 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // منتقي التطبيق (يحدّد البادئة والبذرة المستخدمة في التوليد).
-            DropdownButtonFormField<AppProfile>(
+            // اختيار التطبيق المراد إنشاء مفتاح له.
+            DropdownButtonFormField<AppDef>(
               initialValue: _app,
               decoration: const InputDecoration(
                 labelText: 'التطبيق',
@@ -319,7 +236,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                 border: OutlineInputBorder(),
               ),
               items: [
-                for (final a in _apps)
+                for (final a in _appDefs)
                   DropdownMenuItem(
                     value: a,
                     child: Text('${a.name}  (${a.prefix})'),
@@ -331,7 +248,6 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                   _app = v;
                   _key = null; // ألغِ رمزًا سابقًا لتطبيق آخر.
                 });
-                _refreshPub();
               },
             ),
             const SizedBox(height: 16),
@@ -370,8 +286,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                   for (final p in _presets)
                     ActionChip(
                       label: Text('$p يوم'),
-                      onPressed: () =>
-                          setState(() => _daysCtrl.text = '$p'),
+                      onPressed: () => setState(() => _daysCtrl.text = '$p'),
                     ),
                 ],
               ),
@@ -380,9 +295,9 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
             FilledButton.icon(
               onPressed: _generate,
               icon: const Icon(Icons.vpn_key),
-              label: const Text('توليد الكود'),
-              style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50)),
+              label: Text('توليد كود لـ «${_app.name}»'),
+              style:
+                  FilledButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             ),
             if (_key != null) ...[
               const SizedBox(height: 24),
@@ -395,7 +310,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('رمز التفعيل',
+                    Text('رمز تفعيل «${_app.name}»',
                         style: TextStyle(
                             color: scheme.onPrimaryContainer,
                             fontWeight: FontWeight.bold)),
@@ -411,8 +326,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                     FilledButton.icon(
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: _key!));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('تم نسخ الكود')));
+                        _snack('تم نسخ الكود');
                       },
                       icon: const Icon(Icons.copy),
                       label: const Text('نسخ الكود'),
@@ -428,6 +342,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
   }
 
   void _showInfo() {
+    final embedded = _app.embeddedSeedHex != null;
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -439,42 +354,85 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('المفتاح العامّ',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('«${_app.name}» — المفتاح العامّ',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 6),
             const Text(
-                'يجب أن يطابق المفتاح العامّ المدمج في التطبيق. إن لم يطابق، '
-                'لن تُقبل الأكواد.',
+                'يجب أن يطابق المفتاح العامّ المدمج في ذلك التطبيق، وإلا لن '
+                'تُقبل الأكواد.',
                 style: TextStyle(fontSize: 12)),
             const SizedBox(height: 10),
-            _CopyBox(label: 'Public Key (Base64)', value: _pub),
+            _CopyBox(label: 'Public Key', value: _app.pubB64),
+            if (embedded) ...[
+              const SizedBox(height: 12),
+              const Text('بذرة هذا التطبيق مدمجة في المولّد (جاهزة).',
+                  style: TextStyle(fontSize: 12, color: Colors.green)),
+            ] else ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(ctx);
+                  await _storage.delete(key: 'seed_${_app.id}');
+                  if (_app.id == 'mudhakkarati') {
+                    await _storage.delete(key: _kLegacySeed);
+                  }
+                  if (mounted) _snack('حُذف مفتاح «${_app.name}» — سيُطلب عند التوليد القادم');
+                },
+                icon: const Icon(Icons.key_off),
+                label: Text('حذف/تغيير مفتاح «${_app.name}»'),
+              ),
+            ],
             const SizedBox(height: 20),
+            const Divider(),
+            const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: () async {
                 Navigator.pop(ctx);
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (c) => AlertDialog(
-                    title: const Text('تغيير المفتاح الخاصّ؟'),
-                    content: const Text(
-                        'سيُحذف المفتاح الحالي من هذا الجهاز. تأكّد أنّك حفظته.'),
-                    actions: [
-                      TextButton(
-                          onPressed: () => Navigator.pop(c, false),
-                          child: const Text('إلغاء')),
-                      FilledButton(
-                          onPressed: () => Navigator.pop(c, true),
-                          child: const Text('حذف وتغيير')),
-                    ],
-                  ),
-                );
-                if (ok == true) await widget.onResetSeed();
+                await _showNewKeyPair();
               },
-              icon: const Icon(Icons.key_off),
-              label: const Text('تغيير المفتاح الخاصّ'),
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('توليد زوج مفاتيح لتطبيق جديد'),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// يولّد زوج مفاتيح جديدًا (لتطبيق جديد) ويعرضه للنسخ. لا يمسّ التطبيقات الحالية.
+  Future<void> _showNewKeyPair() async {
+    final kp = await LicenseCodec.newKeyPair();
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('زوج مفاتيح جديد'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text('للمفتاح الخاصّ (Seed) — احفظه سرًّا:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 6),
+              _CopyBox(label: 'Private Seed (hex)', value: kp.seedHex),
+              const SizedBox(height: 12),
+              const Text('المفتاح العامّ — ضعه في التطبيق الجديد:',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+              const SizedBox(height: 6),
+              _CopyBox(label: 'Public Key', value: kp.publicKeyB64),
+              const SizedBox(height: 10),
+              const Text(
+                  '⚠️ فقدان المفتاح الخاصّ = عدم القدرة على توليد أكواد لهذا التطبيق.',
+                  style: TextStyle(color: Colors.red, fontSize: 12)),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text('تمام')),
+        ],
       ),
     );
   }
