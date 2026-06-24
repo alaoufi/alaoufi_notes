@@ -15,6 +15,7 @@ import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
 import '../features/settings/settings_provider.dart';
+import '../services/notification_service.dart';
 import '../services/pdf_export_service.dart';
 import 'color_picker_sheet.dart';
 import 'confirm_dialog.dart';
@@ -202,14 +203,17 @@ Future<void> showNoteActions(BuildContext context, Note note,
   );
 }
 
-/// يفتح واتساب لمستلمٍ يختاره المستخدم، والرسالة (محتوى الملاحظة) جاهزة للإرسال.
-/// لا يُرسِل تلقائيًّا (واتساب يمنع ذلك) — يبقى زرّ الإرسال على المستخدم.
+/// إرسال محتوى الملاحظة عبر واتساب لمستلمٍ يختاره المستخدم — فورًا أو مجدولًا.
+/// لا يُرسِل تلقائيًّا (واتساب يمنع ذلك): تُفتح المحادثة والرسالة جاهزة وتضغط أنت
+/// «إرسال». المجدول: في الوقت يصلك إشعار، تضغطه فيفتح واتساب جاهزًا.
 Future<void> _sendWhatsApp(BuildContext context, Note note) async {
+  final messenger = ScaffoldMessenger.of(context); // ثابت (مستوى التطبيق)
   final prefs = await SharedPreferences.getInstance();
   final last = prefs.getString('wa_last_number') ?? '';
   final ctrl = TextEditingController(text: last);
   if (!context.mounted) return;
-  final number = await showDialog<String>(
+  // النتيجة: ('now'|'schedule', الرقم) أو null عند الإلغاء.
+  final res = await showDialog<(String, String)>(
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text('إرسال عبر واتساب'),
@@ -236,31 +240,75 @@ Future<void> _sendWhatsApp(BuildContext context, Note note) async {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء')),
+        TextButton.icon(
+          onPressed: () => Navigator.pop(ctx, ('schedule', ctrl.text)),
+          icon: const Icon(Icons.schedule),
+          label: const Text('جدولة'),
+        ),
         FilledButton.icon(
-          onPressed: () => Navigator.pop(ctx, ctrl.text),
+          onPressed: () => Navigator.pop(ctx, ('now', ctrl.text)),
           icon: const Icon(Icons.chat),
-          label: const Text('فتح واتساب'),
+          label: const Text('الآن'),
         ),
       ],
     ),
   );
-  if (number == null) return;
-  final digits = number.replaceAll(RegExp(r'[^0-9]'), '');
+  if (res == null) return;
+  final (action, raw) = res;
+  final digits = raw.replaceAll(RegExp(r'[^0-9]'), '');
   if (digits.isEmpty) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('أدخل رقمًا صحيحًا')));
-    }
+    messenger.showSnackBar(const SnackBar(content: Text('أدخل رقمًا صحيحًا')));
     return;
   }
   await prefs.setString('wa_last_number', digits);
-  final uri = Uri.parse(
-      'https://wa.me/$digits?text=${Uri.encodeComponent(_asText(note))}');
-  // أغلق شيت الإجراءات ثم افتح واتساب.
-  if (context.mounted) Navigator.pop(context);
-  try {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } catch (_) {/* تعذّر الفتح — يتجاهل بأمان */}
+  final text = _asText(note);
+
+  if (action == 'now') {
+    if (context.mounted) Navigator.pop(context); // أغلق الشيت
+    final uri =
+        Uri.parse('https://wa.me/$digits?text=${Uri.encodeComponent(text)}');
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    return;
+  }
+
+  // جدولة: اختر التاريخ والوقت (الشيت ما زال مفتوحًا لتوفير سياق صالح).
+  if (!context.mounted) return;
+  final when = await _pickFutureDateTime(context);
+  if (context.mounted) Navigator.pop(context); // أغلق الشيت بعد الاختيار
+  if (when == null) {
+    messenger.showSnackBar(
+        const SnackBar(content: Text('أُلغيت الجدولة (اختر وقتًا في المستقبل)')));
+    return;
+  }
+  final id = DateTime.now().microsecondsSinceEpoch.remainder(0x7fffffff);
+  await NotificationService.instance
+      .scheduleWhatsApp(id: id, when: when, digits: digits, text: text);
+  final hh = when.hour.toString().padLeft(2, '0');
+  final mm = when.minute.toString().padLeft(2, '0');
+  messenger.showSnackBar(SnackBar(
+      content: Text(
+          'سيصلك تنبيه ${when.year}/${when.month}/${when.day} $hh:$mm لإرسالها عبر واتساب')));
+}
+
+/// منتقي تاريخ + وقت في المستقبل (يعيد null عند الإلغاء أو وقت ماضٍ).
+Future<DateTime?> _pickFutureDateTime(BuildContext context) async {
+  final now = DateTime.now();
+  final date = await showDatePicker(
+    context: context,
+    initialDate: now,
+    firstDate: now,
+    lastDate: now.add(const Duration(days: 365)),
+  );
+  if (date == null || !context.mounted) return null;
+  final t = await showTimePicker(
+    context: context,
+    initialTime: TimeOfDay.fromDateTime(now.add(const Duration(minutes: 5))),
+  );
+  if (t == null) return null;
+  final when = DateTime(date.year, date.month, date.day, t.hour, t.minute);
+  return when.isAfter(DateTime.now()) ? when : null;
 }
 
 /// رسالة تحذير قبل الحذف. تعيد true إن أكّد المستخدم.

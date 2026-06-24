@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/models/enums.dart';
 import '../data/models/reminder.dart';
@@ -270,6 +272,47 @@ class NotificationService {
     }
   }
 
+  /// يجدول «إرسال واتساب»: في الوقت المحدّد يظهر إشعار، وعند الضغط عليه يفتح
+  /// واتساب لرقم [digits] والرسالة [text] جاهزة (يبقى زرّ الإرسال على المستخدم).
+  /// يُعاد جدولته تلقائيًّا بعد إعادة تشغيل الجهاز (BootReceiver للإضافة).
+  Future<void> scheduleWhatsApp({
+    required int id,
+    required DateTime when,
+    required String digits,
+    required String text,
+  }) async {
+    await init();
+    final scheduled = tz.TZDateTime.from(when, tz.local);
+    final preview = text.trim().isEmpty
+        ? 'رسالة جاهزة'
+        : (text.trim().length > 60 ? '${text.trim().substring(0, 60)}…' : text.trim());
+    // نُرمّز نصّ الرسالة Base64 كي لا تتعارض رموزه مع فواصل الحمولة (| و :).
+    final encoded = base64.encode(utf8.encode(text));
+    await _zonedSchedule(
+      id,
+      '📤 إرسال عبر واتساب',
+      'اضغط لفتح واتساب وإرسال: $preview',
+      scheduled,
+      _whatsAppDetails(),
+      mode: AndroidScheduleMode.exactAllowWhileIdle,
+      payload: 'wa:$digits|watext:$encoded|base:$id',
+    );
+  }
+
+  /// إشعار عاديّ لتنبيه «إرسال واتساب» (بلا صوت منبّه ولا أزرار غفوة/إيقاف).
+  /// تُنشأ قناته تلقائيًّا عند أوّل جدولة.
+  NotificationDetails _whatsAppDetails() => const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'alaoufi_whatsapp',
+          'إرسال واتساب المجدول',
+          channelDescription: 'تنبيه لفتح واتساب وإرسال ملاحظة في وقت محدّد',
+          importance: Importance.high,
+          priority: Priority.high,
+          category: AndroidNotificationCategory.reminder,
+          playSound: true,
+        ),
+      );
+
   Future<void> schedule(Reminder reminder, String title, String body) async {
     await init();
     final scheduled = tz.TZDateTime.from(reminder.time, tz.local);
@@ -433,6 +476,21 @@ class NotificationService {
         await _scheduleSnooze(base, payload);
         return;
       default:
+        // إشعار «إرسال واتساب» مجدول: افتح واتساب بالرسالة جاهزة (في الواجهة فقط).
+        // نتحقّق أن الحمولة **تبدأ** بـwa: (نبنيها هكذا) تفاديًا لأي تطابق خاطئ.
+        final wa = payload.startsWith('wa:') ? _extractStr(payload, 'wa:') : null;
+        if (wa != null && wa.isNotEmpty && !fromBackground) {
+          var text = '';
+          try {
+            text = utf8.decode(base64.decode(_extractStr(payload, 'watext:') ?? ''));
+          } catch (_) {}
+          final uri =
+              Uri.parse('https://wa.me/$wa?text=${Uri.encodeComponent(text)}');
+          try {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          } catch (_) {}
+          return;
+        }
         // ضغط على جسم الإشعار: تذكير حرج ⇒ شاشة المنبّه، وإلا افتح الملاحظة.
         final imp = _extractStr(payload, 'imp:');
         if (imp == 'critical' && onAlarm != null && !fromBackground) {
