@@ -21,7 +21,7 @@ import 'confirm_dialog.dart';
 ///
 /// [onDetails] (من المحرّر) يضيف عنصر «تفاصيل» يفتح العنوان والتاريخ والحذف.
 Future<void> showNoteActions(BuildContext context, Note note,
-    {VoidCallback? onDetails, VoidCallback? onSelect}) async {
+    {VoidCallback? onDetails, VoidCallback? onSelect, VoidCallback? onStats}) async {
   final s = S.of(context);
   final provider = context.read<NotesProvider>();
   final settings = context.read<SettingsProvider>();
@@ -60,6 +60,13 @@ Future<void> showNoteActions(BuildContext context, Note note,
               tile(Icons.info_outline, 'تفاصيل (العنوان والتاريخ)', () {
                 Navigator.pop(context);
                 onDetails();
+              }),
+              const Divider(height: 1),
+            ],
+            if (onStats != null) ...[
+              tile(Icons.bar_chart, s.t('stats'), () {
+                Navigator.pop(context);
+                onStats();
               }),
               const Divider(height: 1),
             ],

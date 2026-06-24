@@ -378,13 +378,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       appBar: AppBar(
           backgroundColor: grad != null ? Colors.transparent : bg,
           actions: [
-            if (_note.type == NoteType.text ||
-                _note.type == NoteType.checklist)
-              IconButton(
-                tooltip: s.t('stats'),
-                icon: const Icon(Icons.bar_chart),
-                onPressed: () => _showStats(s),
-              ),
             IconButton(
               tooltip: _note.isPinned ? s.t('unpin') : s.t('pin'),
               icon: Icon(_note.isPinned ? Icons.push_pin : Icons.push_pin_outlined),
@@ -456,7 +449,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 await _ensureSaved();
                 if (mounted) {
                   await showNoteActions(context, _note,
-                      onDetails: () => _showDetails(s));
+                      onDetails: () => _showDetails(s),
+                      onStats: (_note.type == NoteType.text ||
+                              _note.type == NoteType.checklist)
+                          ? () => _showStats(s)
+                          : null);
                 }
                 // أعد التحميل لتحديث الحالة (لون/تثبيت/قفل).
                 final fresh = await context
