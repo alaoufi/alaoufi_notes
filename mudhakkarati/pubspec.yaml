@@ -1,7 +1,7 @@
 name: mudhakkarati
 description: "مذكراتي - تطبيق مذكرات وملاحظات يعمل بدون إنترنت بالكامل."
 publish_to: 'none'
-version: 1.4.7+54
+version: 1.4.8+55
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
