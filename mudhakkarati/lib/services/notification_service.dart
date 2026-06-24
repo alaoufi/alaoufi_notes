@@ -272,7 +272,9 @@ class NotificationService {
     }
   }
 
-  /// يجدول «إرسال واتساب»: في الوقت المحدّد يظهر إشعار، وعند الضغط عليه يفتح
+  /// يجدول «موعد إرسال واتساب» — ميزة **مستقلّة تمامًا** عن المنبّه/التذكير
+  /// (لا تمرّ بمسار التذكيرات، ولا صوت منبّه، ولا غفوة، ولا «عدم النسيان»، ولا
+  /// شاشة كاملة). مجرّد بطاقة إشعار عاديّة في الوقت المحدّد: عند الضغط عليها يفتح
   /// واتساب لرقم [digits] والرسالة [text] جاهزة (يبقى زرّ الإرسال على المستخدم).
   /// يُعاد جدولته تلقائيًّا بعد إعادة تشغيل الجهاز (BootReceiver للإضافة).
   Future<void> scheduleWhatsApp({
@@ -299,16 +301,18 @@ class NotificationService {
     );
   }
 
-  /// إشعار عاديّ لتنبيه «إرسال واتساب» (بلا صوت منبّه ولا أزرار غفوة/إيقاف).
+  /// بطاقة إشعار عاديّة لـ«موعد إرسال واتساب» — تصنيفها «رسالة» (لا «تذكير»)
+  /// لتبقى منفصلة عن نظام المنبّه: بلا صوت منبّه ولا أزرار غفوة/إيقاف.
   /// تُنشأ قناته تلقائيًّا عند أوّل جدولة.
   NotificationDetails _whatsAppDetails() => const NotificationDetails(
         android: AndroidNotificationDetails(
           'alaoufi_whatsapp',
-          'إرسال واتساب المجدول',
-          channelDescription: 'تنبيه لفتح واتساب وإرسال ملاحظة في وقت محدّد',
+          'مواعيد إرسال واتساب',
+          channelDescription:
+              'بطاقة لفتح واتساب وإرسال ملاحظة في وقت تختاره — مستقلّة عن المنبّه',
           importance: Importance.high,
           priority: Priority.high,
-          category: AndroidNotificationCategory.reminder,
+          category: AndroidNotificationCategory.message,
           playSound: true,
         ),
       );

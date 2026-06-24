@@ -204,8 +204,9 @@ Future<void> showNoteActions(BuildContext context, Note note,
 }
 
 /// إرسال محتوى الملاحظة عبر واتساب لمستلمٍ يختاره المستخدم — فورًا أو مجدولًا.
-/// لا يُرسِل تلقائيًّا (واتساب يمنع ذلك): تُفتح المحادثة والرسالة جاهزة وتضغط أنت
-/// «إرسال». المجدول: في الوقت يصلك إشعار، تضغطه فيفتح واتساب جاهزًا.
+/// ميزة مستقلّة عن المنبّه/التذكير. لا تُرسِل تلقائيًّا (واتساب يمنع ذلك): تُفتح
+/// المحادثة والرسالة جاهزة وتضغط أنت «إرسال». المجدول: في وقته تظهر بطاقة، تضغطها
+/// فيفتح واتساب جاهزًا.
 Future<void> _sendWhatsApp(BuildContext context, Note note) async {
   final messenger = ScaffoldMessenger.of(context); // ثابت (مستوى التطبيق)
   final prefs = await SharedPreferences.getInstance();
@@ -289,7 +290,7 @@ Future<void> _sendWhatsApp(BuildContext context, Note note) async {
   final mm = when.minute.toString().padLeft(2, '0');
   messenger.showSnackBar(SnackBar(
       content: Text(
-          'سيصلك تنبيه ${when.year}/${when.month}/${when.day} $hh:$mm لإرسالها عبر واتساب')));
+          'مُجدوَل ${when.year}/${when.month}/${when.day} $hh:$mm — في وقته تفتح واتساب بالرسالة جاهزة')));
 }
 
 /// منتقي تاريخ + وقت في المستقبل (يعيد null عند الإلغاء أو وقت ماضٍ).
