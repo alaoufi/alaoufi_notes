@@ -249,14 +249,56 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Future<bool> _onWillPop() async {
     _debounce?.cancel();
+    // التقط آخر محتوى حيّ من المحرّر (قد يكون مؤقّت الحفظ المؤجَّل لم ينقضِ بعد).
+    if (_richCtrl != null) _richContent = _richCtrl!.currentContent;
     final provider = context.read<NotesProvider>();
-    if (!_deleted && (_dirty || _note.id == null)) {
-      await _save();
+    if (!_deleted) {
+      // لا نُبقي ملاحظة فارغة (كُتب فيها ثم مُحي، أو أُنشئت مؤقّتًا لفتح قائمة):
+      // إن كانت محفوظة سابقًا نحذفها نهائيًّا، وإن كانت جديدة لا نُنشئها.
+      if (_isCurrentlyEmpty()) {
+        if (_note.id != null) await provider.deleteForever(_note);
+        _deleted = true;
+      } else if (_dirty || _note.id == null) {
+        await _save();
+      }
     }
     // حدّث القائمة مرّة واحدة في الخلفية (بصمت، بلا وميض تحميل) كي لا يتأخّر
     // الرجوع للملاحظات ويظلّ الانتقال سلسًا.
     unawaited(provider.refresh(silent: true));
     return true;
+  }
+
+  /// هل الملاحظة فارغة فعليًّا الآن (من حالة المحرّر الحيّة)؟ فارغة = بلا عنوان،
+  /// وبلا مرفق (صورة/صوت/PDF/رسم)، وبلا محتوى حسب نوعها. تُستخدم كي لا نحفظ/نُبقي
+  /// ملاحظة لا كتابة فيها.
+  bool _isCurrentlyEmpty() {
+    if (_titleCtrl.text.trim().isNotEmpty) return false;
+    if (_note.imagePath != null ||
+        _note.audioPath != null ||
+        _note.pdfPath != null ||
+        _note.drawingPath != null) {
+      return false;
+    }
+    switch (_note.type) {
+      case NoteType.password:
+        final e = _passwordEntry;
+        return e.site.trim().isEmpty &&
+            e.app.trim().isEmpty &&
+            e.username.trim().isEmpty &&
+            e.password.trim().isEmpty &&
+            e.notes.trim().isEmpty;
+      case NoteType.checklist:
+        return !_itemCtrls.any((c) => c.text.trim().isNotEmpty);
+      case NoteType.text:
+        // النصّ الحيّ من المحرّر (لا _richContent المؤجَّل ~600ms) كي يُلتقط
+        // الحذف فورًا عند الخروج السريع.
+        final live = _richCtrl != null
+            ? _richCtrl!.plainText
+            : richToPlainText(_richContent);
+        return live.trim().isEmpty;
+      default:
+        return _contentCtrl.text.trim().isEmpty;
+    }
   }
 
   @override

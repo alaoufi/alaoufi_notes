@@ -185,6 +185,10 @@ class RichTextController {
     });
   }
 
+  /// المحتوى الحاليّ مُسلسَلًا للتخزين (حيّ، بلا تأجيل) — يُستخدم عند الخروج كي
+  /// يُحفظ آخر ما كُتب حتى لو خرج المستخدم قبل انقضاء مؤقّت الحفظ المؤجَّل.
+  String get currentContent => _serializeWithoutDirection();
+
   /// يُسلسِل المستند للتخزين **دون** سمة الاتجاه (تُحسب من اللغة عند العرض).
   String _serializeWithoutDirection() {
     final ops = quill.document.toDelta().toJson();
