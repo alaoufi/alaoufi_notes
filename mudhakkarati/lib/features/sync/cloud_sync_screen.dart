@@ -28,6 +28,8 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
 
   SyncProvider _provider = SyncProvider.webdav;
   bool _auto = false;
+  SyncFrequency _freq = SyncFrequency.daily; // تردّد المزامنة التلقائية
+  bool _silent = false; // مزامنة صامتة في الخلفية
   bool _busy = false;
   DateTime? _last;
   bool _loaded = false;
@@ -44,12 +46,16 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
     final prov = await s.provider();
     final cfg = await s.webdavConfig();
     final auto = await s.autoSync();
+    final freq = await s.syncFrequency();
+    final silent = await s.silentSync();
     final last = await s.lastSync();
     setState(() {
       _provider = prov == SyncProvider.none ? SyncProvider.webdav : prov;
       _url.text = cfg.url;
       _user.text = cfg.user;
       _auto = auto;
+      _freq = freq;
+      _silent = silent;
       _last = last;
       _loaded = true;
     });
@@ -100,6 +106,12 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
   }
 
   /// وقت نسبيّ ودّي لآخر مزامنة (الآن/قبل دقائق/ساعات/أيام).
+  String _freqLabel(SyncFrequency f) => switch (f) {
+        SyncFrequency.everyOpen => 'كلّ فتح',
+        SyncFrequency.onClose => 'عند الإغلاق',
+        SyncFrequency.daily => 'مرّة باليوم',
+      };
+
   String _relative(DateTime d) {
     final loc = S.of(context);
     String fmt(String key, int n) => loc.t(key).replaceAll('{n}', '$n');
@@ -140,6 +152,8 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
       await s.setPassphrase(_phrase.text.trim());
     }
     await s.setAutoSync(_auto);
+    await s.setSyncFrequency(_freq);
+    await s.setSilentSync(_silent);
     return true;
   }
 
@@ -343,6 +357,40 @@ class _CloudSyncScreenState extends State<CloudSyncScreen> {
                         title: Text(loc.t('auto_sync_open'),
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
+                      // خيارات التردّد + الوضع الصامت — تظهر فقط عند تفعيل التلقائي.
+                      if (_auto) ...[
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: Text('متى تتمّ المزامنة؟',
+                                style: Theme.of(context).textTheme.bodySmall),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Wrap(
+                            spacing: 8,
+                            children: [
+                              for (final f in SyncFrequency.values)
+                                ChoiceChip(
+                                  label: Text(_freqLabel(f)),
+                                  selected: _freq == f,
+                                  onSelected: (_) =>
+                                      setState(() => _freq = f),
+                                ),
+                            ],
+                          ),
+                        ),
+                        SwitchListTile(
+                          value: _silent,
+                          onChanged: (v) => setState(() => _silent = v),
+                          secondary: const Icon(Icons.notifications_off_outlined),
+                          title: const Text('مزامنة صامتة في الخلفية'),
+                          subtitle: const Text(
+                              'بلا شريط علويّ — لا تؤثّر على سرعة التعامل'),
+                        ),
+                      ],
                       ListTile(
                         leading: Icon(
                             _last != null ? Icons.cloud_done : Icons.cloud_off,

@@ -15,6 +15,12 @@ import 'webdav_backend.dart';
 /// مزوّد المزامنة المختار.
 enum SyncProvider { none, webdav, googleDrive }
 
+/// تردّد المزامنة التلقائية: كلّ فتح / عند الإغلاق / مرّة باليوم.
+enum SyncFrequency { everyOpen, onClose, daily }
+
+/// سبب محاولة المزامنة التلقائية (لمطابقتها بالتردّد المختار).
+enum SyncTrigger { open, close }
+
 /// حالة شريط المزامنة الخفيف في الأعلى.
 enum SyncUi { idle, syncing, done, error }
 
@@ -44,6 +50,8 @@ class SyncService {
   static const _kWebdavUrl = 'sync_webdav_url';
   static const _kWebdavUser = 'sync_webdav_user';
   static const _kAuto = 'sync_auto';
+  static const _kFreq = 'sync_freq'; // تردّد المزامنة التلقائية
+  static const _kSilent = 'sync_silent'; // مزامنة صامتة في الخلفية (بلا شريط)
   static const _kLast = 'sync_last';
   static const _kGDriveOn = 'sync_gdrive_on';
 
@@ -81,6 +89,47 @@ class SyncService {
   Future<void> setAutoSync(bool v) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kAuto, v);
+  }
+
+  /// تردّد المزامنة التلقائية (افتراضيًّا: مرّة باليوم — أقلّ إزعاجًا).
+  Future<SyncFrequency> syncFrequency() async {
+    final prefs = await SharedPreferences.getInstance();
+    final v = prefs.getString(_kFreq);
+    return SyncFrequency.values.firstWhere((e) => e.name == v,
+        orElse: () => SyncFrequency.daily);
+  }
+
+  Future<void> setSyncFrequency(SyncFrequency f) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kFreq, f.name);
+  }
+
+  /// مزامنة صامتة في الخلفية (دون شريط علويّ) — افتراضيًّا false (ظاهرة).
+  Future<bool> silentSync() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kSilent) ?? false;
+  }
+
+  Future<void> setSilentSync(bool v) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kSilent, v);
+  }
+
+  /// هل تحين مزامنة تلقائية الآن للسبب [trigger]، حسب التفعيل والتهيئة والتردّد؟
+  Future<bool> shouldAutoSync(SyncTrigger trigger) async {
+    if (!await autoSync()) return false;
+    if (!await isConfigured()) return false;
+    switch (await syncFrequency()) {
+      case SyncFrequency.everyOpen:
+        return trigger == SyncTrigger.open;
+      case SyncFrequency.onClose:
+        return trigger == SyncTrigger.close;
+      case SyncFrequency.daily:
+        if (trigger != SyncTrigger.open) return false;
+        final last = await lastSync();
+        return last == null ||
+            DateTime.now().difference(last) >= const Duration(hours: 24);
+    }
   }
 
   Future<DateTime?> lastSync() async {

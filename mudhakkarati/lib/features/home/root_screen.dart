@@ -37,8 +37,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       BackupService.instance
           .ensureDefaultAutoBackup()
           .then((_) => BackupService.instance.maybeRunAutoBackup());
-      // مزامنة أولى عند الإقلاع.
-      _autoSync();
+      // مزامنة أولى عند الإقلاع (تُعامَل كـ«فتح»).
+      _autoSync(SyncTrigger.open);
     });
   }
 
@@ -50,27 +50,33 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // كلّما عاد التطبيق إلى الواجهة، حاول مزامنة تلقائية.
+    // «فتح» عند العودة للواجهة، و«إغلاق» عند ذهابها للخلفية — كلّ منهما يُطابَق
+    // بالتردّد المختار في الإعدادات (كل فتح / عند الإغلاق / مرّة باليوم).
     if (state == AppLifecycleState.resumed) {
-      _autoSync();
+      _autoSync(SyncTrigger.open);
+    } else if (state == AppLifecycleState.paused) {
+      _autoSync(SyncTrigger.close);
     }
   }
 
-  /// مزامنة تلقائية في الخلفية مع شريط خفيف في الأعلى (لا تُعطّل العمل).
-  Future<void> _autoSync() async {
+  /// مزامنة تلقائية حسب التردّد المختار. تظهر بشريط خفيف ما لم يُفعّل وضع
+  /// «المزامنة الصامتة» — وفي الحالين لا تُعطّل تفاعل المستخدم (عمل غير متزامن).
+  Future<void> _autoSync(SyncTrigger trigger) async {
     if (_syncing) return;
-    // تجنّب التكرار السريع عند تعدّد أحداث الاستئناف خلال ثوانٍ.
+    // تجنّب التكرار السريع عند تعدّد الأحداث خلال ثوانٍ.
     if (_lastSyncDone != null &&
         DateTime.now().difference(_lastSyncDone!) < const Duration(seconds: 8)) {
       return;
     }
     final svc = SyncService.instance;
-    if (!await svc.autoSync()) return;
-    if (!await svc.isConfigured()) return;
+    if (!await svc.shouldAutoSync(trigger)) return;
+    final silent = await svc.silentSync();
 
     _syncing = true;
-    svc.status.value =
-        const SyncStatus(SyncUi.syncing, 'جارٍ مزامنة ملاحظاتك…');
+    if (!silent) {
+      svc.status.value =
+          const SyncStatus(SyncUi.syncing, 'جارٍ مزامنة ملاحظاتك…');
+    }
 
     final r = await svc.syncNow();
     _lastSyncDone = DateTime.now();
@@ -82,6 +88,8 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       await notes.loadCategories();
       await notes.refresh();
     }
+
+    if (silent) return; // الوضع الصامت: لا شريط ولا إشعار مرئيّ.
 
     svc.status.value = r.ok
         ? const SyncStatus(SyncUi.done, 'تمت المزامنة')
