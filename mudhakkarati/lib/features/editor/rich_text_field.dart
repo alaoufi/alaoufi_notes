@@ -218,8 +218,8 @@ class RichTextController {
 /// يضبط اتجاه **كل سطر** حسب لغته، مع **وراثة** اتجاه السطر السابق للأسطر التي
 /// لا حرف لغويّ فيها بعد (فارغة/رموز/أرقام)، والافتراضي للسطر الأول **يمين**:
 ///
-/// - سطر فيه حرف عربي ⇒ `rtl` (يمين)؛ سطر فيه حرف لاتيني ⇒ بلا سمة (المحيط LTR
-///   ⇒ يسار، فالشرطة والترقيم في أوّل السطر الإنجليزي تظهر يسارًا بشكل صحيح).
+/// - السطر غالبه عربيّ ⇒ `rtl` (يمين)؛ غالبه لاتينيّ ⇒ بلا سمة (المحيط LTR ⇒
+///   يسار). الاعتماد على **اللغة الغالبة** يمنع تلخبط الأسطر المختلطة يمين/يسار.
 /// - السطر الفارغ/الرمزي يرث اتجاه ما قبله ⇒ لا قفز عند المتابعة بنفس اللغة،
 ///   والملاحظة الجديدة تبدأ يمينًا (الافتراضي).
 /// - يطبّق السمة على **فاصل السطر فقط** (طول 1)، ولا يستدعي updateSelection،
@@ -233,7 +233,8 @@ void applyLineDirections(QuillController quill) {
   for (var i = 0; i < text.length; i++) {
     if (text[i] != '\n') continue;
     final lineText = text.substring(lineStart, i);
-    final strong = strongLineDirection(lineText);
+    // اللغة الغالبة في السطر (لا أوّل حرف) ⇒ ثبات الأسطر المختلطة عربي/إنجليزي.
+    final strong = dominantLineDirection(lineText);
     final wantRtl = strong == null ? inheritedRtl : strong == TextDirection.rtl;
     inheritedRtl = wantRtl; // يرثه السطر التالي
     var cur = false;
@@ -253,6 +254,71 @@ void applyLineDirections(QuillController quill) {
       1,
       op[1] == 1 ? Attribute.rtl : Attribute.clone(Attribute.rtl, null),
       shouldNotifyListeners: k == ops.length - 1,
+    );
+  }
+}
+
+/// زرّ التظليل (القلم الناعم): لوحة ألوان **باستيل ناعمة** مريحة للعين بدل لوحة
+/// الألوان الصارخة الافتراضية، مع خيار إزالة التظليل. يطبّق سمة الخلفية على
+/// التحديد الحاليّ.
+class _SoftHighlightButton extends StatelessWidget {
+  final QuillController controller;
+  const _SoftHighlightButton({required this.controller});
+
+  // (لون، اسم) — درجات باستيل هادئة.
+  static const List<(int, String)> _colors = [
+    (0xFFFFF8B8, 'أصفر ناعم'),
+    (0xFFFFE0B2, 'برتقالي ناعم'),
+    (0xFFDCEDC8, 'أخضر ناعم'),
+    (0xFFB3E5FC, 'أزرق ناعم'),
+    (0xFFF8BBD0, 'وردي ناعم'),
+    (0xFFE1BEE7, 'بنفسجي ناعم'),
+  ];
+
+  static String _hex(int c) =>
+      '#${(c & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      tooltip: 'تظليل (قلم ناعم)',
+      icon: const Icon(Icons.border_color_outlined, size: 22),
+      onSelected: (v) {
+        if (v == '__none') {
+          controller
+              .formatSelection(Attribute.clone(Attribute.background, null));
+        } else {
+          controller.formatSelection(BackgroundAttribute(v));
+        }
+      },
+      itemBuilder: (_) => [
+        for (final (color, name) in _colors)
+          PopupMenuItem<String>(
+            value: _hex(color),
+            child: Row(children: [
+              Container(
+                width: 30,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: Color(color),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.black26),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(name),
+            ]),
+          ),
+        const PopupMenuDivider(),
+        const PopupMenuItem<String>(
+          value: '__none',
+          child: Row(children: [
+            Icon(Icons.format_color_reset, size: 18),
+            SizedBox(width: 12),
+            Text('إزالة التظليل'),
+          ]),
+        ),
+      ],
     );
   }
 }
@@ -622,7 +688,7 @@ class RichTextToolbar extends StatelessWidget {
         case 'color':
           return QuillToolbarColorButton(controller: q, isBackground: false);
         case 'highlight':
-          return QuillToolbarColorButton(controller: q, isBackground: true);
+          return _SoftHighlightButton(controller: q);
         case 'header':
           return QuillToolbarSelectHeaderStyleDropdownButton(controller: q);
         case 'ul':
