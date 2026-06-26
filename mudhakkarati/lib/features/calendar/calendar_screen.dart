@@ -87,10 +87,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
     // أسماء الشهور/الأيام الهجريّة حسب لغة الواجهة.
     HijriCalendar.setLocal(s.isArabic ? 'ar' : 'en');
     final reminders = context.watch<RemindersProvider>();
-    final dayNotes = _notesFor(_selected);
+    // ملاحظات اليوم مرتّبة بوقت الإنشاء (الأقدم أولًا)، والتذكيرات بوقتها.
+    final dayNotes = _notesFor(_selected)
+      ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
     final dayReminders = reminders.items
         .where((v) => _sameDay(v.reminder.time, _selected))
-        .toList();
+        .toList()
+      ..sort((a, b) => a.reminder.time.compareTo(b.reminder.time));
 
     return Scaffold(
       appBar: gradientAppBar(context, s.t('calendar'), actions: [
@@ -153,6 +156,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 shape: BoxShape.circle,
                               ),
                             ),
+                            // تلوين خفيف لأيام بها ملاحظات (غير اليوم/المحدَّد).
+                            calendarBuilders: CalendarBuilders<Note>(
+                              defaultBuilder: (ctx, day, _) {
+                                if (_notesFor(day).isEmpty) return null;
+                                final scheme = Theme.of(ctx).colorScheme;
+                                return Container(
+                                  margin: const EdgeInsets.all(6),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: scheme.primaryContainer
+                                        .withOpacity(0.45),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text('${day.day}'),
+                                );
+                              },
+                            ),
                           ),
                   ),
                   // بطاقة تفاصيل اليوم: التاريخ + تذكيرات + ملاحظات (مرتّبة، بخلفية).
@@ -204,7 +224,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ? scheme.primary
                 : isToday
                     ? scheme.primaryContainer
-                    : null,
+                    : hasNotes
+                        ? scheme.primaryContainer.withOpacity(0.45)
+                        : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
