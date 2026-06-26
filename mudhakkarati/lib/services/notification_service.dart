@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../core/time/hijri_recurrence.dart';
@@ -559,6 +560,68 @@ class NotificationService {
   Future<void> cancelAll() async {
     await init();
     await _plugin.cancelAll();
+  }
+
+  // ===================== ملاحظات مثبّتة في شريط الإشعارات =====================
+  // إشعار «مستمرّ» (ongoing) صامت يعرض ملاحظة مهمّة تبقى أمام المستخدم. معرّفه في
+  // نطاق مستقلّ (1<<30 + noteId) فلا يتعارض مع التذكيرات ([1, 2^26)) ولا إعاداتها.
+  static const int _pinnedBase = 1 << 30;
+  static const String _kPinnedKey = 'pinned_notification_notes';
+
+  Future<Set<int>> pinnedIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    return (prefs.getStringList(_kPinnedKey) ?? [])
+        .map(int.tryParse)
+        .whereType<int>()
+        .toSet();
+  }
+
+  Future<bool> isPinnedId(int noteId) async =>
+      (await pinnedIds()).contains(noteId);
+
+  Future<void> _savePinned(Set<int> ids) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+        _kPinnedKey, ids.map((e) => e.toString()).toList());
+  }
+
+  /// يعرض/يحدّث إشعار ملاحظة مثبّتة (صامت ومستمرّ)، ويحفظها في القائمة المثبّتة.
+  Future<void> showPinnedNote(int noteId, String title, String body) async {
+    await init();
+    final t = title.trim().isEmpty ? 'ملاحظة مثبّتة' : title.trim();
+    final b = body.trim();
+    await _plugin.show(
+      _pinnedBase + noteId,
+      '📌 $t',
+      b,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          'alaoufi_quiet',
+          'تنبيهات هادئة',
+          channelDescription: 'إشعارات بلا صوت',
+          importance: Importance.low,
+          priority: Priority.low,
+          ongoing: true, // لا يُزال بالسحب
+          autoCancel: false,
+          onlyAlertOnce: true,
+          playSound: false,
+          styleInformation: b.isEmpty ? null : BigTextStyleInformation(b),
+        ),
+      ),
+      payload: 'note:$noteId|pinned:1',
+    );
+    final ids = await pinnedIds()
+      ..add(noteId);
+    await _savePinned(ids);
+  }
+
+  /// يزيل إشعار الملاحظة المثبّتة ويخرجها من القائمة.
+  Future<void> cancelPinnedNote(int noteId) async {
+    await init();
+    await _plugin.cancel(_pinnedBase + noteId);
+    final ids = await pinnedIds()
+      ..remove(noteId);
+    await _savePinned(ids);
   }
 
   // ===== اختبار الموثوقية =====

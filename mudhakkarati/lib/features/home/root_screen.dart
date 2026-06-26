@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../services/backup_service.dart';
 import '../../services/notification_service.dart';
 import '../../services/sync/sync_service.dart';
+import '../editor/rich_text_field.dart';
 import '../reminders/reminders_provider.dart';
 import 'home_screen.dart';
 import 'notes_provider.dart';
@@ -39,7 +40,30 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
           .then((_) => BackupService.instance.maybeRunAutoBackup());
       // مزامنة أولى عند الإقلاع (تُعامَل كـ«فتح»).
       _autoSync(SyncTrigger.open);
+      // أعِد عرض الملاحظات المثبّتة في الإشعارات (تختفي عند إغلاق التطبيق).
+      _reassertPinnedNotes();
     });
+  }
+
+  /// يعيد إظهار إشعارات الملاحظات المثبّتة بعد إعادة تشغيل التطبيق، ويُنظّف
+  /// المثبّتة المحذوفة/المؤرشفة.
+  Future<void> _reassertPinnedNotes() async {
+    try {
+      final svc = NotificationService.instance;
+      final ids = await svc.pinnedIds();
+      if (ids.isEmpty || !mounted) return;
+      final repo = context.read<NotesProvider>().notes;
+      for (final id in ids) {
+        final note = await repo.getNote(id);
+        if (note == null || note.isDeleted || note.isArchived) {
+          await svc.cancelPinnedNote(id);
+          continue;
+        }
+        await svc.showPinnedNote(id, note.title, richToPlainText(note.content));
+      }
+    } catch (_) {
+      // لا يجب أن تُعطّل بدء التطبيق.
+    }
   }
 
   @override

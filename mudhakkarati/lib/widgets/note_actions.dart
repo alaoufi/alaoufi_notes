@@ -13,6 +13,7 @@ import '../features/links/note_links.dart';
 import '../features/reminders/reminder_dialog.dart';
 import '../features/security/pin_setup.dart';
 import '../features/settings/settings_provider.dart';
+import '../services/notification_service.dart';
 import '../services/pdf_export_service.dart';
 import 'color_picker_sheet.dart';
 import 'confirm_dialog.dart';
@@ -25,6 +26,7 @@ Future<void> showNoteActions(BuildContext context, Note note,
   final s = S.of(context);
   final provider = context.read<NotesProvider>();
   final settings = context.read<SettingsProvider>();
+  final messenger = ScaffoldMessenger.of(context);
 
   await showModalBottomSheet(
     context: context,
@@ -116,6 +118,36 @@ Future<void> showNoteActions(BuildContext context, Note note,
               Navigator.pop(context);
               await showReminderDialog(context, note);
             }),
+            // تثبيت الملاحظة في شريط الإشعارات (إشعار صامت مستمرّ أمام المستخدم).
+            if (note.id != null)
+              FutureBuilder<bool>(
+                future: NotificationService.instance.isPinnedId(note.id!),
+                builder: (context, snap) {
+                  final pinned = snap.data ?? false;
+                  return tile(
+                    pinned
+                        ? Icons.notifications_active
+                        : Icons.notifications_none,
+                    pinned ? 'إزالة من الإشعارات' : 'تثبيت في الإشعارات',
+                    () async {
+                      Navigator.pop(context);
+                      if (pinned) {
+                        await NotificationService.instance
+                            .cancelPinnedNote(note.id!);
+                        messenger.showSnackBar(const SnackBar(
+                            content: Text('أُزيلت من الإشعارات')));
+                      } else {
+                        await NotificationService.instance.showPinnedNote(
+                            note.id!,
+                            note.title,
+                            richToPlainText(note.content));
+                        messenger.showSnackBar(const SnackBar(
+                            content: Text('ثُبّتت في الإشعارات 📌')));
+                      }
+                    },
+                  );
+                },
+              ),
             tile(
               note.isLocked ? Icons.lock_open : Icons.lock_outline,
               note.isLocked ? s.t('unlock') : s.t('lock'),
