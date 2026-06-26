@@ -26,7 +26,8 @@ enum ReminderRepeat {
   daily, // يومي
   weekly, // أسبوعي
   monthly, // شهري
-  yearly, // سنوي
+  yearly, // سنوي (ميلادي)
+  hijriYearly, // سنوي هجري (مناسبات: نفس اليوم/الشهر الهجريين كل عام)
 }
 
 extension ReminderRepeatX on ReminderRepeat {

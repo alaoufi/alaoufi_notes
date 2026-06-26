@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../core/time/hijri_recurrence.dart';
 import '../data/models/enums.dart';
 import '../data/models/reminder.dart';
 import 'med_occurrences.dart';
@@ -286,6 +287,23 @@ class NotificationService {
       return;
     }
 
+    // سنويّ هجريّ: لا مطابقة أصليّة في الإضافة (ميلاديّة فقط) ⇒ نجدول الموعد
+    // الهجريّ القادم كموعد واحد، ويُعاد حسابه عند كل فتح عبر ensureScheduled.
+    if (reminder.repeat == ReminderRepeat.hijriYearly) {
+      final next = nextHijriAnniversary(reminder.time, DateTime.now());
+      await _zonedSchedule(
+        reminder.notificationId,
+        safeTitle,
+        safeBody,
+        tz.TZDateTime.from(next, tz.local),
+        _detailsFor(reminder.importance),
+        mode: _mode(reminder.importance),
+        payload: 'note:${reminder.noteId}|title:$safeTitle|body:$safeBody'
+            '|imp:${reminder.importance.dbValue}|base:${reminder.notificationId}',
+      );
+      return;
+    }
+
     DateTimeComponents? match;
     switch (reminder.repeat) {
       case ReminderRepeat.once:
@@ -302,6 +320,9 @@ class NotificationService {
         break;
       case ReminderRepeat.yearly:
         match = DateTimeComponents.dateAndTime;
+        break;
+      case ReminderRepeat.hijriYearly:
+        match = null; // مُعالَج أعلاه بالعودة المبكّرة.
         break;
     }
 

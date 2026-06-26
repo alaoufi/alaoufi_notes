@@ -171,6 +171,7 @@ Future<void> showStandaloneReminderDialog(BuildContext context,
                 ReminderRepeat.weekly => s.t('repeat_weekly'),
                 ReminderRepeat.monthly => s.t('repeat_monthly'),
                 ReminderRepeat.yearly => s.t('repeat_yearly'),
+                ReminderRepeat.hijriYearly => s.t('repeat_hijri_yearly'),
               };
 
           // إعدادات افتراضية ذكية عند اختيار نوع المنبّه.

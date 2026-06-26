@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../core/time/hijri_recurrence.dart';
 import '../../data/models/enums.dart';
 import '../../data/models/reminder.dart';
 import '../../services/med_occurrences.dart';
@@ -302,6 +303,8 @@ class RemindersScreen extends StatelessWidget {
       case ReminderRepeat.monthly:
       case ReminderRepeat.yearly:
         return t.isAfter(now) ? t : t;
+      case ReminderRepeat.hijriYearly:
+        return nextHijriAnniversary(t, now);
     }
   }
 
@@ -322,6 +325,7 @@ class RemindersScreen extends StatelessWidget {
         ReminderRepeat.weekly => s.t('repeat_weekly'),
         ReminderRepeat.monthly => s.t('repeat_monthly'),
         ReminderRepeat.yearly => s.t('repeat_yearly'),
+        ReminderRepeat.hijriYearly => s.t('repeat_hijri_yearly'),
       };
 
   Widget _empty(BuildContext context, S s) => EmptyState(

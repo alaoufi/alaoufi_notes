@@ -1,3 +1,4 @@
+import '../core/time/hijri_recurrence.dart';
 import '../data/models/enums.dart';
 import '../data/models/reminder.dart';
 
@@ -26,6 +27,8 @@ DateTime medOccurrenceAt(Reminder r, int index) {
     case ReminderRepeat.yearly:
       return DateTime(
           base.year + index, base.month, base.day, base.hour, base.minute);
+    case ReminderRepeat.hijriYearly:
+      return hijriAnniversaryAt(base, index);
   }
 }
 
