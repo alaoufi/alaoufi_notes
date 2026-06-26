@@ -66,12 +66,34 @@ class UpdateService {
     final remoteVer = (j['version'] as String?) ?? '';
     final url = (j['url'] as String?) ?? _fallbackApk;
 
+    // نقارن بـ**اسم النسخة** (1.7.4 مقابل 1.7.1) لا برقم البناء: مع `--split-per-abi`
+    // يضيف Flutter إزاحة معماريّة إلى versionCode المثبَّت فيصير أكبر من الرقم
+    // المنشور، فكانت المقارنة برقم البناء تقول دائمًا «أنت على الأحدث».
     final info = await PackageInfo.fromPlatform();
-    final localBuild = int.tryParse(info.buildNumber) ?? 0;
-    if (remoteBuild > localBuild) {
+    if (isNewerVersion(remoteVer, info.version)) {
       return UpdateInfo(remoteVer, remoteBuild, url);
     }
     return null;
+  }
+
+  /// هل [remote] أحدث من [local] دلاليًّا (مقارنة مقاطع `x.y.z` عدديًّا)؟
+  /// تتجاهل لاحقة البناء (`+NN`) وأي رموز غير رقميّة في كل مقطع.
+  static bool isNewerVersion(String remote, String local) {
+    List<int> parts(String v) => v
+        .split('+')
+        .first
+        .split('.')
+        .map((p) => int.tryParse(p.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
+        .toList();
+    final r = parts(remote);
+    final l = parts(local);
+    final n = r.length > l.length ? r.length : l.length;
+    for (var i = 0; i < n; i++) {
+      final rv = i < r.length ? r[i] : 0;
+      final lv = i < l.length ? l[i] : 0;
+      if (rv != lv) return rv > lv;
+    }
+    return false; // متساويتان
   }
 
   /// تنزيل نصّ من [url] مع مهلة؛ يرمي عند غير 200.
