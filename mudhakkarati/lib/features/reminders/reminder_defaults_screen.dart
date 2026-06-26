@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../services/notification_service.dart';
 import '../settings/settings_provider.dart';
 import '../sounds/sound_library_screen.dart';
 import 'reminder_helpers.dart';
+import 'reminders_provider.dart';
 
 /// صفحة «إعدادات التنبيه الافتراضية»: تُضبط مرّة واحدة (النغمة، الغفوة، رفع الصوت،
 /// تنبيه قبل الوقت) وتُستخدم كقيم أوّلية لكل تنبيه جديد — قابلة للتعديل عند الإنشاء.
@@ -99,6 +101,43 @@ class ReminderDefaultsScreen extends StatelessWidget {
             ]),
           ),
 
+          // موجز الصباح: إشعار يوميّ بعدد التذكيرات النشطة.
+          Card(
+            child: Column(children: [
+              SwitchListTile(
+                secondary: const Icon(Icons.wb_sunny_outlined),
+                title: const Text('موجز الصباح'),
+                subtitle: const Text('إشعار يوميّ بعدد تذكيراتك النشطة',
+                    style: TextStyle(fontSize: 11.5)),
+                value: st.morningBriefing,
+                onChanged: (v) async {
+                  await st.setMorningBriefing(v);
+                  await _applyBriefing(context);
+                },
+              ),
+              if (st.morningBriefing)
+                ListTile(
+                  leading: const Icon(Icons.schedule),
+                  title: const Text('وقت الموجز'),
+                  trailing: Text(
+                      '${st.briefingHour.toString().padLeft(2, '0')}:'
+                      '${st.briefingMinute.toString().padLeft(2, '0')}',
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay(
+                          hour: st.briefingHour, minute: st.briefingMinute),
+                    );
+                    if (picked != null) {
+                      await st.setBriefingTime(picked.hour, picked.minute);
+                      await _applyBriefing(context);
+                    }
+                  },
+                ),
+            ]),
+          ),
+
           // تنبيه قبل الوقت الافتراضي.
           Card(
             child: Padding(
@@ -138,6 +177,22 @@ class ReminderDefaultsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// يطبّق جدولة موجز الصباح فورًا بعد تغيير الإعداد (تفعيل/وقت).
+  Future<void> _applyBriefing(BuildContext context) async {
+    final st = context.read<SettingsProvider>();
+    final count = context
+        .read<RemindersProvider>()
+        .items
+        .where((v) => v.reminder.isActive)
+        .length;
+    await NotificationService.instance.updateMorningBriefing(
+      enabled: st.morningBriefing,
+      hour: st.briefingHour,
+      minute: st.briefingMinute,
+      reminderCount: count,
     );
   }
 }

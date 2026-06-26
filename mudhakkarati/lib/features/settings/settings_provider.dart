@@ -22,6 +22,9 @@ class SettingsProvider extends ChangeNotifier {
   Locale _locale = const Locale('ar'); // عربي افتراضيًّا (تطبيق عربيّ ⇒ اتجاه RTL)
   String _alarmTone = 'ocean'; // Calm Tide افتراضيًّا
   int _snoozeMinutes = 10; // مدّة الغفوة بالدقائق (0 = بلا غفوة)
+  bool _morningBriefing = false; // موجز صباحيّ يوميّ بعدد التذكيرات
+  int _briefingHour = 8; // ساعة الموجز الصباحيّ
+  int _briefingMinute = 0; // دقيقة الموجز الصباحيّ
   bool _autoRaiseVolume = true; // رفع صوت المنبّه تلقائيًّا عند الصامت/المنخفض
   bool _gradualVolume = false; // رفع صوت المنبّه بالتدرّج
   int _defaultPreAlert = 0; // تنبيه قبل الوقت الافتراضي بالدقائق (0 = بلا)
@@ -59,6 +62,9 @@ class SettingsProvider extends ChangeNotifier {
   Locale get locale => _locale;
   String get alarmTone => _alarmTone;
   int get snoozeMinutes => _snoozeMinutes;
+  bool get morningBriefing => _morningBriefing;
+  int get briefingHour => _briefingHour;
+  int get briefingMinute => _briefingMinute;
   bool get autoRaiseVolume => _autoRaiseVolume;
   bool get gradualVolume => _gradualVolume;
   int get defaultPreAlert => _defaultPreAlert;
@@ -277,6 +283,9 @@ class SettingsProvider extends ChangeNotifier {
     _alarmTone = prefs.getString(_kTone) ?? 'ocean';
     _favoriteTones = (prefs.getStringList('favorite_tones') ?? const []).toSet();
     _snoozeMinutes = prefs.getInt('snooze_minutes') ?? 10;
+    _morningBriefing = prefs.getBool('morning_briefing') ?? false;
+    _briefingHour = prefs.getInt('briefing_hour') ?? 8;
+    _briefingMinute = prefs.getInt('briefing_minute') ?? 0;
     _autoRaiseVolume = prefs.getBool('auto_raise_volume') ?? true;
     _gradualVolume = prefs.getBool('gradual_volume') ?? false;
     _defaultPreAlert = prefs.getInt('default_pre_alert') ?? 0;
@@ -436,6 +445,22 @@ class SettingsProvider extends ChangeNotifier {
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('auto_raise_volume', v);
+  }
+
+  Future<void> setMorningBriefing(bool v) async {
+    _morningBriefing = v;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('morning_briefing', v);
+  }
+
+  Future<void> setBriefingTime(int hour, int minute) async {
+    _briefingHour = hour;
+    _briefingMinute = minute;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('briefing_hour', hour);
+    await prefs.setInt('briefing_minute', minute);
   }
 
   /// رفع صوت المنبّه بالتدرّج (يبدأ منخفضًا ويعلو تدريجيًّا).

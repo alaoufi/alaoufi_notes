@@ -6,6 +6,7 @@ import '../../services/notification_service.dart';
 import '../../services/sync/sync_service.dart';
 import '../editor/rich_text_field.dart';
 import '../reminders/reminders_provider.dart';
+import '../settings/settings_provider.dart';
 import 'home_screen.dart';
 import 'notes_provider.dart';
 
@@ -42,7 +43,28 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
       _autoSync(SyncTrigger.open);
       // أعِد عرض الملاحظات المثبّتة في الإشعارات (تختفي عند إغلاق التطبيق).
       _reassertPinnedNotes();
+      // حدّث موجز الصباح بعدد التذكيرات الحاليّ.
+      _refreshBriefing();
     });
+  }
+
+  /// يُحدّث جدولة موجز الصباح بعدد التذكيرات النشطة الحاليّ (يُستدعى عند كل فتح).
+  Future<void> _refreshBriefing() async {
+    try {
+      if (!mounted) return;
+      final st = context.read<SettingsProvider>();
+      final count = context
+          .read<RemindersProvider>()
+          .items
+          .where((v) => v.reminder.isActive)
+          .length;
+      await NotificationService.instance.updateMorningBriefing(
+        enabled: st.morningBriefing,
+        hour: st.briefingHour,
+        minute: st.briefingMinute,
+        reminderCount: count,
+      );
+    } catch (_) {}
   }
 
   /// يعيد إظهار إشعارات الملاحظات المثبّتة بعد إعادة تشغيل التطبيق، ويُنظّف
@@ -78,6 +100,7 @@ class _RootScreenState extends State<RootScreen> with WidgetsBindingObserver {
     // بالتردّد المختار في الإعدادات (كل فتح / عند الإغلاق / مرّة باليوم).
     if (state == AppLifecycleState.resumed) {
       _autoSync(SyncTrigger.open);
+      _refreshBriefing();
     } else if (state == AppLifecycleState.paused) {
       _autoSync(SyncTrigger.close);
     }

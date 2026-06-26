@@ -624,6 +624,46 @@ class NotificationService {
     await _savePinned(ids);
   }
 
+  // ===================== موجز الصباح =====================
+  static const int _briefingId = (1 << 30) - 1; // معرّف ثابت مستقلّ
+
+  /// يجدول (أو يلغي) إشعارًا يوميًّا صباحيًّا بعدد التذكيرات النشطة. يُحدَّث عند كل
+  /// فتح للتطبيق فيبقى العدد محدَّثًا. هادئ (بلا صوت) وغير دقيق (لا يحتاج إذن منبّه).
+  Future<void> updateMorningBriefing({
+    required bool enabled,
+    required int hour,
+    required int minute,
+    required int reminderCount,
+  }) async {
+    await init();
+    await _plugin.cancel(_briefingId);
+    if (!enabled) return;
+    final now = tz.TZDateTime.now(tz.local);
+    var when = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (!when.isAfter(now)) when = when.add(const Duration(days: 1));
+    final body = reminderCount > 0
+        ? 'لديك $reminderCount تذكيرًا نشطًا — تفقّد مهامّك اليوم.'
+        : 'يوم موفّق! لا تذكيرات نشطة حاليًّا.';
+    await _zonedSchedule(
+      _briefingId,
+      '☀️ صباح الخير',
+      body,
+      when,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'alaoufi_quiet',
+          'تنبيهات هادئة',
+          channelDescription: 'إشعارات بلا صوت',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+        ),
+      ),
+      mode: AndroidScheduleMode.inexactAllowWhileIdle,
+      match: DateTimeComponents.time, // يوميًّا في نفس الوقت
+      payload: 'briefing:1',
+    );
+  }
+
   // ===== اختبار الموثوقية =====
   // معرّفات ثابتة للاختبار: أكبر من _forgetStride (كي لا تُطلَق إعادات «عدم
   // النسيان») وفي الوقت ذاته يبقى base + 15·stride ضمن نطاق 32-بت بأمان.
