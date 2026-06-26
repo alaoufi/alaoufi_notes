@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
@@ -961,13 +962,21 @@ class _UpdateTileState extends State<_UpdateTile> {
     }
   }
 
+  /// مسار احتياطيّ دائم: تنزيل أحدث APK عبر المتصفّح — يعمل حتى لو تعذّر الفحص أو
+  /// التثبيت داخل التطبيق (ما دام المتصفّح يصل إلى github.com).
+  Future<void> _openInBrowser() async {
+    await launchUrl(Uri.parse(UpdateService.downloadUrl),
+        mode: LaunchMode.externalApplication);
+  }
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     final scheme = Theme.of(context).colorScheme;
 
+    final Widget tile;
     if (_downloading) {
-      return ListTile(
+      tile = ListTile(
         leading: SizedBox(
           width: 22,
           height: 22,
@@ -977,10 +986,8 @@ class _UpdateTileState extends State<_UpdateTile> {
         title: Text(s.t('upd_downloading')),
         subtitle: Text('${(_progress * 100).round()}%'),
       );
-    }
-
-    if (_available != null) {
-      return Card(
+    } else if (_available != null) {
+      tile = Card(
         color: scheme.primaryContainer,
         child: ListTile(
           leading: Icon(Icons.system_update, color: scheme.onPrimaryContainer),
@@ -995,19 +1002,36 @@ class _UpdateTileState extends State<_UpdateTile> {
           onTap: _update,
         ),
       );
+    } else {
+      tile = ListTile(
+        leading: const Icon(Icons.system_update_outlined),
+        title: Text(s.t('upd_check')),
+        subtitle: _status != null ? Text(_status!) : null,
+        trailing: _checking
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.chevron_left),
+        onTap: _checking ? null : _check,
+      );
     }
 
-    return ListTile(
-      leading: const Icon(Icons.system_update_outlined),
-      title: Text(s.t('upd_check')),
-      subtitle: _status != null ? Text(_status!) : null,
-      trailing: _checking
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2))
-          : const Icon(Icons.chevron_left),
-      onTap: _checking ? null : _check,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        tile,
+        // زرّ احتياطيّ دائم يضمن التحديث حتى لو لم يعمل الفحص داخل التطبيق.
+        if (!_downloading)
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              icon: const Icon(Icons.download, size: 18),
+              label: const Text('تنزيل أحدث نسخة عبر المتصفّح'),
+              onPressed: _openInBrowser,
+            ),
+          ),
+      ],
     );
   }
 }

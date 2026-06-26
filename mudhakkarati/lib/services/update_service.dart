@@ -41,6 +41,10 @@ class UpdateService {
   static const _fallbackApk =
       'https://github.com/alaoufi/alaoufi_notes/releases/download/latest/app-arm64-v8a-release.apk';
 
+  /// رابط تنزيل أحدث APK مباشرةً (مسار احتياطيّ عبر المتصفّح حين يتعذّر الفحص/التثبيت
+  /// داخل التطبيق — يعمل ما دام المتصفّح يصل إلى github.com).
+  static String get downloadUrl => _fallbackApk;
+
   /// يعيد معلومات التحديث إن توفّرت نسخة أحدث، أو null إن كنت على الأحدث.
   /// يرمي [UpdateException] عند فشل الوصول (تمييزًا عن «أنت محدّث»).
   Future<UpdateInfo?> check() async {
