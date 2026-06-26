@@ -65,24 +65,29 @@ class _PinEntryState extends State<PinEntry> {
               style: Theme.of(context).textTheme.titleLarge,
               textAlign: TextAlign.center),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (i) {
-              final filled = i < _pin.length;
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: filled ? scheme.primary : Colors.transparent,
-                  border: Border.all(
-                    color: _error ? scheme.error : scheme.primary,
-                    width: 2,
+          // نقاط التقدّم تُثبَّت على LTR كي تمتلئ من اليسار (أوّل رقم = النقطة
+          // اليسرى) متّسقةً مع لوحة الأرقام، لا أن تنعكس بسبب اتجاه الواجهة RTL.
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(4, (i) {
+                final filled = i < _pin.length;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 8),
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: filled ? scheme.primary : Colors.transparent,
+                    border: Border.all(
+                      color: _error ? scheme.error : scheme.primary,
+                      width: 2,
+                    ),
                   ),
-                ),
-              );
-            }),
+                );
+              }),
+            ),
           ),
           if (_error)
             Padding(
