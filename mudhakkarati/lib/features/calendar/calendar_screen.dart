@@ -9,6 +9,7 @@ import '../../core/l10n/app_strings.dart';
 import '../../data/models/note.dart';
 import '../../widgets/ui_kit.dart';
 import '../editor/note_editor_screen.dart';
+import '../editor/rich_text_field.dart';
 import '../home/notes_provider.dart';
 import '../reminders/reminders_provider.dart';
 
@@ -111,76 +112,51 @@ class _CalendarScreenState extends State<CalendarScreen> {
           : RefreshIndicator(
               onRefresh: _loadNotes,
               child: ListView(
+                padding: const EdgeInsets.only(top: 8, bottom: 24),
                 children: [
-                  // التقويم بالكامل: هجريّ (شبكة مخصّصة) أو ميلاديّ (TableCalendar).
-                  if (_hijri)
-                    _hijriCalendar(context, s)
-                  else
-                    TableCalendar<Note>(
-                      locale: s.isArabic ? 'ar' : 'en',
-                      firstDay: DateTime(2015),
-                      lastDay: DateTime(2100),
-                      focusedDay: _focused,
-                      selectedDayPredicate: (d) => _sameDay(d, _selected),
-                      eventLoader: _notesFor,
-                      startingDayOfWeek: StartingDayOfWeek.saturday,
-                      calendarFormat: CalendarFormat.month,
-                      availableCalendarFormats: const {CalendarFormat.month: ''},
-                      onDaySelected: (selected, focused) {
-                        setState(() {
-                          _selected = selected;
-                          _focused = focused;
-                        });
-                      },
-                      calendarStyle: CalendarStyle(
-                        markerDecoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        todayDecoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          shape: BoxShape.circle,
-                        ),
-                        selectedDecoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  _dateHeader(context, s),
-                  if (dayReminders.isNotEmpty) ...[
-                    _label(context, s.t('reminders')),
-                    ...dayReminders.map((v) => ListTile(
-                          leading: const Icon(Icons.alarm),
-                          title: Text(v.note?.title.isNotEmpty == true
-                              ? v.note!.title
-                              : 'ملاحظة'),
-                          subtitle:
-                              Text(DateFormat('HH:mm').format(v.reminder.time)),
-                        )),
-                  ],
-                  _label(context, s.t('nav_notes')),
-                  if (dayNotes.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Center(child: Text(s.t('no_notes_day'))),
-                    )
-                  else
-                    ...dayNotes.map((n) => ListTile(
-                          leading: const Icon(Icons.sticky_note_2_outlined),
-                          title: Text(
-                            n.title.isNotEmpty ? n.title : n.content,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => NoteEditorScreen(noteId: n.id),
+                  // بطاقة التقويم: هجريّ (شبكة مخصّصة) أو ميلاديّ (TableCalendar).
+                  AppCard(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: _hijri
+                        ? _hijriCalendar(context, s)
+                        : TableCalendar<Note>(
+                            locale: s.isArabic ? 'ar' : 'en',
+                            firstDay: DateTime(2015),
+                            lastDay: DateTime(2100),
+                            focusedDay: _focused,
+                            selectedDayPredicate: (d) => _sameDay(d, _selected),
+                            eventLoader: _notesFor,
+                            startingDayOfWeek: StartingDayOfWeek.saturday,
+                            calendarFormat: CalendarFormat.month,
+                            availableCalendarFormats: const {
+                              CalendarFormat.month: ''
+                            },
+                            onDaySelected: (selected, focused) {
+                              setState(() {
+                                _selected = selected;
+                                _focused = focused;
+                              });
+                            },
+                            calendarStyle: CalendarStyle(
+                              markerDecoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                              todayDecoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                                shape: BoxShape.circle,
+                              ),
+                              selectedDecoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
                             ),
                           ),
-                        )),
-                  const SizedBox(height: 24),
+                  ),
+                  // بطاقة تفاصيل اليوم: التاريخ + تذكيرات + ملاحظات (مرتّبة، بخلفية).
+                  _dayCard(context, s, dayReminders, dayNotes),
                 ],
               ),
             ),
@@ -275,15 +251,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ],
           ),
         ),
-        Row(
-          children: weekdays
-              .map((w) => Expanded(
-                    child: Center(
-                      child: Text(w,
-                          style: Theme.of(context).textTheme.bodySmall),
-                    ),
-                  ))
-              .toList(),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: weekdays.asMap().entries.map((e) {
+              final isFriday = e.key == 6; // عطلة نهاية الأسبوع
+              return Expanded(
+                child: Center(
+                  child: Text(e.value,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isFriday ? scheme.error : scheme.primary,
+                          )),
+                ),
+              );
+            }).toList(),
+          ),
         ),
         const SizedBox(height: 4),
         GridView.count(
@@ -297,36 +285,148 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _dateHeader(BuildContext context, S s) {
-    final greg = DateFormat('EEEE، d MMMM yyyy', s.isArabic ? 'ar' : 'en')
-        .format(_selected);
-    final h = HijriCalendar.fromDate(_selected);
-    final hijriStr = '${h.hDay} ${h.longMonthName} ${h.hYear} هـ';
+  /// عنوان عرض الملاحظة: العنوان إن وُجد، وإلا **أوّل ثلاث كلمات** من نصّها العاديّ
+  /// (نفكّ Delta JSON فلا تظهر رموز التنسيق)، وإلا «بدون عنوان».
+  String _noteLabel(Note n) {
+    final t = n.title.trim();
+    if (t.isNotEmpty) return t;
+    final plain = richToPlainText(n.content).trim();
+    if (plain.isEmpty) return 'بدون عنوان';
+    return plain.split(RegExp(r'\s+')).take(3).join(' ');
+  }
+
+  Widget _dot(BuildContext context, Color color, {double size = 14}) => Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border:
+              Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        ),
+      );
+
+  Widget _sectionLabel(BuildContext context, IconData icon, String text) {
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+      child: Row(
         children: [
-          Text(_hijri ? hijriStr : greg,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold)),
-          Text(_hijri ? greg : hijriStr,
-              style: Theme.of(context).textTheme.bodySmall),
+          Icon(icon, size: 18, color: scheme.primary),
+          const SizedBox(width: 8),
+          Text(text,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: scheme.primary, fontWeight: FontWeight.bold)),
         ],
       ),
     );
   }
 
-  Widget _label(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Text(text,
-          style: Theme.of(context)
-              .textTheme
-              .labelLarge
-              ?.copyWith(color: Theme.of(context).hintColor)),
+  /// بطاقة تفاصيل اليوم المحدَّد: رأس التاريخ (هجريّ/ميلاديّ) + التذكيرات +
+  /// الملاحظات — مرتّبة بخلفيّة بطاقة، وكل عنصر بعنوانه الواضح ونقطة لونه.
+  Widget _dayCard(BuildContext context, S s, List<ReminderView> dayReminders,
+      List<Note> dayNotes) {
+    final scheme = Theme.of(context).colorScheme;
+    final greg = DateFormat('EEEE، d MMMM yyyy', s.isArabic ? 'ar' : 'en')
+        .format(_selected);
+    final h = HijriCalendar.fromDate(_selected);
+    final hijriStr = '${h.hDay} ${h.longMonthName} ${h.hYear} هـ';
+
+    return AppCard(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // رأس التاريخ بشارة يوم بارزة.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: scheme.primaryContainer,
+                  child: Text('${_hijri ? h.hDay : _selected.day}',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: scheme.onPrimaryContainer)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_hijri ? hijriStr : greg,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold)),
+                      Text(_hijri ? greg : hijriStr,
+                          style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+
+          // التذكيرات.
+          if (dayReminders.isNotEmpty) ...[
+            _sectionLabel(context, Icons.alarm, s.t('reminders')),
+            ...dayReminders.map((v) => ListTile(
+                  dense: true,
+                  leading: _dot(context, scheme.tertiary),
+                  title: Text(
+                    v.note != null ? _noteLabel(v.note!) : 'تذكير',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: Text(DateFormat('HH:mm').format(v.reminder.time),
+                      style: Theme.of(context).textTheme.bodySmall),
+                  onTap: v.note != null
+                      ? () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  NoteEditorScreen(noteId: v.note!.id),
+                            ),
+                          )
+                      : null,
+                )),
+            const Divider(height: 1),
+          ],
+
+          // الملاحظات.
+          _sectionLabel(context, Icons.sticky_note_2_outlined, s.t('nav_notes')),
+          if (dayNotes.isEmpty)
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Center(
+                child: Text(s.t('no_notes_day'),
+                    style: TextStyle(color: scheme.outline)),
+              ),
+            )
+          else
+            ...dayNotes.map((n) => ListTile(
+                  dense: true,
+                  leading: _dot(context,
+                      n.color != null ? Color(n.color!) : scheme.primary),
+                  title: Text(
+                    _noteLabel(n),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NoteEditorScreen(noteId: n.id),
+                    ),
+                  ),
+                )),
+          const SizedBox(height: 6),
+        ],
+      ),
     );
   }
 }
