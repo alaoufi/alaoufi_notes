@@ -118,10 +118,10 @@ class _NumPad extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget key(String label, {VoidCallback? onTap, Widget? child}) {
       return Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(6),
         child: SizedBox(
-          width: 72,
-          height: 72,
+          width: 62,
+          height: 62,
           child: Material(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             shape: const CircleBorder(),
@@ -132,7 +132,7 @@ class _NumPad extends StatelessWidget {
                 child: child ??
                     Text(label,
                         style: const TextStyle(
-                            fontSize: 26, fontWeight: FontWeight.bold)),
+                            fontSize: 24, fontWeight: FontWeight.bold)),
               ),
             ),
           ),
@@ -140,32 +140,37 @@ class _NumPad extends StatelessWidget {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          key('1'),
-          key('2'),
-          key('3'),
-        ]),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          key('4'),
-          key('5'),
-          key('6'),
-        ]),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          key('7'),
-          key('8'),
-          key('9'),
-        ]),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          onBiometric != null
-              ? key('', onTap: () => onBiometric!.call(), child: const Icon(Icons.fingerprint, size: 32))
-              : const SizedBox(width: 88),
-          key('0'),
-          key('', onTap: onBackspace, child: const Icon(Icons.backspace_outlined)),
-        ]),
-      ],
+    // لوحة الأرقام تُثبَّت على LTR كي تظهر 1‑2‑3 من اليسار كأي هاتف/آلة حاسبة،
+    // ولا تنعكس إلى 3‑2‑1 بسبب اتجاه الواجهة العربيّ (RTL).
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            key('1'),
+            key('2'),
+            key('3'),
+          ]),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            key('4'),
+            key('5'),
+            key('6'),
+          ]),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            key('7'),
+            key('8'),
+            key('9'),
+          ]),
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            onBiometric != null
+                ? key('', onTap: () => onBiometric!.call(), child: const Icon(Icons.fingerprint, size: 30))
+                : const SizedBox(width: 74),
+            key('0'),
+            key('', onTap: onBackspace, child: const Icon(Icons.backspace_outlined)),
+          ]),
+        ],
+      ),
     );
   }
 }
