@@ -304,7 +304,15 @@ class SettingsProvider extends ChangeNotifier {
     _defaultNoteColor = prefs.containsKey(_kDefColor)
         ? prefs.getInt(_kDefColor)
         : 0xFFFCE49E;
-    _defaultGradient = prefs.getString(_kDefGradient);
+    // الخلفية الافتراضية لأي تثبيت جديد = تدرّج أصفر دافئ من الأعلى
+    // (FCE49E → EFE6C0 → E8E49E). المفتاح غائب ⇒ تثبيت جديد ⇒ التدرّج؛ قيمة
+    // فارغة ⇒ ألغى المستخدم التدرّج صراحةً ⇒ بلا تدرّج؛ وإلا ⇒ تدرّجه المحفوظ.
+    if (prefs.containsKey(_kDefGradient)) {
+      final g = prefs.getString(_kDefGradient);
+      _defaultGradient = (g == null || g.isEmpty) ? null : g;
+    } else {
+      _defaultGradient = '0:${0xFFFCE49E},${0xFFEFE6C0},${0xFFE8E49E}';
+    }
     _defaultBgStyle = prefs.getInt(_kDefBgStyle) ?? 0;
     final nf = prefs.getString(_kNoteFont);
     if (nf != null && fontFamilies.contains(nf)) _noteFontFamily = nf;
@@ -354,11 +362,8 @@ class SettingsProvider extends ChangeNotifier {
     _defaultGradient = gradient;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    if (gradient == null) {
-      await prefs.remove(_kDefGradient);
-    } else {
-      await prefs.setString(_kDefGradient, gradient);
-    }
+    // فارغ = «بلا تدرّج» صراحةً (نميّزه عن «لم يُضبط» كي لا يعود التدرّج الافتراضي).
+    await prefs.setString(_kDefGradient, gradient ?? '');
   }
 
   Future<void> setDefaultBgStyle(int style) async {

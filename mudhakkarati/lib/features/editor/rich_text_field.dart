@@ -436,18 +436,15 @@ class _RichTextEditorBodyState extends State<RichTextEditorBody> {
         placeholder: 'اكتب ملاحظتك هنا...',
         // نُبقي باني القائمة غير فارغ دائمًا (تجنّبًا لتعطّل المكتبة عند
         // التبديل المباشر). نقرأ الإعداد **لحظة ظهور القائمة** لا وقت البناء، كي
-        // يَنفُذ الإخفاء فورًا ولا تظهر القائمة ثانيةً عند تحديد جديد. عند الإظهار
-        // نثبّتها أعلى الشاشة كي لا تغطّي شريط التنسيق.
+        // يَنفُذ الإخفاء فورًا ولا تظهر القائمة ثانيةً عند تحديد جديد. نضع القائمة
+        // على **مرساة التحديد** (فوق المظلَّل، أو تحته إن ضاق المكان) فلا تغطّي
+        // النصّ المحدَّد — بدل تثبيتها أعلى الشاشة فوق النصّ.
         contextMenuBuilder: (menuContext, state) {
           final hideNow = context.read<SettingsProvider>().hideSelectionMenu;
           if (hideNow) return const SizedBox.shrink();
-          final top =
-              MediaQuery.of(menuContext).padding.top + kToolbarHeight + 8;
-          final anchor =
-              Offset(MediaQuery.of(menuContext).size.width / 2, top);
           return TextFieldTapRegion(
             child: AdaptiveTextSelectionToolbar.buttonItems(
-              anchors: TextSelectionToolbarAnchors(primaryAnchor: anchor),
+              anchors: state.contextMenuAnchors,
               buttonItems: state.contextMenuButtonItems,
             ),
           );
