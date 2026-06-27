@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../services/license_service.dart';
 import '../../services/security_service.dart';
 import '../../widgets/ui_kit.dart';
 import 'pin_entry.dart';
@@ -18,6 +19,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
   bool _biometricEnabled = false;
   bool _biometricAvailable = false;
   bool _loaded = false;
+  LicenseInfo? _license;
+  String _deviceId = '…';
 
   @override
   void initState() {
@@ -29,6 +32,8 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     _lockEnabled = await _sec.isLockEnabled();
     _biometricEnabled = await _sec.isBiometricEnabled();
     _biometricAvailable = await _sec.canUseBiometrics();
+    _license = await LicenseService.instance.info();
+    _deviceId = await LicenseService.instance.deviceIdPretty();
     setState(() => _loaded = true);
   }
 
@@ -115,6 +120,38 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
               ],
             ),
           ),
+          // التفعيل: الحالة + رقم الجهاز + إلغاء التفعيل (لاختبار دورة التفعيل).
+          AppCard(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    Icon(Icons.verified_user_outlined, color: scheme.primary),
+                    const SizedBox(width: 10),
+                    Text('التفعيل',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold)),
+                  ]),
+                  const SizedBox(height: 10),
+                  Text('الحالة: ${_licenseStatusText()}'),
+                  const SizedBox(height: 4),
+                  Text('رقم الجهاز: $_deviceId',
+                      style: Theme.of(context).textTheme.bodySmall),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _deactivate,
+                    icon: Icon(Icons.lock_reset, size: 18, color: scheme.error),
+                    label: Text('إلغاء التفعيل (لاختبار التفعيل)',
+                        style: TextStyle(color: scheme.error)),
+                  ),
+                ],
+              ),
+            ),
+          ),
           AppCard(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -136,5 +173,45 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
         ],
       ),
     );
+  }
+
+  String _licenseStatusText() {
+    final l = _license;
+    if (l == null) return '—';
+    switch (l.state) {
+      case LicenseState.disabled:
+        return 'وضع تطوير (غير مقفل)';
+      case LicenseState.none:
+        return 'غير مفعّل';
+      case LicenseState.active:
+        return l.permanent ? 'مفعّل (دائم)' : 'مفعّل — متبقّي ${l.daysLeft} يوم';
+      case LicenseState.expired:
+        return 'منتهٍ';
+    }
+  }
+
+  Future<void> _deactivate() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('إلغاء التفعيل؟'),
+        content: const Text(
+            'سيُمسح سجلّ التفعيل، وتظهر شاشة التفعيل عند عودتك للتطبيق. (للاختبار)'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('تراجع')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('إلغاء التفعيل')),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await LicenseService.instance.deactivate();
+    await _load();
+    messenger.showSnackBar(const SnackBar(
+        content: Text('أُلغي التفعيل — اخرج من التطبيق وارجع إليه لتظهر شاشة التفعيل')));
   }
 }
