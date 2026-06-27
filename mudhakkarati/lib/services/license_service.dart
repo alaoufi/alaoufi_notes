@@ -46,13 +46,13 @@ class LicenseService {
   LicenseService._();
   static final LicenseService instance = LicenseService._();
 
-  // المفتاح العامّ للمالك (Base64 لـ 32 بايت Ed25519). التحقق فقط — لا يمكن
-  // توليد رموز منه. وُلّد مرّة واحدة؛ مفتاحه الخاصّ يبقى في تطبيق المولّد فقط.
+  // المفتاح العامّ **العالميّ** (UNIV1) — نفسه في كل تطبيقات المالك، وبذرته الخاصّة
+  // مدمجة في المولّد (خيار «عام»). للتحقق فقط — لا يولّد رموزًا.
   static const String _publicKeyB64 =
-      'Wu3tven4KhEEuNqUNLatFTLljCgjFnJXtFc3QHYlhk8=';
+      '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=';
 
   // بادئة الرسالة الموقَّعة (إصدار الصيغة). يجب أن تطابق المولّد حرفيًّا.
-  static const String _msgPrefix = 'MDKL1';
+  static const String _msgPrefix = 'UNIV1';
 
   static const _kDeviceId = 'lic_device_id';
   static const _kRecord = 'lic_record'; // سجلّ التفعيل (JSON).
@@ -80,7 +80,7 @@ class LicenseService {
       final rnd = Random.secure();
       raw = base64Encode(List<int>.generate(16, (_) => rnd.nextInt(256)));
     }
-    final digest = crypto.sha256.convert(utf8.encode('mudhakkarati:$raw'));
+    final digest = crypto.sha256.convert(utf8.encode('alaoufi:$raw'));
     final id = base32(digest.bytes.sublist(0, 10)); // 16 حرفًا.
     await _storage.write(key: _kDeviceId, value: id);
     return id;
