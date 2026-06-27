@@ -9,9 +9,6 @@ void main() => runApp(const KeygenApp());
 const _storage = FlutterSecureStorage(
   aOptions: AndroidOptions(encryptedSharedPreferences: true),
 );
-// مفتاح تخزين قديم (مذكراتي) — نهاجر منه إن وُجد.
-const _kLegacySeed = 'owner_seed_hex';
-
 /// تعريف تطبيق في المولّد.
 /// - [prefix]: بادئة الصيغة الموقَّعة (يجب أن تطابق التطبيق).
 /// - [pubB64]: المفتاح العامّ — للتحقّق أنّ البذرة المُدخَلة صحيحة وللعرض.
@@ -35,8 +32,7 @@ const _universalSeedHex =
 const List<AppDef> _appDefs = [
   AppDef('universal', 'عام — أيّ تطبيق', 'UNIV1',
       '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
-  // مذكراتي تحوّل إلى المفتاح العالميّ (UNIV1) — بذرته مدمجة، فيعمل الخيار مباشرةً
-  // بلا لصق مفتاح (المفتاح الخاصّ القديم MDKL1 فُقد ولم يَعُد مستخدَمًا).
+  // مذكراتي — بالمفتاح العالميّ (UNIV1)، بذرته مدمجة فيعمل الخيار مباشرةً.
   AppDef('mudhakkarati', 'مذكراتي', 'UNIV1',
       '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
   // حلالي — يعمل بالمفتاح العالميّ (UNIV1، بذرته مدمجة). يتطلّب أن يكون تطبيق
@@ -101,15 +97,7 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
     if (app.embeddedSeedHex != null) return _hexToBytes(app.embeddedSeedHex!);
 
     // مخزّنة لهذا التطبيق؟
-    String? stored = await _storage.read(key: 'seed_${app.id}');
-    // هجرة من المفتاح القديم (مذكراتي فقط).
-    if ((stored == null || stored.length != 64) && app.id == 'mudhakkarati') {
-      final legacy = await _storage.read(key: _kLegacySeed);
-      if (legacy != null && legacy.length == 64) {
-        await _storage.write(key: 'seed_${app.id}', value: legacy);
-        stored = legacy;
-      }
-    }
+    final stored = await _storage.read(key: 'seed_${app.id}');
     if (stored != null && stored.length == 64) return _hexToBytes(stored);
 
     if (!mounted) return null;
@@ -384,9 +372,6 @@ class _GeneratorScreenState extends State<_GeneratorScreen> {
                 onPressed: () async {
                   Navigator.pop(ctx);
                   await _storage.delete(key: 'seed_${_app.id}');
-                  if (_app.id == 'mudhakkarati') {
-                    await _storage.delete(key: _kLegacySeed);
-                  }
                   if (mounted) _snack('حُذف مفتاح «${_app.name}» — سيُطلب عند التوليد القادم');
                 },
                 icon: const Icon(Icons.key_off),

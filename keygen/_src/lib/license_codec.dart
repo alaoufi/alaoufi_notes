@@ -7,7 +7,7 @@ import 'package:cryptography/cryptography.dart';
 class LicenseCodec {
   LicenseCodec._();
 
-  static const String msgPrefix = 'MDKL1';
+  static const String msgPrefix = 'UNIV1';
   static final _ed = Ed25519();
 
   /// يولّد رمز تفعيل لجهاز ومدّة معيّنة، موقّعًا بمفتاح المالك الخاصّ (Seed).
