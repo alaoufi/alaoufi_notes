@@ -641,10 +641,19 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
               ],
             ),
             const SizedBox(height: 8),
+            // المُحدِّد يعرض اسم التكرار حسب الرقم مباشرةً (٢ = يوم بعد يوم…).
             Row(children: [
               Expanded(
-                  child: Text(s.t('med_custom_every'),
-                      style: const TextStyle(fontWeight: FontWeight.w600))),
+                  child: Text(
+                      _every == 1
+                          ? s.t('med_daily')
+                          : _every == 2
+                              ? s.t('med_every_other')
+                              : _every == 7
+                                  ? s.t('med_weekly')
+                                  : 'كل $_every أيام',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 15))),
               IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
                   onPressed: () =>
@@ -657,6 +666,18 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
                   onPressed: () =>
                       setState(() => _every = (_every + 1).clamp(1, 90))),
             ]),
+            // توضيح صريح لمعنى الرقم: متى تأتي الجرعة التالية فعليًّا.
+            Text(
+              _every == 1
+                  ? 'جرعة كلّ يوم'
+                  : _every == 2
+                      ? 'جرعة، ثمّ التالية بعد يومين (يوم بينهما بلا جرعة)'
+                      : 'جرعة، ثمّ التالية بعد $_every أيام',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Theme.of(context).hintColor),
+            ),
             const SizedBox(height: 8),
             // أوّل جرعة: تاريخ + وقت.
             Row(children: [
