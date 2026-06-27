@@ -39,8 +39,10 @@ const _universalSeedHex =
 const List<AppDef> _appDefs = [
   AppDef('universal', 'عام — أيّ تطبيق', 'UNIV1',
       '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
-  AppDef('mudhakkarati', 'مذكراتي', 'MDKL1',
-      'Wu3tven4KhEEuNqUNLatFTLljCgjFnJXtFc3QHYlhk8='),
+  // مذكراتي تحوّل إلى المفتاح العالميّ (UNIV1) — بذرته مدمجة، فيعمل الخيار مباشرةً
+  // بلا لصق مفتاح (المفتاح الخاصّ القديم MDKL1 فُقد ولم يَعُد مستخدَمًا).
+  AppDef('mudhakkarati', 'مذكراتي', 'UNIV1',
+      '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
   AppDef('marah', 'مراح', 'MRHL1',
       'q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=', _marahSeedHex),
 ];
