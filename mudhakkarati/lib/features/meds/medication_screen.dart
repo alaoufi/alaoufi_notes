@@ -185,29 +185,42 @@ class _MedicationScreenState extends State<MedicationScreen> {
     );
   }
 
-  /// صفّ جرعة واحدة ضمن الكورس: سابقة (مضت) / التالية / قادمة.
+  /// صفّ جرعة واحدة ضمن الكورس بخلفيّة ملوّنة شفّافة تميّز حالتها:
+  /// **أُخذت (مضت)** خضراء خفيفة، **التالية الآن** بإطار مميّز، و**متبقّية (لم
+  /// تُؤخذ بعد)** حمراء خفيفة — فيُفهَم المأخوذ والمتبقّي بنظرة.
   Widget _doseRow(int i, DateTime when, int duePassed, DateFormat fmt, S s,
       ColorScheme scheme) {
     final isPast = i < duePassed;
     final isNext = i == duePassed;
     final IconData icon;
-    final Color color;
+    final Color color; // لون الأيقونة/التسمية
+    final Color bg; // خلفيّة الصفّ الشفّافة
     final String label;
     if (isPast) {
-      icon = Icons.check_circle_outline;
-      color = Colors.green;
+      icon = Icons.check_circle;
+      color = Colors.green.shade700;
+      bg = Colors.green.withOpacity(0.13); // أُخذت
       label = s.t('med_past_label');
     } else if (isNext) {
-      icon = Icons.notifications_active_outlined;
+      icon = Icons.notifications_active;
       color = scheme.primary;
+      bg = scheme.primary.withOpacity(0.14); // التالية الآن
       label = s.t('med_next_label');
     } else {
       icon = Icons.schedule;
-      color = Theme.of(context).hintColor;
+      color = Colors.red.shade400;
+      bg = Colors.red.withOpacity(0.08); // متبقّية (لم تُؤخذ)
       label = s.t('med_upcoming_label');
     }
     return Container(
-      color: isNext ? scheme.primary.withOpacity(0.07) : null,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        border: isNext
+            ? Border.all(color: scheme.primary.withOpacity(0.5), width: 1.2)
+            : null,
+      ),
       child: ListTile(
         dense: true,
         visualDensity: const VisualDensity(vertical: -2),
