@@ -457,7 +457,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                         _note.ruleThickness ?? settings.ruleThickness,
                     currentOpacity: _note.ruleOpacity ?? settings.ruleOpacity,
                     currentLineHeight:
-                        _note.ruleLineHeight ?? settings.noteLineHeight);
+                        _note.ruleLineHeight ?? settings.noteLineHeight,
+                    defaultColor: settings.defaultNoteColor,
+                    defaultGradient: settings.defaultGradient);
                 if (res != null) {
                   setState(() => _note = _note.copyWith(
                         color: res.value,

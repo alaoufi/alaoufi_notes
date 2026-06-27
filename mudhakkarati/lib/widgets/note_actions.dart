@@ -99,7 +99,9 @@ Future<void> showNoteActions(BuildContext context, Note note,
                       note.ruleThickness ?? settings.ruleThickness,
                   currentOpacity: note.ruleOpacity ?? settings.ruleOpacity,
                   currentLineHeight:
-                      note.ruleLineHeight ?? settings.noteLineHeight);
+                      note.ruleLineHeight ?? settings.noteLineHeight,
+                  defaultColor: settings.defaultNoteColor,
+                  defaultGradient: settings.defaultGradient);
               if (res != null) {
                 await provider.saveNote(note.copyWith(
                   color: res.value,

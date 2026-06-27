@@ -65,13 +65,17 @@ Future<ColorPickResult?> showColorPicker(
   double currentThickness = 1.0,
   double currentOpacity = 0.12,
   double currentLineHeight = 1.6,
+  // الافتراضي المحفوظ في الإعدادات — يُعرض كنقطة بداية حين لا تملك الملاحظة قيمتها.
+  int? defaultColor,
+  String? defaultGradient,
 }) async {
   // حمّل مكتبة الألوان المخصّصة المحفوظة (دائمة) قبل عرض المنتقي.
   await CustomColorsStore.instance.load();
   if (!context.mounted) return null;
   final s = S.of(context);
   int selectedStyle = currentStyle;
-  int? selectedColor = current;
+  // حين لا تملك الملاحظة لونًا، نُبرز اللون الافتراضيّ المحفوظ كنقطة بداية.
+  int? selectedColor = current ?? defaultColor;
 
   // حالة التسطير الخاص بالملاحظة.
   bool ruleOnLine = currentOnLine;
@@ -79,12 +83,14 @@ Future<ColorPickResult?> showColorPicker(
   double ruleOpacity = currentOpacity.clamp(0.03, 0.6);
   double ruleLineHeight = currentLineHeight.clamp(0.8, 3.0);
 
-  // حالة التدرّج اللوني.
+  // حالة التدرّج اللوني: تدرّج الملاحظة إن وُجد، وإلا التدرّج الافتراضيّ المحفوظ.
   final parsedGrad = NoteGradient.parse(currentGradient);
-  bool useGradient = parsedGrad != null;
-  List<int> gradColors =
-      parsedGrad?.colors ?? [0xFF42A5F5, 0xFF7E57C2];
-  int gradDir = parsedGrad?.direction ?? 2;
+  final defGrad = NoteGradient.parse(defaultGradient);
+  final effGrad = parsedGrad ?? defGrad;
+  // نُظهر التدرّج إن كان للملاحظة تدرّجها، أو كانت بلا لونٍ مختار ولها افتراضيّ.
+  bool useGradient = parsedGrad != null || (current == null && defGrad != null);
+  List<int> gradColors = effGrad?.colors ?? [0xFF42A5F5, 0xFF7E57C2];
+  int gradDir = effGrad?.direction ?? 2;
 
   return showModalBottomSheet<ColorPickResult>(
     context: context,
