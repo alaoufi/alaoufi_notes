@@ -26,10 +26,6 @@ class AppDef {
       [this.embeddedSeedHex]);
 }
 
-// بذرة «مراح» مدمجة في أداة المالك فقط (ليست في التطبيق المنشور).
-const _marahSeedHex =
-    '38beeb3667847dc80f248da1960f0bd7ac6484afa048ff641978119991a4d470';
-
 // بذرة المفتاح العالميّ (master) — لأيّ تطبيق يضع مفتاحه العامّ وبادئة UNIV1.
 const _universalSeedHex =
     '21200553e66913ea203a7b6f9a8d52a3e09fda7e76cd58353e66b750f79b2de9';
@@ -47,8 +43,9 @@ const List<AppDef> _appDefs = [
   // «حلالي» مبنيًّا بالمفتاح العالميّ (license_service من دليل المطوّر).
   AppDef('halali', 'حلالي', 'UNIV1',
       '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
-  AppDef('marah', 'مراح', 'MRHL1',
-      'q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=', _marahSeedHex),
+  // مراح — حُوّل أيضًا للمفتاح العالميّ (يتطلّب بناء تطبيق مراح بالمفتاح العالميّ).
+  AppDef('marah', 'مراح', 'UNIV1',
+      '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
 ];
 
 class KeygenApp extends StatelessWidget {
