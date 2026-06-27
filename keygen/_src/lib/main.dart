@@ -43,6 +43,10 @@ const List<AppDef> _appDefs = [
   // بلا لصق مفتاح (المفتاح الخاصّ القديم MDKL1 فُقد ولم يَعُد مستخدَمًا).
   AppDef('mudhakkarati', 'مذكراتي', 'UNIV1',
       '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
+  // حلالي — يعمل بالمفتاح العالميّ (UNIV1، بذرته مدمجة). يتطلّب أن يكون تطبيق
+  // «حلالي» مبنيًّا بالمفتاح العالميّ (license_service من دليل المطوّر).
+  AppDef('halali', 'حلالي', 'UNIV1',
+      '0JXPjbbPjczfYbYxl+jy1vOVcsEJT+CPbUIQgXNCStU=', _universalSeedHex),
   AppDef('marah', 'مراح', 'MRHL1',
       'q6t0BfdSs/AF9EAHkRAwAoaqRwHFp7m052uCRxlwKw4=', _marahSeedHex),
 ];
