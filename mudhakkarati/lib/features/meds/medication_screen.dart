@@ -521,7 +521,7 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
   final _name = TextEditingController();
   final _dose = TextEditingController();
   int _total = 8;
-  int _every = 7; // أسبوعيًّا افتراضيًّا
+  int _every = 1; // يوميًّا افتراضيًّا (راحة ٠) — الأشيع للأدوية
   late DateTime _date;
   late TimeOfDay _time;
 
@@ -619,60 +619,50 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
                 s.t('med_dose_unit'),
                 () => setState(() => _total = (_total - 1).clamp(1, 365)),
                 () => setState(() => _total = (_total + 1).clamp(1, 365))),
-            // التكرار بأنماط مسمّاة واضحة + خيار «مخصّص» لأي عدد أيام.
-            Text(s.t('med_interval'),
+            // الفاصل = «عدد أيام الراحة بين الجرعتين» (نموذج بسيط واضح):
+            //   ٠ = يوميًّا، ١ = يوم بعد يوم، ٢ = جرعة ثمّ راحة يومين…
+            // داخليًّا: الفاصل بالأيام (_every) = أيام الراحة + ١.
+            Text('أيام الراحة بين الجرعتين',
                 style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            Wrap(
-              spacing: 8,
-              children: [
-                ChoiceChip(
-                    label: Text(s.t('med_daily')),
-                    selected: _every == 1,
-                    onSelected: (_) => setState(() => _every = 1)),
-                ChoiceChip(
-                    label: Text(s.t('med_every_other')),
-                    selected: _every == 2,
-                    onSelected: (_) => setState(() => _every = 2)),
-                ChoiceChip(
-                    label: Text(s.t('med_weekly')),
-                    selected: _every == 7,
-                    onSelected: (_) => setState(() => _every = 7)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // المُحدِّد يعرض اسم التكرار حسب الرقم مباشرةً (٢ = يوم بعد يوم…).
             Row(children: [
-              Expanded(
-                  child: Text(
-                      _every == 1
-                          ? s.t('med_daily')
-                          : _every == 2
-                              ? s.t('med_every_other')
-                              : _every == 7
-                                  ? s.t('med_weekly')
-                                  : 'كل $_every أيام',
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, fontSize: 15))),
               IconButton(
-                  icon: const Icon(Icons.remove_circle_outline),
+                  icon: const Icon(Icons.remove_circle_outline, size: 30),
                   onPressed: () =>
                       setState(() => _every = (_every - 1).clamp(1, 90))),
-              Text('$_every',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 15)),
+              SizedBox(
+                width: 44,
+                child: Text('${_every - 1}',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 22)),
+              ),
               IconButton(
-                  icon: const Icon(Icons.add_circle_outline),
+                  icon: const Icon(Icons.add_circle_outline, size: 30),
                   onPressed: () =>
                       setState(() => _every = (_every + 1).clamp(1, 90))),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _every == 1
+                      ? 'يوميًّا'
+                      : _every == 2
+                          ? 'يوم بعد يوم'
+                          : 'راحة ${_every - 1} أيام',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15),
+                ),
+              ),
             ]),
-            // توضيح صريح لمعنى الرقم: متى تأتي الجرعة التالية فعليًّا.
+            // توضيح صريح للمعنى.
             Text(
               _every == 1
-                  ? 'جرعة كلّ يوم'
+                  ? 'جرعة كلّ يوم (بلا راحة)'
                   : _every == 2
-                      ? 'جرعة، ثمّ التالية بعد يومين (يوم بينهما بلا جرعة)'
-                      : 'جرعة، ثمّ التالية بعد $_every أيام',
+                      ? 'جرعة، ثمّ راحة يوم واحد، ثمّ الجرعة التالية'
+                      : 'جرعة، ثمّ راحة ${_every - 1} أيام، ثمّ الجرعة التالية',
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
