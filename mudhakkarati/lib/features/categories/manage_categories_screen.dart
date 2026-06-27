@@ -60,44 +60,57 @@ class ManageCategoriesScreen extends StatelessWidget {
               },
               itemBuilder: (context, i) {
                 final c = cats[i];
+                // أزرار مُصغّرة ومتقاربة كي يتّسع الاسم ولا يلتفّ حرفًا حرفًا.
+                Widget compactBtn(IconData icon, VoidCallback onTap,
+                        {Color? color}) =>
+                    IconButton(
+                      icon: Icon(icon, size: 20, color: color),
+                      onPressed: onTap,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 34, minHeight: 40),
+                    );
                 return ListTile(
                   key: ValueKey(c.id),
+                  dense: true,
+                  contentPadding: const EdgeInsets.only(left: 4, right: 12),
+                  horizontalTitleGap: 8,
+                  minLeadingWidth: 0,
                   leading: CircleAvatar(
+                    radius: 16,
                     backgroundColor: Color(c.color),
                     child: Icon(categoryIconByIndex(c.iconCode),
-                        color: Colors.white, size: 20),
+                        color: Colors.white, size: 17),
                   ),
-                  title: Text(c.name),
+                  title: Text(c.name,
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
                   subtitle: FutureBuilder<int>(
                     future: provider.countByCategory(c.id!),
                     builder: (context, snap) => Text(
                         '${snap.data ?? 0} ${s.t('notes_count')}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _LockCategoryButton(categoryId: c.id!),
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: () => _edit(context, c),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () async {
-                          if (await confirmDelete(context,
-                              title: 'حذف التصنيف؟',
-                              message:
-                                  'سيُحذف التصنيف «${c.name}». لن تُحذف ملاحظاته بل تُصبح بلا تصنيف.')) {
-                            await provider.deleteCategory(c.id!);
-                          }
-                        },
-                      ),
+                      compactBtn(Icons.edit_outlined, () => _edit(context, c)),
+                      compactBtn(Icons.delete_outline, () async {
+                        if (await confirmDelete(context,
+                            title: 'حذف التصنيف؟',
+                            message:
+                                'سيُحذف التصنيف «${c.name}». لن تُحذف ملاحظاته بل تُصبح بلا تصنيف.')) {
+                          await provider.deleteCategory(c.id!);
+                        }
+                      }),
                       ReorderableDragStartListener(
                         index: i,
                         child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Icon(Icons.drag_handle),
+                          padding: EdgeInsets.symmetric(horizontal: 4),
+                          child: Icon(Icons.drag_handle, size: 20),
                         ),
                       ),
                     ],
@@ -283,7 +296,11 @@ class _LockCategoryButtonState extends State<_LockCategoryButton> {
     return IconButton(
       tooltip: _locked ? 'إلغاء قفل التصنيف' : 'قفل التصنيف',
       icon: Icon(_locked ? Icons.lock : Icons.lock_open_outlined,
+          size: 20,
           color: _locked ? Theme.of(context).colorScheme.primary : null),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 34, minHeight: 40),
       onPressed: _toggle,
     );
   }
