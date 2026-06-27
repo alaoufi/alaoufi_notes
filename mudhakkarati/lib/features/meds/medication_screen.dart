@@ -573,11 +573,6 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
   Widget build(BuildContext context) {
     final s = S.of(context);
     final dateFmt = DateFormat('yyyy/MM/dd');
-    final everyHint = _every == 7
-        ? '  (${s.t('med_weekly')})'
-        : _every == 1
-            ? '  (${s.t('med_daily')})'
-            : '';
     return Padding(
       padding: EdgeInsets.fromLTRB(
           16, 0, 16, MediaQuery.of(context).viewInsets.bottom + 16),
@@ -624,9 +619,31 @@ class _NewCourseSheetState extends State<_NewCourseSheet> {
                 s.t('med_dose_unit'),
                 () => setState(() => _total = (_total - 1).clamp(1, 365)),
                 () => setState(() => _total = (_total + 1).clamp(1, 365))),
+            // التكرار بأنماط مسمّاة واضحة + خيار «مخصّص» لأي عدد أيام.
+            Text(s.t('med_interval'),
+                style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              children: [
+                ChoiceChip(
+                    label: Text(s.t('med_daily')),
+                    selected: _every == 1,
+                    onSelected: (_) => setState(() => _every = 1)),
+                ChoiceChip(
+                    label: Text(s.t('med_every_other')),
+                    selected: _every == 2,
+                    onSelected: (_) => setState(() => _every = 2)),
+                ChoiceChip(
+                    label: Text(s.t('med_weekly')),
+                    selected: _every == 7,
+                    onSelected: (_) => setState(() => _every = 7)),
+              ],
+            ),
+            const SizedBox(height: 8),
             Row(children: [
               Expanded(
-                  child: Text('${s.t('med_interval')}$everyHint',
+                  child: Text(s.t('med_custom_every'),
                       style: const TextStyle(fontWeight: FontWeight.w600))),
               IconButton(
                   icon: const Icon(Icons.remove_circle_outline),
