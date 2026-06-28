@@ -107,32 +107,24 @@ class ManageCategoriesScreen extends StatelessWidget {
                           await provider.deleteCategory(c.id!);
                         }
                       }),
-                      // سهمان ↑↓ متراصّان للترتيب (بدل السحب والإفلات).
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_up),
-                            iconSize: 22,
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                                minWidth: 30, minHeight: 22),
-                            tooltip: 'لأعلى',
-                            onPressed: i == 0 ? null : () => move(-1),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.keyboard_arrow_down),
-                            iconSize: 22,
-                            visualDensity: VisualDensity.compact,
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(
-                                minWidth: 30, minHeight: 22),
-                            tooltip: 'لأسفل',
-                            onPressed:
-                                i == cats.length - 1 ? null : () => move(1),
-                          ),
-                        ],
+                      // سهمان أفقيّان للترتيب (بدل السحب) — مضمونا اللمس.
+                      IconButton(
+                        icon: const Icon(Icons.arrow_upward, size: 20),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 32, minHeight: 40),
+                        tooltip: 'لأعلى',
+                        onPressed: i == 0 ? null : () => move(-1),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_downward, size: 20),
+                        visualDensity: VisualDensity.compact,
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 32, minHeight: 40),
+                        tooltip: 'لأسفل',
+                        onPressed: i == cats.length - 1 ? null : () => move(1),
                       ),
                     ],
                   ),
