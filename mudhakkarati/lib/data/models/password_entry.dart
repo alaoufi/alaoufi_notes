@@ -4,64 +4,75 @@ import '../../services/vault_service.dart';
 
 /// بيانات ملاحظة كلمات المرور (حقول منظمة).
 ///
-/// تُخزَّن داخل حقل `content` للملاحظة كـ JSON، مع تشفير كلمة المرور فقط
-/// بمفتاح الخزنة (VaultService). باقي الحقول تبقى نصًّا ليعمل البحث.
+/// تُخزَّن داخل حقل `content` للملاحظة كـ JSON. قاعدة البيانات نفسها مشفّرة
+/// بالكامل (SQLCipher)، لذا تُحفظ الحقول كنصّ عادي ليعمل البحث. الملاحظات
+/// القديمة التي شُفّرت كلمة مرورها سابقًا (`password_enc`) تُفكّ عند القراءة
+/// للتوافق الرجعيّ.
 class PasswordEntry {
-  final String site; // الموقع
-  final String app; // التطبيق
+  final String name; // الاسم
+  final String link; // الرابط
   final String username; // اسم المستخدم
-  final String password; // كلمة المرور (نص صريح في الذاكرة فقط)
+  final String password; // كلمة المرور (نصّ عادي — القاعدة مشفّرة)
   final String notes; // ملاحظات
 
   const PasswordEntry({
-    this.site = '',
-    this.app = '',
+    this.name = '',
+    this.link = '',
     this.username = '',
     this.password = '',
     this.notes = '',
   });
 
   PasswordEntry copyWith({
-    String? site,
-    String? app,
+    String? name,
+    String? link,
     String? username,
     String? password,
     String? notes,
   }) {
     return PasswordEntry(
-      site: site ?? this.site,
-      app: app ?? this.app,
+      name: name ?? this.name,
+      link: link ?? this.link,
       username: username ?? this.username,
       password: password ?? this.password,
       notes: notes ?? this.notes,
     );
   }
 
-  /// يحوّل إلى JSON قابل للتخزين مع تشفير كلمة المرور.
-  /// يجب استدعاء VaultService.instance.ensureKey() مسبقًا.
+  /// يحوّل إلى JSON قابل للتخزين (كلّ الحقول نصّ عادي — القاعدة مشفّرة).
   String toStoredJson() {
     return jsonEncode({
-      'site': site,
-      'app': app,
+      'name': name,
+      'link': link,
       'username': username,
-      'password_enc': password.isEmpty
-          ? ''
-          : VaultService.instance.encrypt(password),
+      'password': password,
       'notes': notes,
     });
   }
 
-  /// يقرأ من JSON المخزَّن ويفك تشفير كلمة المرور.
+  /// يقرأ من JSON المخزَّن. يدعم المفاتيح الجديدة (name/link/password) والقديمة
+  /// (site/app/password_enc) معًا، ويفكّ تشفير كلمات المرور القديمة.
   factory PasswordEntry.fromStoredJson(String raw) {
     if (raw.trim().isEmpty) return const PasswordEntry();
     try {
       final map = jsonDecode(raw) as Map<String, dynamic>;
-      final enc = (map['password_enc'] as String?) ?? '';
+      // كلمة المرور: الجديدة نصّ عادي، والقديمة مشفّرة (password_enc).
+      var pw = (map['password'] as String?) ?? '';
+      if (pw.isEmpty) {
+        final enc = (map['password_enc'] as String?) ?? '';
+        if (enc.isNotEmpty) {
+          try {
+            pw = VaultService.instance.decrypt(enc);
+          } catch (_) {
+            pw = '';
+          }
+        }
+      }
       return PasswordEntry(
-        site: (map['site'] as String?) ?? '',
-        app: (map['app'] as String?) ?? '',
+        name: (map['name'] as String?) ?? (map['site'] as String?) ?? '',
+        link: (map['link'] as String?) ?? (map['app'] as String?) ?? '',
         username: (map['username'] as String?) ?? '',
-        password: enc.isEmpty ? '' : VaultService.instance.decrypt(enc),
+        password: pw,
         notes: (map['notes'] as String?) ?? '',
       );
     } catch (_) {
@@ -71,8 +82,8 @@ class PasswordEntry {
 
   /// نص مختصر يُعرض في البطاقة (بدون كلمة المرور).
   String get displayTitle {
-    if (site.trim().isNotEmpty) return site;
-    if (app.trim().isNotEmpty) return app;
+    if (name.trim().isNotEmpty) return name;
+    if (link.trim().isNotEmpty) return link;
     if (username.trim().isNotEmpty) return username;
     return 'كلمة مرور';
   }

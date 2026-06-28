@@ -216,8 +216,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       emptyRich = richToPlainText(_richContent).trim().isEmpty;
     } else if (_note.type == NoteType.password) {
       final e = _passwordEntry;
-      emptyPassword = e.site.trim().isEmpty &&
-          e.app.trim().isEmpty &&
+      emptyPassword = e.name.trim().isEmpty &&
+          e.link.trim().isEmpty &&
           e.username.trim().isEmpty &&
           e.password.trim().isEmpty &&
           e.notes.trim().isEmpty;
@@ -297,8 +297,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     switch (_note.type) {
       case NoteType.password:
         final e = _passwordEntry;
-        return e.site.trim().isEmpty &&
-            e.app.trim().isEmpty &&
+        return e.name.trim().isEmpty &&
+            e.link.trim().isEmpty &&
             e.username.trim().isEmpty &&
             e.password.trim().isEmpty &&
             e.notes.trim().isEmpty;

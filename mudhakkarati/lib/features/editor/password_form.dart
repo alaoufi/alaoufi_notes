@@ -23,8 +23,8 @@ class PasswordForm extends StatefulWidget {
 }
 
 class _PasswordFormState extends State<PasswordForm> {
-  late final TextEditingController _site;
-  late final TextEditingController _app;
+  late final TextEditingController _name;
+  late final TextEditingController _link;
   late final TextEditingController _username;
   late final TextEditingController _password;
   late final TextEditingController _notes;
@@ -34,8 +34,8 @@ class _PasswordFormState extends State<PasswordForm> {
   @override
   void initState() {
     super.initState();
-    _site = TextEditingController(text: widget.initial.site);
-    _app = TextEditingController(text: widget.initial.app);
+    _name = TextEditingController(text: widget.initial.name);
+    _link = TextEditingController(text: widget.initial.link);
     _username = TextEditingController(text: widget.initial.username);
     _password = TextEditingController(text: widget.initial.password);
     _notes = TextEditingController(text: widget.initial.notes);
@@ -44,8 +44,8 @@ class _PasswordFormState extends State<PasswordForm> {
   @override
   void dispose() {
     _clearTimer?.cancel();
-    _site.dispose();
-    _app.dispose();
+    _name.dispose();
+    _link.dispose();
     _username.dispose();
     _password.dispose();
     _notes.dispose();
@@ -54,8 +54,8 @@ class _PasswordFormState extends State<PasswordForm> {
 
   void _emit() {
     widget.onChanged(PasswordEntry(
-      site: _site.text,
-      app: _app.text,
+      name: _name.text,
+      link: _link.text,
       username: _username.text,
       password: _password.text,
       notes: _notes.text,
@@ -133,8 +133,8 @@ class _PasswordFormState extends State<PasswordForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _field(s.t('pw_site'), _site, Icons.language),
-        _field(s.t('pw_app'), _app, Icons.apps),
+        _field(s.t('pw_name'), _name, Icons.badge_outlined),
+        _field(s.t('pw_link'), _link, Icons.link),
         _field(s.t('pw_username'), _username, Icons.person_outline),
         _passwordField(s),
         _strengthBar(s),
