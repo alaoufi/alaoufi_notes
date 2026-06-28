@@ -108,8 +108,8 @@ jobs:
           VER=$(grep '^version:' mudhakkarati/pubspec.yaml | sed 's/version: //; s/+.*//' | tr -d '[:space:]')
           mkdir -p /tmp/release
           APKDIR=mudhakkarati/build/app/outputs/flutter-apk
-          cp "$APKDIR/app-arm64-v8a-release.apk"   "/tmp/release/AlaoufiNotes_${VER}.apk"
-          cp "$APKDIR/app-armeabi-v7a-release.apk" "/tmp/release/AlaoufiNotes_${VER}_v7a.apk"
+          cp "$APKDIR/app-arm64-v8a-release.apk"   "/tmp/release/AlaoufiNotes-${VER}.apk"
+          cp "$APKDIR/app-armeabi-v7a-release.apk" "/tmp/release/AlaoufiNotes-${VER}-v7a.apk"
           echo "VER=$VER" >> "$GITHUB_ENV"
           ls -lh /tmp/release
 
@@ -123,8 +123,8 @@ jobs:
             النسخة الحاليّة: **${{ env.VER }}**
 
             للتمييز عند التنزيل، استخدم الملفّ الذي يحمل رقم النسخة في اسمه:
-            • AlaoufiNotes_${{ env.VER }}.apk — لمعظم الأجهزة الحديثة (يُنصح به)
-            • AlaoufiNotes_${{ env.VER }}_v7a.apk — لأجهزة 32-بت القديمة
+            • AlaoufiNotes-${{ env.VER }}.apk — لمعظم الأجهزة الحديثة (يُنصح به)
+            • AlaoufiNotes-${{ env.VER }}-v7a.apk — لأجهزة 32-بت القديمة
 
             (الاسم الثابت `app-arm64-v8a-release.apk` يبقى للتحديث الداخليّ والرابط الثابت.)
           files: |
@@ -132,8 +132,8 @@ jobs:
             mudhakkarati/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             mudhakkarati/build/app/outputs/flutter-apk/app-x86_64-release.apk
             mudhakkarati/build/app/outputs/bundle/release/app-release.aab
-            /tmp/release/AlaoufiNotes_${{ env.VER }}.apk
-            /tmp/release/AlaoufiNotes_${{ env.VER }}_v7a.apk
+            /tmp/release/AlaoufiNotes-${{ env.VER }}.apk
+            /tmp/release/AlaoufiNotes-${{ env.VER }}-v7a.apk
 
       - name: رفع APK كـ Artifact
         if: success()
