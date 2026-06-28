@@ -36,10 +36,19 @@ Future<void> main() async {
   var appStarted = false;
   // نلتقط أي خطأ غير متوقع بدل أن يتعطّل التطبيق بصمت.
   await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+    final binding = WidgetsFlutterBinding.ensureInitialized();
 
     FlutterError.onError = (details) {
       startupErrors.add('FlutterError: ${details.exceptionAsString()}');
+    };
+
+    // شبكة أمان أخيرة: الأخطاء الناتجة عن نداءات المحرّك (لمسات/إيماءات/قنوات
+    // أصلية) تتجاوز runZonedGuarded وتذهب مباشرة إلى PlatformDispatcher؛ وإن لم
+    // تُعالَج هنا فإنّ أندرويد ينهي العمليّة بنافذة «إغلاق التطبيق». نسجّلها
+    // ونُعيد true (أي عولجت) كي يبقى التطبيق حيًّا بدل أن ينهار.
+    binding.platformDispatcher.onError = (error, stack) {
+      startupErrors.add('Platform: $error');
+      return true;
     };
 
     // بدل شاشة رمادية/انهيار عند فشل بناء أي واجهة، نعرض نص الخطأ ليُصوَّر.

@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../main.dart' show startupErrors;
 import '../../core/l10n/app_strings.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/note_gradient.dart';
@@ -792,6 +793,7 @@ class SettingsScreen extends StatelessWidget {
           },
         ),
         const _UpdateTile(),
+        const _DiagnosticsTile(),
       ];
 
   /// عناصر قائمة اختيار الخط: مجمّعة حسب العائلة (نسخ/كوفي/…) برؤوس غير قابلة
@@ -1032,6 +1034,68 @@ class _UpdateTileState extends State<_UpdateTile> {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// عنصر «تشخيص الأخطاء»: يعرض أيّ أخطاء التُقطت أثناء التشغيل (بدل أن تنهار
+/// الواجهة بصمت). إن وُجد خطأ، يظهر العنوان بلون تحذيريّ مع عددها؛ والضغط يفتح
+/// نافذة تعرض نصّها كاملًا لتُصوَّر وتُرسَل للمطوّر.
+class _DiagnosticsTile extends StatefulWidget {
+  const _DiagnosticsTile();
+
+  @override
+  State<_DiagnosticsTile> createState() => _DiagnosticsTileState();
+}
+
+class _DiagnosticsTileState extends State<_DiagnosticsTile> {
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final count = startupErrors.length;
+    final hasErrors = count > 0;
+    return ListTile(
+      leading: Icon(
+        hasErrors ? Icons.bug_report : Icons.check_circle_outline,
+        color: hasErrors ? scheme.error : null,
+      ),
+      title: const Text('تشخيص الأخطاء'),
+      subtitle: Text(hasErrors
+          ? 'سُجِّل $count خطأ — اضغط لعرضه وتصويره'
+          : 'لا أخطاء مسجّلة'),
+      trailing: hasErrors ? const Icon(Icons.chevron_left) : null,
+      onTap: hasErrors ? _show : null,
+    );
+  }
+
+  void _show() {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('أخطاء مسجّلة'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            child: SelectableText(
+              startupErrors.join('\n\n——————\n\n'),
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              setState(startupErrors.clear);
+              Navigator.pop(ctx);
+            },
+            child: const Text('مسح'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('إغلاق'),
+          ),
+        ],
+      ),
     );
   }
 }
