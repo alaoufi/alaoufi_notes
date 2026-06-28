@@ -47,18 +47,19 @@ class ManageCategoriesScreen extends StatelessWidget {
           ),
           const Divider(height: 1),
           Expanded(
-            child: ReorderableListView.builder(
+            child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 90),
-              buildDefaultDragHandles: false,
               itemCount: cats.length,
-              onReorder: (oldIndex, newIndex) {
-                final list = List<Category>.from(cats);
-                if (newIndex > oldIndex) newIndex -= 1;
-                final item = list.removeAt(oldIndex);
-                list.insert(newIndex, item);
-                provider.reorderCategories(list);
-              },
               itemBuilder: (context, i) {
+                // نقل التصنيف خطوة لأعلى/أسفل وحفظ الترتيب الجديد.
+                void move(int delta) {
+                  final j = i + delta;
+                  if (j < 0 || j >= cats.length) return;
+                  final list = List<Category>.from(cats);
+                  final item = list.removeAt(i);
+                  list.insert(j, item);
+                  provider.reorderCategories(list);
+                }
                 final c = cats[i];
                 // أزرار مُصغّرة ومتقاربة كي يتّسع الاسم ولا يلتفّ حرفًا حرفًا.
                 Widget compactBtn(IconData icon, VoidCallback onTap,
@@ -106,12 +107,32 @@ class ManageCategoriesScreen extends StatelessWidget {
                           await provider.deleteCategory(c.id!);
                         }
                       }),
-                      ReorderableDragStartListener(
-                        index: i,
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4),
-                          child: Icon(Icons.drag_handle, size: 20),
-                        ),
+                      // سهمان ↑↓ متراصّان للترتيب (بدل السحب والإفلات).
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_up),
+                            iconSize: 22,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                                minWidth: 30, minHeight: 22),
+                            tooltip: 'لأعلى',
+                            onPressed: i == 0 ? null : () => move(-1),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            iconSize: 22,
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                                minWidth: 30, minHeight: 22),
+                            tooltip: 'لأسفل',
+                            onPressed:
+                                i == cats.length - 1 ? null : () => move(1),
+                          ),
+                        ],
                       ),
                     ],
                   ),
