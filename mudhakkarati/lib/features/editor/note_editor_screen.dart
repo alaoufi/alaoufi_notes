@@ -17,6 +17,7 @@ import '../../services/word_export_service.dart';
 import '../../services/secure_screen.dart';
 import '../../services/vault_service.dart';
 import 'password_form.dart';
+import '../security/pin_setup.dart';
 import '../../widgets/color_picker_sheet.dart';
 import '../../widgets/note_actions.dart';
 import '../../widgets/paper_background.dart';
@@ -115,10 +116,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ChecklistItem(noteId: 0, text: '', isTask: widget.startAsTask)
         ];
         _rebuildItemCtrls();
-      } else if (_note.type == NoteType.password) {
-        // ملاحظات كلمات المرور مقفلة افتراضيًا (تتطلب فتح القفل لعرضها).
-        _note = _note.copyWith(isLocked: true);
       }
+      // ملاحظات كلمات المرور لم تعُد مقفلة افتراضيًّا — يقفلها المستخدم اختياريًّا
+      // بزرّ «حماية الملاحظة» في الشريط العلويّ.
     }
     // وحدة تحكّم النص الغني (لنوع النص) — تُهيّأ بعد معرفة المحتوى.
     if (_note.type == NoteType.text) {
@@ -338,6 +338,29 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     if (_note.id == null) await _save(force: true);
   }
 
+  /// زرّ «حماية الملاحظة»: قفل/فتح اختياريّ. عند القفل نتأكّد من وجود رقم سرّي
+  /// أولًا؛ والملاحظة المقفلة تتطلّب الرقم/البصمة عند فتحها لاحقًا.
+  Future<void> _toggleLock() async {
+    final s = S.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final provider = context.read<NotesProvider>();
+    final willLock = !_note.isLocked;
+    if (willLock) {
+      final ok = await ensurePinConfigured(context);
+      if (!ok) return;
+    }
+    await _ensureSaved();
+    await provider.setLocked(_note, willLock);
+    if (!mounted) return;
+    setState(() => _note = _note.copyWith(isLocked: willLock));
+    messenger.showSnackBar(SnackBar(
+      content: Text(willLock
+          ? 'تم تفعيل حماية الملاحظة 🔒'
+          : 'أُلغيت حماية الملاحظة'),
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
   Future<void> _attachImage() async {
     final path = await EditorAttachments.pickImage(context);
     if (path == null) return;
@@ -435,6 +458,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       appBar: AppBar(
           backgroundColor: grad != null ? Colors.transparent : bg,
           actions: [
+            IconButton(
+              tooltip: _note.isLocked ? s.t('unlock') : s.t('lock'),
+              icon: Icon(
+                _note.isLocked ? Icons.lock : Icons.lock_open_outlined,
+                color: _note.isLocked ? Colors.amber.shade800 : null,
+              ),
+              onPressed: _toggleLock,
+            ),
             IconButton(
               tooltip: _note.isPinned ? s.t('unpin') : s.t('pin'),
               icon: Icon(_note.isPinned ? Icons.push_pin : Icons.push_pin_outlined),

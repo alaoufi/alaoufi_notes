@@ -127,57 +127,87 @@ class _PasswordFormState extends State<PasswordForm> {
     return score.clamp(0, 4);
   }
 
+  // لون مميِّز لكل حقل (أيقونة + إطار التركيز) — لمسة بصريّة هادئة ومرتّبة.
+  static const _cName = Color(0xFF5C6BC0); // الاسم
+  static const _cLink = Color(0xFF42A5F5); // الرابط
+  static const _cUser = Color(0xFF26A69A); // اسم المستخدم
+  static const _cPass = Color(0xFFEF6C00); // كلمة المرور
+  static const _cNote = Color(0xFF78909C); // ملاحظات
+
   @override
   Widget build(BuildContext context) {
     final s = S.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _field(s.t('pw_name'), _name, Icons.badge_outlined),
-        _field(s.t('pw_link'), _link, Icons.link),
-        _field(s.t('pw_username'), _username, Icons.person_outline),
+        _field(s.t('pw_name'), _name, Icons.badge_outlined, _cName),
+        _field(s.t('pw_link'), _link, Icons.link, _cLink,
+            keyboardType: TextInputType.url),
+        _field(s.t('pw_username'), _username, Icons.person_outline, _cUser),
         _passwordField(s),
         _strengthBar(s),
-        _field(s.t('pw_notes'), _notes, Icons.notes, maxLines: 3),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Icon(Icons.lock, size: 14, color: Theme.of(context).hintColor),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(s.t('pw_encrypted_hint'),
-                  style: Theme.of(context).textTheme.bodySmall),
-            ),
-          ],
-        ),
+        _field(s.t('pw_notes'), _notes, Icons.notes, _cNote, maxLines: 3),
+        const SizedBox(height: 14),
+        _hint(s),
       ],
     );
   }
 
+  /// زخرفة موحّدة: حقل أبيض مستدير، أيقونة داخل مربّع لونيّ ناعم، إطار تركيز ملوّن.
+  InputDecoration _decoration(String label, IconData icon, Color accent,
+      {Widget? suffix}) {
+    final divider = Theme.of(context).dividerColor;
+    final fill = Theme.of(context).colorScheme.surface;
+    OutlineInputBorder border(Color c, double w) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: c, width: w),
+        );
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: fill.withOpacity(0.94),
+      prefixIconConstraints: const BoxConstraints(minWidth: 56, minHeight: 0),
+      prefixIcon: Container(
+        margin: const EdgeInsetsDirectional.only(start: 10, end: 6),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: accent.withOpacity(0.14),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: accent, size: 21),
+      ),
+      suffixIcon: suffix,
+      border: border(Colors.transparent, 0),
+      enabledBorder: border(divider.withOpacity(0.4), 1),
+      focusedBorder: border(accent, 1.6),
+    );
+  }
+
+  Widget _copyBtn(VoidCallback onTap) => IconButton(
+        tooltip: S.of(context).t('copy'),
+        icon: const Icon(Icons.copy_rounded, size: 20),
+        onPressed: onTap,
+      );
+
   Widget _field(String label, TextEditingController ctrl, IconData icon,
-      {int maxLines = 1}) {
+      Color accent, {int maxLines = 1, TextInputType? keyboardType}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 7),
       child: TextField(
         controller: ctrl,
         maxLines: maxLines,
+        keyboardType: keyboardType,
         onChanged: (_) => _emit(),
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-          suffixIcon: IconButton(
-            tooltip: S.of(context).t('copy'),
-            icon: const Icon(Icons.copy),
-            onPressed: () => _copy(ctrl.text),
-          ),
-        ),
+        decoration: _decoration(label, icon, accent,
+            suffix: _copyBtn(() => _copy(ctrl.text))),
       ),
     );
   }
 
   Widget _passwordField(S s) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 7),
       child: TextField(
         controller: _password,
         obscureText: _obscure,
@@ -185,25 +215,27 @@ class _PasswordFormState extends State<PasswordForm> {
           setState(() {});
           _emit();
         },
-        decoration: InputDecoration(
-          labelText: s.t('pw_password'),
-          prefixIcon: const Icon(Icons.vpn_key),
-          suffixIcon: Row(
+        decoration: _decoration(s.t('pw_password'), Icons.vpn_key, _cPass,
+          suffix: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
                 tooltip: s.t('pw_generate'),
-                icon: const Icon(Icons.casino_outlined),
+                icon: const Icon(Icons.casino_outlined, size: 20),
                 onPressed: _generate,
               ),
               IconButton(
                 tooltip: _obscure ? s.t('pw_show') : s.t('pw_hide'),
-                icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                icon: Icon(
+                    _obscure
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                    size: 20),
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),
               IconButton(
                 tooltip: s.t('copy'),
-                icon: const Icon(Icons.copy),
+                icon: const Icon(Icons.copy_rounded, size: 20),
                 onPressed: () => _copySecure(_password.text),
               ),
             ],
@@ -225,23 +257,49 @@ class _PasswordFormState extends State<PasswordForm> {
       Color(0xFF2E7D32),
     ];
     return Padding(
-      padding: const EdgeInsets.only(right: 4, bottom: 6, top: 2),
+      padding: const EdgeInsetsDirectional.only(start: 8, end: 8, bottom: 4, top: 4),
       child: Row(
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: (score + 1) / 5,
-                minHeight: 6,
-                backgroundColor: Theme.of(context).dividerColor,
+                minHeight: 7,
+                backgroundColor: Theme.of(context).dividerColor.withOpacity(0.4),
                 color: colors[score],
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Text(labels[score],
-              style: TextStyle(fontSize: 12, color: colors[score])),
+              style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                  color: colors[score])),
+        ],
+      ),
+    );
+  }
+
+  Widget _hint(S s) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: scheme.secondaryContainer.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.shield_outlined,
+              size: 18, color: scheme.onSecondaryContainer),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(s.t('pw_encrypted_hint'),
+                style: TextStyle(
+                    fontSize: 12.5, color: scheme.onSecondaryContainer)),
+          ),
         ],
       ),
     );
