@@ -1,0 +1,500 @@
+  google_sign_in_android 6.2.1 (7.2.13 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  googleapis 13.2.0 (16.0.0 available)
+  home_widget 0.6.0 (0.9.3 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.3.0 (4.9.1 available)
+  image_picker_android 0.8.13+17 (0.8.13+19 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 4.0.0 (6.1.0 available)
+  local_auth 2.3.0 (3.0.1 available)
+  local_auth_android 1.0.56 (2.0.9 available)
+  local_auth_darwin 1.6.1 (2.0.3 available)
+  local_auth_windows 1.0.11 (2.0.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.18.3 available)
+  mime 1.0.6 (2.0.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 9.0.1 (10.2.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  pdf 3.12.0 (3.13.0 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  permission_handler_apple 9.4.7 (9.4.10 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 7.0.0 (7.1.0 available)
+  record_android 2.0.1 (2.1.2 available)
+  record_ios 2.0.0 (2.1.1 available)
+  record_linux 2.0.0 (2.1.0 available)
+  record_macos 2.0.0 (2.1.1 available)
+  record_platform_interface 2.0.0 (2.1.0 available)
+  record_web 2.0.0 (2.1.0 available)
+  record_windows 2.0.0 (2.2.0 available)
+  share_plus 12.0.2 (13.2.0 available)
+  share_plus_platform_interface 6.1.0 (7.1.0 available)
+  shared_preferences_android 2.4.23 (2.4.26 available)
+  signature 5.5.0 (6.3.0 available)
+  sqflite_common 2.5.8 (2.5.11 available)
+  synchronized 3.4.0+1 (3.4.1 available)
+  test_api 0.7.11 (0.7.13 available)
+  timezone 0.9.4 (0.11.0 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_graphics_compiler 1.2.4 (1.2.6 available)
+  vector_math 2.2.0 (2.4.0 available)
+  win32 5.15.0 (6.3.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+79 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+===== flutter test (يفشل البناء عند فشل أي اختبار) =====
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.0.9 available)
+  audioplayers 6.7.0 (6.8.1 available)
+  audioplayers_android 5.2.1 (5.3.0 available)
+  audioplayers_darwin 6.4.0 (6.5.0 available)
+  audioplayers_linux 4.2.1 (4.3.0 available)
+  audioplayers_platform_interface 7.1.1 (7.2.0 available)
+  audioplayers_web 5.2.1 (5.3.0 available)
+  audioplayers_windows 4.3.1 (4.4.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dbus 0.7.12 (0.7.14 available)
+  device_info_plus 12.4.0 (13.2.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  extension_google_sign_in_as_googleapis_auth 2.0.13 (3.0.0 available)
+  file_picker 8.3.7 (11.0.2 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (22.0.1 available)
+  flutter_local_notifications_linux 4.0.1 (8.0.1 available)
+  flutter_local_notifications_platform_interface 7.2.0 (12.0.0 available)
+  flutter_plugin_android_lifecycle 2.0.34 (2.0.35 available)
+  flutter_secure_storage 9.2.4 (10.3.1 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.1 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.13 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  googleapis 13.2.0 (16.0.0 available)
+  home_widget 0.6.0 (0.9.3 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.3.0 (4.9.1 available)
+  image_picker_android 0.8.13+17 (0.8.13+19 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 4.0.0 (6.1.0 available)
+  local_auth 2.3.0 (3.0.1 available)
+  local_auth_android 1.0.56 (2.0.9 available)
+  local_auth_darwin 1.6.1 (2.0.3 available)
+  local_auth_windows 1.0.11 (2.0.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.18.3 available)
+  mime 1.0.6 (2.0.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 9.0.1 (10.2.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  pdf 3.12.0 (3.13.0 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  permission_handler_apple 9.4.7 (9.4.10 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 7.0.0 (7.1.0 available)
+  record_android 2.0.1 (2.1.2 available)
+  record_ios 2.0.0 (2.1.1 available)
+  record_linux 2.0.0 (2.1.0 available)
+  record_macos 2.0.0 (2.1.1 available)
+  record_platform_interface 2.0.0 (2.1.0 available)
+  record_web 2.0.0 (2.1.0 available)
+  record_windows 2.0.0 (2.2.0 available)
+  share_plus 12.0.2 (13.2.0 available)
+  share_plus_platform_interface 6.1.0 (7.1.0 available)
+  shared_preferences_android 2.4.23 (2.4.26 available)
+  signature 5.5.0 (6.3.0 available)
+  sqflite_common 2.5.8 (2.5.11 available)
+  synchronized 3.4.0+1 (3.4.1 available)
+  test_api 0.7.11 (0.7.13 available)
+  timezone 0.9.4 (0.11.0 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_graphics_compiler 1.2.4 (1.2.6 available)
+  vector_math 2.2.0 (2.4.0 available)
+  win32 5.15.0 (6.3.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+79 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/update_version_test.dart
+00:00 +0: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/update_version_test.dart: UpdateService.isNewerVersion نسخة أحدث تُكتشف (الحالة التي فشلت سابقًا)
+00:00 +1: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/update_version_test.dart: UpdateService.isNewerVersion نفس النسخة أو أقدم لا تُكتشف
+00:00 +2: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/update_version_test.dart: UpdateService.isNewerVersion تتجاهل لاحقة البناء والرموز
+00:00 +3: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/update_version_test.dart: UpdateService.isNewerVersion اختلاف طول المقاطع
+00:02 +4: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ١) ملاحظة جديدة: المؤشّر عند البداية والسطر يمين (الافتراضي)
+00:02 +5: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٢) سطر عربي ⇒ يمين، سطر إنجليزي ⇒ يسار
+00:02 +6: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٣) قائمة بشرطة: "- تابل" يمين، و"- gfghj" يسار (إصلاح الصورة)
+00:02 +7: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٤) قائمة متعددة الأسطر مختلطة
+00:02 +8: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٥) وراثة: سطر جديد فارغ يرث لغة ما قبله (لا قفز)
+00:02 +9: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٦) سطر يبدأ برموز/أرقام فقط يرث (الأول ⇒ يمين الافتراضي)
+00:02 +10: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٧) مختلط داخل السطر ⇒ يُحدَّد باللغة الغالبة (لا أوّل حرف)
+00:02 +11: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه كل سطر حسب لغته (مع وراثة) ٨) كتابة العربية على سطر موروث يمين لا تُغيّر شيئًا (لا قفز)
+00:02 +12: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ٩) الحفظ لا يُخزّن سمة اتجاه، ويُنظّف القديمة
+00:02 +13: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ٩) الحفظ لا يُخزّن سمة اتجاه، ويُنظّف القديمة
+00:02 +14: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ٩) الحفظ لا يُخزّن سمة اتجاه، ويُنظّف القديمة
+00:02 +15: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ٩) الحفظ لا يُخزّن سمة اتجاه، ويُنظّف القديمة
+00:03 +16: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +17: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +18: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +19: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +20: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +21: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +22: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +23: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +24: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:03 +25: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٠) الحفظ يُنتج JSON صالحًا يُعاد تحميله بنفس النص
+00:04 +26: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/default_gradient_test.dart: التدرّج الافتراضي للتثبيت الجديد
+00:04 +27: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١١) الغامق يبقى محفوظًا عبر الحفظ (يُزال الاتجاه فقط)
+00:04 +28: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +29: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +30: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +31: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +32: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +33: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +34: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +35: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +36: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: الحفظ والاستقرار ١٢) اللمس/تحريك المؤشّر دون تغيّر نصّ لا يستدعي الحفظ
+00:05 +37: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +38: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +39: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +40: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +41: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +42: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +43: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +44: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:05 +45: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٣) محرّر التحرير بمحيط LTR
+00:06 +46: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: اتجاه المحيط LTR (كي يُحاذى كل سطر باتجاهه) ١٤) العارض (القراءة) بمحيط LTR
+00:06 +47: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/line_direction_test.dart: lineDirection — حالات القبول RTL: "- اختبار"
+00:06 +48: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +49: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +50: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +51: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +52: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +53: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +54: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +55: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +56: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +57: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +58: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +59: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +60: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +61: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +62: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +63: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:06 +64: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٥) الغامق يُحفظ ولو طُبّق بعد توقّف الكتابة (تنسيق بلا تغيّر نصّ)
+00:08 +65: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ١) الغامق المخزَّن يُعرض بوزن غامق
+00:08 +66: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٦) تحريك المؤشّر وحده (بلا تغيّر تنسيق) لا يستدعي الحفظ
+00:08 +67: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/editor_direction_test.dart: فاعلية أدوات التنسيق (إصلاح: الغامق يُحفظ) ١٦) تحريك المؤشّر وحده (بلا تغيّر تنسيق) لا يستدعي الحفظ
+00:08 +68: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٣) زرّ الغامق + مؤشّر داخل كلمة (بلا تحديد) ⇒ تُغمَّق الكلمة
+00:08 +69: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٣) زرّ الغامق + مؤشّر داخل كلمة (بلا تحديد) ⇒ تُغمَّق الكلمة
+00:08 +70: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٣) زرّ الغامق + مؤشّر داخل كلمة (بلا تحديد) ⇒ تُغمَّق الكلمة
+00:08 +71: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٣) زرّ الغامق + مؤشّر داخل كلمة (بلا تحديد) ⇒ تُغمَّق الكلمة
+00:08 +72: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٤) زرّ الغامق على محرّر فارغ ثم الكتابة ⇒ النص غامق
+00:09 +73: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٥) التحديد يبقى بعد لمس الشريط (لا يُفقد المحرّر تحديده)
+
+Warning: A call to tap() with finder "Found 1 widget with type "RichTextEditorBody": [
+  RichTextEditorBody(dependencies: [DefaultTextStyle, InheritedCupertinoTheme, _InheritedProviderScope<SettingsProvider?>, _InheritedTheme, _LocalizationsScope-[GlobalKey#9f9a4]], state: _RichTextEditorBodyState#5dce2),
+]" derived an Offset (Offset(400.0, 273.0)) that would not hit test on the specified widget.
+Maybe the widget is actually off-screen, or another widget is obscuring it, or the widget cannot receive pointer events.
+The finder corresponds to this RenderBox: RenderStack#799e7 relayoutBoundary=up2
+The hit test result at that offset is: HitTestResult(_RenderInkFeatures#bbae7@Offset(400.0, 273.0), RenderPhysicalModel#2cd5c@Offset(400.0, 273.0), RenderSemanticsAnnotations#67997@Offset(400.0, 273.0), RenderRepaintBoundary#eb3c1@Offset(400.0, 273.0), RenderIgnorePointer#33a31@Offset(400.0, 273.0), RenderAnimatedOpacity#79544@Offset(400.0, 273.0), RenderAnimatedOpacity#e2b29@Offset(400.0, 273.0), _RenderColoredBox#dfaa6@Offset(400.0, 273.0), RenderAnimatedOpacity#c027d@Offset(400.0, 273.0), RenderIgnorePointer#6b4a0@Offset(400.0, 273.0), RenderAnimatedOpacity#fcb3a@Offset(400.0, 273.0), RenderRepaintBoundary#1e550@Offset(400.0, 273.0), RenderSemanticsAnnotations#df2d6@Offset(400.0, 273.0), RenderOffstage#4b9a0@Offset(400.0, 273.0), RenderSemanticsAnnotations#66633@Offset(400.0, 273.0), _RenderTheater#16d61@Offset(400.0, 273.0), RenderAbsorbPointer#37ce8@Offset(400.0, 273.0), RenderPointerListener#af665@Offset(400.0, 273.0), RenderSemanticsAnnotations#d777f@Offset(400.0, 273.0), RenderCustomPaint#d6407@Offset(400.0, 273.0), RenderSemanticsAnnotations#06aed@Offset(400.0, 273.0), RenderSemanticsAnnotations#eacec@Offset(400.0, 273.0), RenderSemanticsAnnotations#fd34c@Offset(400.0, 273.0), RenderTapRegionSurface#839d7@Offset(400.0, 273.0), RenderSemanticsAnnotations#c18a1@Offset(400.0, 273.0), RenderSemanticsAnnotations#e2a3f@Offset(400.0, 273.0), HitTestEntry<HitTestTarget>#01078(_ReusableRenderView#3dc46), HitTestEntry<HitTestTarget>#a25cb(<AutomatedTestWidgetsFlutterBinding>))
+#0      WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2165:25)
+#1      WidgetController.getCenter (package:flutter_test/src/controller.dart:1947:12)
+#2      WidgetController.tap (package:flutter_test/src/controller.dart:1080:7)
+#3      main.<anonymous closure> (file:///home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart:125:18)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+#6      StackZoneSpecification._registerCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:114:42)
+<asynchronous suspension>
+To silence this warning, pass "warnIfMissed: false" to "tap()".
+To make this warning fatal, set WidgetController.hitTestWarningShouldBeFatal to true.
+
+00:09 +74: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٦) إخفاء زرّ من الإعدادات يزيله من شريط التنسيق
+00:09 +75: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/bold_render_test.dart: ٧) ترتيب الأدوات: moveTool ينقل الأداة ويحفظ الترتيب
+00:09 +76: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/universal_license_test.dart: كود دائم (المدّة 0) يُقبل لجهاز الاختبار
+00:09 +77: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/universal_license_test.dart: كود ٣٠ يومًا يُقبل لجهاز الاختبار
+00:09 +78: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/universal_license_test.dart: كود صحيح يُرفض لجهاز مختلف
+00:10 +79: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/encryption_test.dart: authenticated backup encryption roundtrip preserves data and uses authenticated format
+00:10 +80: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/encryption_test.dart: authenticated backup encryption wrong password is rejected (not silent garbage)
+00:10 +81: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/encryption_test.dart: authenticated backup encryption tampering with the ciphertext is detected (HMAC)
+00:10 +82: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/license_test.dart: Base32 (Crockford-ish) round-trips arbitrary bytes
+00:10 +83: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/license_test.dart: Base32 (Crockford-ish) decoder ignores separators and lowercase noise
+00:10 +84: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/license_test.dart: License key pipeline (generator → app) valid key verifies; tamper & wrong-device fail
+00:10 +85: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/license_test.dart: License key pipeline (generator → app) permanent (duration 0) encodes/decodes correctly
+00:11 +86: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Note serialization full roundtrip preserves every persisted field
+00:11 +87: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Note serialization ruleOnLine tri-state (true/false/null) survives roundtrip
+00:11 +88: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Note serialization unknown type falls back to text; missing flags default false
+00:11 +89: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Note serialization copyWith clear flags null out fields
+00:11 +90: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Category serialization roundtrip preserves fields
+00:11 +91: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: Category serialization defaults applied for missing color/icon/position/name
+00:11 +92: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: MedDose serialization taken/missed status maps both ways
+00:11 +93: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: MedDose serialization missing status/name/at do not crash (corrupt/partial rows)
+00:11 +94: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: ChecklistItem serialization roundtrip incl. is_task and is_done
+00:11 +95: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: ChecklistItem serialization is_task defaults to true (legacy rows had no column)
+00:11 +96: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: enum fromDb fallbacks NoteType
+00:11 +97: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: enum fromDb fallbacks ReminderRepeat
+00:11 +98: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/test/models_test.dart: enum fromDb fallbacks ReminderImportance
+00:11 +99: All tests passed!
+===== flutter build apk (split per abi, obfuscated) =====
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.0.9 available)
+  audioplayers 6.7.0 (6.8.1 available)
+  audioplayers_android 5.2.1 (5.3.0 available)
+  audioplayers_darwin 6.4.0 (6.5.0 available)
+  audioplayers_linux 4.2.1 (4.3.0 available)
+  audioplayers_platform_interface 7.1.1 (7.2.0 available)
+  audioplayers_web 5.2.1 (5.3.0 available)
+  audioplayers_windows 4.3.1 (4.4.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dbus 0.7.12 (0.7.14 available)
+  device_info_plus 12.4.0 (13.2.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  extension_google_sign_in_as_googleapis_auth 2.0.13 (3.0.0 available)
+  file_picker 8.3.7 (11.0.2 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (22.0.1 available)
+  flutter_local_notifications_linux 4.0.1 (8.0.1 available)
+  flutter_local_notifications_platform_interface 7.2.0 (12.0.0 available)
+  flutter_plugin_android_lifecycle 2.0.34 (2.0.35 available)
+  flutter_secure_storage 9.2.4 (10.3.1 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.1 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.13 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  googleapis 13.2.0 (16.0.0 available)
+  home_widget 0.6.0 (0.9.3 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.3.0 (4.9.1 available)
+  image_picker_android 0.8.13+17 (0.8.13+19 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 4.0.0 (6.1.0 available)
+  local_auth 2.3.0 (3.0.1 available)
+  local_auth_android 1.0.56 (2.0.9 available)
+  local_auth_darwin 1.6.1 (2.0.3 available)
+  local_auth_windows 1.0.11 (2.0.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.18.3 available)
+  mime 1.0.6 (2.0.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 9.0.1 (10.2.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  pdf 3.12.0 (3.13.0 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  permission_handler_apple 9.4.7 (9.4.10 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 7.0.0 (7.1.0 available)
+  record_android 2.0.1 (2.1.2 available)
+  record_ios 2.0.0 (2.1.1 available)
+  record_linux 2.0.0 (2.1.0 available)
+  record_macos 2.0.0 (2.1.1 available)
+  record_platform_interface 2.0.0 (2.1.0 available)
+  record_web 2.0.0 (2.1.0 available)
+  record_windows 2.0.0 (2.2.0 available)
+  share_plus 12.0.2 (13.2.0 available)
+  share_plus_platform_interface 6.1.0 (7.1.0 available)
+  shared_preferences_android 2.4.23 (2.4.26 available)
+  signature 5.5.0 (6.3.0 available)
+  sqflite_common 2.5.8 (2.5.11 available)
+  synchronized 3.4.0+1 (3.4.1 available)
+  test_api 0.7.11 (0.7.13 available)
+  timezone 0.9.4 (0.11.0 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_graphics_compiler 1.2.4 (1.2.6 available)
+  vector_math 2.2.0 (2.4.0 available)
+  win32 5.15.0 (6.3.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+79 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'assembleRelease'...                        
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): android_id, audioplayers_android, device_info_plus, dynamic_color, flutter_timezone, home_widget, image_picker_android, package_info_plus, quill_native_bridge_android, share_plus, shared_preferences_android, speech_to_text, url_launcher_android
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing 
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Checking the license for package CMake 3.22.1 in /usr/local/lib/android/sdk/licenses
+License for package CMake 3.22.1 accepted.
+Preparing "Install CMake 3.22.1 v.3.22.1".
+"Install CMake 3.22.1 v.3.22.1" ready.
+Installing CMake 3.22.1 in /usr/local/lib/android/sdk/cmake/3.22.1
+"Install CMake 3.22.1 v.3.22.1" complete.
+"Install CMake 3.22.1 v.3.22.1" finished.
+Skipping assets entry "packages/record_web/assets/js/record.worklet.js" since its configured platform(s) did not match the target platform.
+Configured platforms: web
+Target platform: android
+
+Skipping assets entry "packages/record_web/assets/js/record.fixwebmduration.js" since its configured platform(s) did not match the target platform.
+Configured platforms: web
+Target platform: android
+
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 40864 bytes (97.5% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Warning: The generated ELF library contains unobfuscated DWARF debugging information.
+         To avoid this, use --strip to remove it.
+Warning: The generated ELF library contains unobfuscated DWARF debugging information.
+         To avoid this, use --strip to remove it.
+Warning: The generated ELF library contains unobfuscated DWARF debugging information.
+         To avoid this, use --strip to remove it.
+Caught exception: Already watching path: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/android
+Running Gradle task 'assembleRelease'...                          440.9s
+✓ Built build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk (59.5MB)
+✓ Built build/app/outputs/flutter-apk/app-arm64-v8a-release.apk (62.8MB)
+✓ Built build/app/outputs/flutter-apk/app-x86_64-release.apk (64.9MB)
+===== flutter build appbundle (Google Play, obfuscated) =====
+Resolving dependencies...
+Downloading packages...
+  archive 3.6.1 (4.0.9 available)
+  audioplayers 6.7.0 (6.8.1 available)
+  audioplayers_android 5.2.1 (5.3.0 available)
+  audioplayers_darwin 6.4.0 (6.5.0 available)
+  audioplayers_linux 4.2.1 (4.3.0 available)
+  audioplayers_platform_interface 7.1.1 (7.2.0 available)
+  audioplayers_web 5.2.1 (5.3.0 available)
+  audioplayers_windows 4.3.1 (4.4.1 available)
+  code_assets 1.2.0 (1.2.1 available)
+  dbus 0.7.12 (0.7.14 available)
+  device_info_plus 12.4.0 (13.2.0 available)
+  device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+  extension_google_sign_in_as_googleapis_auth 2.0.13 (3.0.0 available)
+  file_picker 8.3.7 (11.0.2 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 17.2.4 (22.0.1 available)
+  flutter_local_notifications_linux 4.0.1 (8.0.1 available)
+  flutter_local_notifications_platform_interface 7.2.0 (12.0.0 available)
+  flutter_plugin_android_lifecycle 2.0.34 (2.0.35 available)
+  flutter_secure_storage 9.2.4 (10.3.1 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.1 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.0.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.13 available)
+  google_sign_in_ios 5.9.0 (6.3.0 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  googleapis 13.2.0 (16.0.0 available)
+  home_widget 0.6.0 (0.9.3 available)
+  hooks 2.0.0 (2.0.2 available)
+  image 4.3.0 (4.9.1 available)
+  image_picker_android 0.8.13+17 (0.8.13+19 available)
+  intl 0.20.2 (0.20.3 available)
+  js 0.6.7 (0.7.2 available)
+  lints 4.0.0 (6.1.0 available)
+  local_auth 2.3.0 (3.0.1 available)
+  local_auth_android 1.0.56 (2.0.9 available)
+  local_auth_darwin 1.6.1 (2.0.3 available)
+  local_auth_windows 1.0.11 (2.0.1 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.18.3 available)
+  mime 1.0.6 (2.0.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 9.0.1 (10.2.0 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  pdf 3.12.0 (3.13.0 available)
+  permission_handler 11.4.0 (12.0.3 available)
+  permission_handler_android 12.1.0 (13.0.1 available)
+  permission_handler_apple 9.4.7 (9.4.10 available)
+  pointycastle 3.9.1 (4.0.0 available)
+  qr 3.0.2 (4.0.0 available)
+  record 7.0.0 (7.1.0 available)
+  record_android 2.0.1 (2.1.2 available)
+  record_ios 2.0.0 (2.1.1 available)
+  record_linux 2.0.0 (2.1.0 available)
+  record_macos 2.0.0 (2.1.1 available)
+  record_platform_interface 2.0.0 (2.1.0 available)
+  record_web 2.0.0 (2.1.0 available)
+  record_windows 2.0.0 (2.2.0 available)
+  share_plus 12.0.2 (13.2.0 available)
+  share_plus_platform_interface 6.1.0 (7.1.0 available)
+  shared_preferences_android 2.4.23 (2.4.26 available)
+  signature 5.5.0 (6.3.0 available)
+  sqflite_common 2.5.8 (2.5.11 available)
+  synchronized 3.4.0+1 (3.4.1 available)
+  test_api 0.7.11 (0.7.13 available)
+  timezone 0.9.4 (0.11.0 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_graphics_compiler 1.2.4 (1.2.6 available)
+  vector_math 2.2.0 (2.4.0 available)
+  win32 5.15.0 (6.3.0 available)
+  win32_registry 2.1.0 (3.0.3 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+79 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Running Gradle task 'bundleRelease'...                          
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): android_id, audioplayers_android, device_info_plus, dynamic_color, flutter_timezone, home_widget, image_picker_android, package_info_plus, quill_native_bridge_android, share_plus, shared_preferences_android, speech_to_text, url_launcher_android
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing 
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Caught exception: Already watching path: /home/runner/work/alaoufi_notes/alaoufi_notes/mudhakkarati/android
+Skipping assets entry "packages/record_web/assets/js/record.worklet.js" since its configured platform(s) did not match the target platform.
+Configured platforms: web
+Target platform: android
+
+Skipping assets entry "packages/record_web/assets/js/record.fixwebmduration.js" since its configured platform(s) did not match the target platform.
+Configured platforms: web
+Target platform: android
+
+Font asset "MaterialIcons-Regular.otf" was tree-shaken, reducing it from 1645184 to 40864 bytes (97.5% reduction). Tree-shaking can be disabled by providing the --no-tree-shake-icons flag when building your app.
+Running Gradle task 'bundleRelease'...                             25.2s
+✓ Built build/app/outputs/bundle/release/app-release.aab (102.7MB)
+===== sizes =====
+total 179M
+-rw-r--r-- 1 runner runner 60M Jun 29 00:57 app-arm64-v8a-release.apk
+-rw-r--r-- 1 runner runner  40 Jun 29 00:57 app-arm64-v8a-release.apk.sha1
+-rw-r--r-- 1 runner runner 57M Jun 29 00:57 app-armeabi-v7a-release.apk
+-rw-r--r-- 1 runner runner  40 Jun 29 00:57 app-armeabi-v7a-release.apk.sha1
+-rw-r--r-- 1 runner runner 62M Jun 29 00:57 app-x86_64-release.apk
+-rw-r--r-- 1 runner runner  40 Jun 29 00:57 app-x86_64-release.apk.sha1
+total 98M
+-rw-r--r-- 1 runner runner 98M Jun 29 00:58 app-release.aab
