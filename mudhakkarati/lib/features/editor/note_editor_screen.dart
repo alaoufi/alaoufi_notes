@@ -509,17 +509,8 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 }
               },
             ),
-            IconButton(
-              tooltip: _note.isFavorite ? s.t('unfavorite') : s.t('favorite'),
-              icon: Icon(_note.isFavorite ? Icons.star : Icons.star_border,
-                  color: _note.isFavorite ? Colors.amber : null),
-              onPressed: () async {
-                await _ensureSaved();
-                final updated = _note.copyWith(isFavorite: !_note.isFavorite);
-                setState(() => _note = updated);
-                await context.read<NotesProvider>().toggleFavorite(_note.copyWith(isFavorite: !updated.isFavorite));
-              },
-            ),
+            // المفضّلة متاحة من قائمة «المزيد ⋮» — أُزيلت من الشريط لإفساح مكان زرّ
+            // الحماية دون أن تتزاحم الأيقونات مع سهم الرجوع.
             IconButton(
               tooltip: s.t('reminder'),
               icon: const Icon(Icons.alarm),
