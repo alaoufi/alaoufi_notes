@@ -30,12 +30,19 @@ class SecurityService {
 
   Future<bool> hasPin() async => (await _storage.read(key: _kPinHash)) != null;
 
+  /// يضبط الرقم السرّي فقط — **لا** يُفعّل قفل التطبيق عند الإقلاع. قفل التطبيق
+  /// يُفعَّل صراحةً عبر [setLockEnabled] من مفتاح «قفل التطبيق» في الإعدادات،
+  /// كي لا يؤدّي قفلُ ملاحظةٍ واحدة إلى مطالبة التطبيق كلّه بالرقم عند فتحه.
   Future<void> setPin(String pin) async {
     const salt = 'mudhakkarati_pin';
     final hash = EncryptionService.instance.hashSecret(pin, salt);
     await _storage.write(key: _kPinSalt, value: salt);
     await _storage.write(key: _kPinHash, value: hash);
-    await _storage.write(key: _kLockEnabled, value: 'true');
+  }
+
+  /// تفعيل/إلغاء قفل التطبيق عند الإقلاع (مستقلّ عن وجود الرقم السرّي).
+  Future<void> setLockEnabled(bool enabled) async {
+    await _storage.write(key: _kLockEnabled, value: enabled ? 'true' : 'false');
   }
 
   Future<bool> verifyPin(String pin) async {
@@ -45,11 +52,12 @@ class SecurityService {
     return EncryptionService.instance.hashSecret(pin, salt) == stored;
   }
 
+  /// إلغاء قفل التطبيق عند الإقلاع. نُبقي الرقم السرّي محفوظًا كي تظلّ الملاحظات
+  /// والتصنيفات المقفلة قابلةً للفتح بنفس الرقم — لا نحذفه بمجرّد إيقاف قفل
+  /// التطبيق.
   Future<void> disableLock() async {
     await _storage.write(key: _kLockEnabled, value: 'false');
     await _storage.write(key: _kBiometric, value: 'false');
-    await _storage.delete(key: _kPinHash);
-    await _storage.delete(key: _kPinSalt);
   }
 
   Future<void> setBiometric(bool enabled) async {

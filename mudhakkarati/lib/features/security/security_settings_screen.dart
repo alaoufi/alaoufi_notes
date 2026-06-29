@@ -56,6 +56,9 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
                 }
                 if (first == pin) {
                   await _sec.setPin(pin);
+                  // قفل التطبيق عند الإقلاع يُفعَّل صراحةً هنا (من مفتاح «قفل
+                  // التطبيق») — لا تلقائيًّا عند ضبط الرقم لقفل ملاحظة.
+                  await _sec.setLockEnabled(true);
                   if (ctx.mounted) Navigator.pop(ctx, true);
                   return true;
                 }
