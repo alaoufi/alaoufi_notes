@@ -586,7 +586,10 @@ class _HomeScreenState extends State<HomeScreen> {
   /// ثم بقيّة الملاحظات تحت عنوان «أخرى» — وإلا شبكة واحدة.
   List<Widget> _noteSlivers(BuildContext context, S s,
       SettingsProvider settings, NotesProvider provider) {
-    final cross = settings.layout == NoteLayout.grid ? 2 : 1;
+    // العرض المدمج: عمود إضافيّ في وضع الشبكة (بطاقات أصغر، عدد أكبر).
+    final cross = settings.layout == NoteLayout.grid
+        ? (settings.compactCards ? 3 : 2)
+        : 1;
     Widget card(Note n) {
       final c = NoteCard(
         note: n,

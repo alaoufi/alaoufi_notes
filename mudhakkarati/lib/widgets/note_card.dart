@@ -52,6 +52,7 @@ class NoteCard extends StatelessWidget {
             : Colors.black87);
 
     final scheme = Theme.of(context).colorScheme;
+    final compact = context.watch<SettingsProvider>().compactCards;
     return Card(
       // الشبكة تتكفّل بالتباعد؛ نُلغي هامش الثيم العام كي لا تتباعد البطاقات.
       margin: EdgeInsets.zero,
@@ -70,8 +71,7 @@ class NoteCard extends StatelessWidget {
         onTap: onTap,
         onLongPress: onLongPress,
         child: Padding(
-          padding: EdgeInsets.all(
-              context.watch<SettingsProvider>().compactCards ? 7 : 10),
+          padding: EdgeInsets.all(compact ? 8 : 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -112,13 +112,15 @@ class NoteCard extends StatelessWidget {
                 ],
               ),
               if (note.title.trim().isNotEmpty) ...[
-                const SizedBox(height: 6),
+                SizedBox(height: compact ? 3 : 6),
                 _highlight(
                   context,
                   note.title,
                   TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 16, color: onBg),
-                  maxLines: 2,
+                      fontWeight: FontWeight.bold,
+                      fontSize: compact ? 13.5 : 16,
+                      color: onBg),
+                  maxLines: compact ? 1 : 2,
                 ),
               ],
               if (note.isLocked && !revealLocked)
@@ -140,8 +142,9 @@ class NoteCard extends StatelessWidget {
 
   /// تذييل منظّم: شارة التصنيف (نقطة ملوّنة + اسم) والتاريخ.
   Widget _footer(BuildContext context, Color onBg) {
+    final compact = context.watch<SettingsProvider>().compactCards;
     return Padding(
-      padding: const EdgeInsets.only(top: 10),
+      padding: EdgeInsets.only(top: compact ? 6 : 10),
       child: Row(
         children: [
           Expanded(
@@ -502,7 +505,9 @@ class NoteCard extends StatelessWidget {
   Widget _text(BuildContext context, Color onBg) {
     final plain = richToPlainText(note.content);
     if (plain.trim().isEmpty) return const SizedBox.shrink();
-    final noteFont = context.watch<SettingsProvider>().noteFontFamily;
+    final settings = context.watch<SettingsProvider>();
+    final noteFont = settings.noteFontFamily;
+    final compact = settings.compactCards;
     return Padding(
       padding: const EdgeInsets.only(top: 4),
       child: _highlight(
@@ -511,7 +516,7 @@ class NoteCard extends StatelessWidget {
         TextStyle(
             color: onBg.withOpacity(0.8),
             height: 1.3,
-            fontSize: 13,
+            fontSize: compact ? 11.5 : 13,
             fontFamily: noteFont),
       ),
     );
