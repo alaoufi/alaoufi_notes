@@ -75,7 +75,7 @@ jobs:
 
       - name: نشر المولّد في Releases (تحميل مباشر)
         if: success()
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: keygen-latest
           name: مولّد أكواد مذكراتي — أحدث نسخة
