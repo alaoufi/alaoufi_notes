@@ -91,7 +91,7 @@ jobs:
 
       - name: نشر في Releases (تحميل مباشر من المتصفّح)
         if: success()
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Alaoufi Notes — أحدث نسخة
